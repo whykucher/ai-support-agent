@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ops dashboard — AI Support &amp; Lead Agent</title>
+<style>
+  :root {
+    --ink: #e7e5e4; --muted: #a8a29e; --line: #2b2724;
+    --bg: #161311; --panel: #1e1a17; --accent: #d19a6a; --ok: #6ee7a8; --warn: #fbbf6e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink); line-height: 1.55;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 28px 24px 64px; }
+  header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 26px; }
+  h1 { font-size: 20px; margin: 0; letter-spacing: -.02em; }
+  .tag { font-size: 12px; color: var(--muted); border: 1px solid var(--line); padding: 3px 9px; border-radius: 999px; }
+  .spacer { margin-left: auto; }
+  input, button, select {
+    font: inherit; border-radius: 9px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--ink); padding: 8px 12px;
+  }
+  button { cursor: pointer; }
+  button.primary { background: var(--accent); color: #1a1310; border-color: var(--accent); font-weight: 650; }
+  button:hover { filter: brightness(1.08); }
+
+  .kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 26px; }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+  .kpi b { display: block; font-size: 27px; letter-spacing: -.02em; }
+  .kpi span { font-size: 12.5px; color: var(--muted); }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .panel h2 { font-size: 15px; margin: 0; padding: 14px 18px; border-bottom: 1px solid var(--line); font-weight: 650; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 10px 18px; border-bottom: 1px solid var(--line); font-weight: 600; }
+  td { padding: 12px 18px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  tr.clickable:hover { background: #241f1b; cursor: pointer; }
+  .pill { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; display: inline-block; }
+  .hot { background: #4a2119; color: #ffb4a2; }
+  .warm { background: #3b2f18; color: var(--warn); }
+  .yes { color: var(--ok); }
+  .no { color: #f8a29a; }
+  .empty { padding: 34px 18px; text-align: center; color: var(--muted); font-size: 14px; }
+  .muted { color: var(--muted); }
+  .cols { display: grid; grid-template-columns: 1.55fr 1fr; gap: 18px; align-items: start; }
+  .msg { padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+  .msg b { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 2px; }
+  #err { color: #f8a29a; font-size: 13px; }
+  @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } .cols { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>AI Support &amp; Lead Agent</h1>
+    <span class="tag" id="provider">provider: …</span>
+    <span class="tag" id="kb">knowledge: …</span>
+    <span class="spacer"></span>
+    <input id="token" placeholder="admin token" size="18">
+    <button class="primary" id="load">Load</button>
+    <button id="reindex" title="Re-read the knowledge folder">Reindex</button>
+    <button id="retry" title="Resend leads that never reached n8n">Retry n8n</button>
+    <a href="/" style="color:var(--accent);font-size:13.5px;margin-left:6px">← storefront</a>
+  </header>
+
+  <div id="err"></div>
+
+  <div class="kpis">
+    <div class="kpi"><b id="k-conv">–</b><span>Conversations</span></div>
+    <div class="kpi"><b id="k-msg">–</b><span>Questions answered</span></div>
+    <div class="kpi"><b id="k-lead">–</b><span>Leads captured</span></div>
+    <div class="kpi"><b id="k-defl">–</b><span>Deflection rate</span></div>
+    <div class="kpi"><b id="k-lat">–</b><span>Avg response</span></div>
+  </div>
+
+  <div class="cols">
+    <div class="panel">
+      <h2>Recent leads</h2>
+      <table>
+        <thead><tr><th>When</th><th>Contact</th><th>Intent</th><th>Score</th><th>n8n</th></tr></thead>
+        <tbody id="leads"></tbody>
+      </table>
+      <div class="empty" id="leads-empty">No leads yet — open the storefront and ask the bot about wholesale pricing.</div>
+    </div>
+
+    <div class="panel">
+      <h2 id="tx-title">Transcript</h2>
+      <div id="tx" class="empty">Select a lead to read its conversation.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const tokenBox = $("token");
+tokenBox.value = localStorage.getItem("nw_admin_token") || "demo-admin-token";
+
+const hdr = () => ({ "X-Admin-Token": tokenBox.value.trim() });
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, { ...opts, headers: { ...hdr(), ...(opts.headers || {}) } });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || res.statusText);
+  return data;
+}
+
+const when = ts => new Date(ts * 1000).toLocaleString(undefined,
+  { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+
+async function loadAll() {
+  $("err").textContent = "";
+  try {
+    const health = await (await fetch("/api/health")).json();
+    $("provider").textContent = "provider: " + health.provider;
+    $("kb").textContent = `knowledge: ${health.knowledge.n} chunks / ${health.knowledge.sources} file(s)`;
+
+    const m = await api("/api/metrics");
+    $("k-conv").textContent = m.conversations;
+    $("k-msg").textContent = m.user_messages;
+    $("k-lead").textContent = m.leads;
+    $("k-defl").textContent = m.deflection_rate + "%";
+    $("k-lat").textContent = m.avg_latency_ms + " ms";
+
+    const { leads } = await api("/api/leads?limit=50");
+    const body = $("leads");
+    body.innerHTML = "";
+    $("leads-empty").style.display = leads.length ? "none" : "block";
+    for (const l of leads) {
+      const tr = document.createElement("tr");
+      tr.className = "clickable";
+      tr.innerHTML = `
+        <td class="muted">${when(l.created_at)}</td>
+        <td>${l.name ? `<div>${escapeHtml(l.name)}</div>` : ""}
+            <div class="muted">${escapeHtml(l.email || l.phone || "—")}</div></td>
+        <td>${escapeHtml(l.intent || "—")}</td>
+        <td><span class="pill ${l.lead_score >= 60 ? "hot" : "warm"}">${l.lead_score}</span></td>
+        <td class="${l.delivered ? "yes" : "no"}" title="${escapeHtml(l.delivery_error || "")}">
+            ${l.delivered ? "sent" : "pending"}</td>`;
+      tr.onclick = () => showTranscript(l.conversation_id);
+      body.appendChild(tr);
+    }
+  } catch (e) {
+    $("err").textContent = "Error: " + e.message + " (check the admin token)";
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+async function showTranscript(id) {
+  $("tx-title").textContent = "Transcript · " + id;
+  $("tx").innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const data = await api("/api/conversations/" + encodeURIComponent(id));
+    $("tx").innerHTML = data.messages.length
+      ? data.messages.map(m =>
+          `<div class="msg"><b>${m.role}</b>${escapeHtml(m.content)}</div>`).join("")
+      : '<div class="empty">No messages.</div>';
+  } catch (e) {
+    $("tx").innerHTML = `<div class="empty">${escapeHtml(e.message)}</div>`;
+  }
+}
+
+$("load").onclick = () => {
+  localStorage.setItem("nw_admin_token", tokenBox.value.trim());
+  loadAll();
+};
+$("reindex").onclick = async () => {
+  try { const r = await api("/api/reindex", { method: "POST" });
+        alert("Reindexed: " + JSON.stringify(r.indexed)); loadAll(); }
+  catch (e) { alert(e.message); }
+};
+$("retry").onclick = async () => {
+  try { const r = await api("/api/leads/retry", { method: "POST" });
+        alert("Resent " + r.resent + " lead(s)"); loadAll(); }
+  catch (e) { alert(e.message); }
+};
+
+loadAll();
+setInterval(loadAll, 15000);
+</script>
+</body>
+</html>

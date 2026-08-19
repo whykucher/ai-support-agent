@@ -1,0 +1,44 @@
+# Full stack: the agent plus a local n8n to receive its leads.
+#
+#   docker compose up --build
+#   agent -> http://localhost:8000      n8n -> http://localhost:5678
+#
+# In n8n, import n8n/lead-routing.json, activate it, and the webhook URL
+# http://n8n:5678/webhook/lead-intake already matches N8N_WEBHOOK_URL below.
+
+services:
+  agent:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DB_PATH: /srv/data/app.db
+      N8N_WEBHOOK_URL: http://n8n:5678/webhook/lead-intake
+    volumes:
+      - agent-data:/srv/data
+      # Edit the knowledge base on the host, hit Reindex in the dashboard.
+      - ./knowledge:/srv/knowledge:ro
+    depends_on:
+      - n8n
+    restart: unless-stopped
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      N8N_SECURE_COOKIE: "false"
+      GENERIC_TIMEZONE: Europe/Berlin
+      # Must match N8N_WEBHOOK_SECRET in .env for signature checks to pass.
+      N8N_WEBHOOK_SECRET: ${N8N_WEBHOOK_SECRET:-}
+      NODE_FUNCTION_ALLOW_BUILTIN: crypto
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - ./n8n:/workflows:ro
+    restart: unless-stopped
+
+volumes:
+  agent-data:
+  n8n-data:

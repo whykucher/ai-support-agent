@@ -1,0 +1,220 @@
+{
+  "name": "AI Support Agent - Lead Routing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-intake",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1f0c2e4-0001-4a10-9c11-000000000001",
+      "name": "Lead Intake Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-620, 300],
+      "webhookId": "a1f0c2e4-0001-4a10-9c11-000000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Verify the HMAC signature the FastAPI service sends, then flatten the\n// payload into the shape the downstream nodes expect.\nconst crypto = require('crypto');\nconst SECRET = $env.N8N_WEBHOOK_SECRET || '';\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const body = item.json.body ?? item.json;\n  const headers = item.json.headers ?? {};\n\n  if (SECRET) {\n    const expected = crypto\n      .createHmac('sha256', SECRET)\n      .update(JSON.stringify(body))\n      .digest('hex');\n    if (headers['x-signature'] !== expected) {\n      throw new Error('Invalid signature - rejecting lead ' + (body.lead_id ?? '?'));\n    }\n  }\n\n  const transcript = (body.transcript || [])\n    .map((m) => `${m.role.toUpperCase()}: ${m.content}`)\n    .join('\\n');\n\n  out.push({\n    json: {\n      lead_id: body.lead_id,\n      conversation_id: body.conversation_id,\n      name: body.name || '(not given)',\n      email: body.email || '',\n      phone: body.phone || '',\n      intent: body.intent || 'unknown',\n      lead_score: Number(body.lead_score || 0),\n      priority: body.priority || 'warm',\n      message: body.message || '',\n      source_page: body.source_page || '',\n      company: body.company || '',\n      captured_at: body.captured_at || new Date().toISOString(),\n      transcript,\n    },\n  });\n}\n\nreturn out;"
+      },
+      "id": "a1f0c2e4-0002-4a10-9c11-000000000002",
+      "name": "Verify & Normalise",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-400, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "hot-check",
+              "leftValue": "={{ $json.lead_score }}",
+              "rightValue": 60,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "a1f0c2e4-0003-4a10-9c11-000000000003",
+      "name": "Hot lead?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-180, 300]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#sales",
+          "mode": "name"
+        },
+        "text": "=:fire: *Hot lead — score {{ $json.lead_score }}*\n*Contact:* {{ $json.name }} · {{ $json.email }} {{ $json.phone }}\n*Intent:* {{ $json.intent }}\n*Page:* {{ $json.source_page }}\n*Asked:* {{ $json.message }}\n\n```{{ $json.transcript }}```",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "id": "a1f0c2e4-0004-4a10-9c11-000000000004",
+      "name": "Slack: notify sales",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [80, 180],
+      "notes": "Swap for Telegram / Discord / MS Teams - same input shape."
+    },
+    {
+      "parameters": {
+        "sendTo": "sales@your-company.example",
+        "subject": "=New {{ $json.priority }} lead ({{ $json.lead_score }}) — {{ $json.name }}",
+        "emailType": "text",
+        "message": "={{ $json.name }} just spoke to the website assistant.\n\nEmail: {{ $json.email }}\nPhone: {{ $json.phone }}\nIntent: {{ $json.intent }}\nScore: {{ $json.lead_score }}\nPage: {{ $json.source_page }}\nCaptured: {{ $json.captured_at }}\n\n--- Transcript ---\n{{ $json.transcript }}",
+        "options": {}
+      },
+      "id": "a1f0c2e4-0005-4a10-9c11-000000000005",
+      "name": "Gmail: alert owner",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [80, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/contacts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { email: $json.email, firstname: $json.name, phone: $json.phone, hs_lead_status: 'NEW', message: $json.message } }) }}",
+        "options": {}
+      },
+      "id": "a1f0c2e4-0006-4a10-9c11-000000000006",
+      "name": "CRM: create contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [80, 460],
+      "notes": "HubSpot shown. Pipedrive/Zoho/Airtable: change URL + body, nothing else."
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Leads"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "matchingColumns": [],
+          "value": {}
+        },
+        "options": {}
+      },
+      "id": "a1f0c2e4-0007-4a10-9c11-000000000007",
+      "name": "Sheets: log every lead",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [80, 620],
+      "notes": "Single source of truth the client can open without logging into anything."
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "days"
+      },
+      "id": "a1f0c2e4-0008-4a10-9c11-000000000008",
+      "name": "Wait 1 day",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [320, 780],
+      "webhookId": "a1f0c2e4-0008-4a10-9c11-000000000008"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "=Still thinking about {{ $json.company }}?",
+        "emailType": "text",
+        "message": "=Hi {{ $json.name }},\n\nYou asked our assistant about \"{{ $json.message }}\" yesterday.\n\nIf it is still on your list, reply to this email and a human will pick it up\nwithin the hour.\n\n— The {{ $json.company }} team",
+        "options": {}
+      },
+      "id": "a1f0c2e4-0009-4a10-9c11-000000000009",
+      "name": "Gmail: nurture follow-up",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [540, 780],
+      "notes": "Warm leads only. Fires 24h later if nobody has closed the loop."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, lead_id: $json.lead_id, routed: $json.priority }) }}",
+        "options": {}
+      },
+      "id": "a1f0c2e4-0010-4a10-9c11-000000000010",
+      "name": "Respond to app",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [320, 300]
+    }
+  ],
+  "connections": {
+    "Lead Intake Webhook": {
+      "main": [[{ "node": "Verify & Normalise", "type": "main", "index": 0 }]]
+    },
+    "Verify & Normalise": {
+      "main": [[{ "node": "Hot lead?", "type": "main", "index": 0 }]]
+    },
+    "Hot lead?": {
+      "main": [
+        [
+          { "node": "Slack: notify sales", "type": "main", "index": 0 },
+          { "node": "Gmail: alert owner", "type": "main", "index": 0 },
+          { "node": "CRM: create contact", "type": "main", "index": 0 },
+          { "node": "Sheets: log every lead", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "Sheets: log every lead", "type": "main", "index": 0 },
+          { "node": "Wait 1 day", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Sheets: log every lead": {
+      "main": [[{ "node": "Respond to app", "type": "main", "index": 0 }]]
+    },
+    "Wait 1 day": {
+      "main": [[{ "node": "Gmail: nurture follow-up", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "portfolio-demo"
+  },
+  "tags": [
+    { "name": "ai-support-agent" },
+    { "name": "lead-routing" }
+  ]
+}

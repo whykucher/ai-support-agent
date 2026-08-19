@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Northwind Coffee Co. — Roasted to order in Portland</title>
+<style>
+  :root {
+    --ink: #1c1917;
+    --muted: #78716c;
+    --accent: #7c4a2d;
+    --soft: #f5efe9;
+    --line: #e7e5e4;
+    --bg: #fffdfb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: rgb(255 253 251 / 88%);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav { display: flex; align-items: center; gap: 28px; height: 68px; }
+  .logo { font-weight: 800; letter-spacing: -.02em; font-size: 18px; }
+  .logo span { color: var(--accent); }
+  .nav a { color: var(--muted); text-decoration: none; font-size: 14.5px; }
+  .nav a:hover { color: var(--ink); }
+  .nav .spacer { margin-left: auto; }
+  .btn {
+    display: inline-block; padding: 10px 18px; border-radius: 999px;
+    background: var(--accent); color: #fff !important; text-decoration: none;
+    font-weight: 600; font-size: 14.5px; border: 0; cursor: pointer;
+  }
+  .btn.ghost { background: transparent; color: var(--accent) !important; border: 1px solid var(--accent); }
+
+  .hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; padding: 76px 0 64px; }
+  .eyebrow {
+    display: inline-block; padding: 5px 12px; border-radius: 999px;
+    background: var(--soft); color: var(--accent);
+    font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  }
+  h1 { font-size: clamp(34px, 5vw, 52px); line-height: 1.08; letter-spacing: -.03em; margin: 18px 0 16px; }
+  .lede { font-size: 18px; color: var(--muted); max-width: 46ch; }
+  .cta { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+
+  .beans {
+    aspect-ratio: 4/3; border-radius: 22px;
+    background:
+      radial-gradient(120% 90% at 20% 10%, #a56a44 0%, transparent 55%),
+      radial-gradient(100% 80% at 85% 80%, #4a2c1a 0%, transparent 60%),
+      linear-gradient(150deg, #8a5433, #3f2617);
+    display: grid; place-items: center; color: #f7ece3; text-align: center; padding: 32px;
+  }
+  .beans b { display: block; font-size: 40px; letter-spacing: -.02em; }
+  .beans small { opacity: .8; letter-spacing: .18em; text-transform: uppercase; font-size: 11.5px; }
+
+  .strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; padding: 28px 0 56px; border-top: 1px solid var(--line); }
+  .strip div b { display: block; font-size: 22px; letter-spacing: -.02em; }
+  .strip div span { font-size: 13.5px; color: var(--muted); }
+
+  section { padding: 56px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 28px; letter-spacing: -.02em; margin: 0 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 32px; }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .card { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: #fff; }
+  .card .thumb { height: 132px; }
+  .t1 { background: linear-gradient(140deg, #b07d55, #6b4227); }
+  .t2 { background: linear-gradient(140deg, #4a3325, #221610); }
+  .t3 { background: linear-gradient(140deg, #c9a06a, #8a5f34); }
+  .t4 { background: linear-gradient(140deg, #9e6f4c, #5c3a22); }
+  .t5 { background: linear-gradient(140deg, #7f8b74, #414a3a); }
+  .card .body { padding: 16px 18px 20px; }
+  .card h3 { margin: 0 0 4px; font-size: 16.5px; }
+  .card p { margin: 0 0 14px; font-size: 13.5px; color: var(--muted); min-height: 40px; }
+  .price { font-weight: 700; }
+  .row { display: flex; align-items: center; justify-content: space-between; }
+
+  .band { background: var(--soft); border-radius: 20px; padding: 36px 40px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: center; }
+  .band ul { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 14.5px; }
+
+  footer { border-top: 1px solid var(--line); padding: 32px 0 64px; color: var(--muted); font-size: 13.5px; }
+  .demo-note {
+    margin-top: 14px; padding: 12px 16px; border: 1px dashed var(--accent);
+    border-radius: 12px; color: var(--accent); font-size: 13px; background: #fff;
+  }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; gap: 32px; padding: 48px 0; }
+    .strip { grid-template-columns: repeat(2, 1fr); }
+    .grid { grid-template-columns: 1fr 1fr; }
+    .band { grid-template-columns: 1fr; }
+    .nav a:not(.btn) { display: none; }
+  }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo">Northwind<span>.</span></div>
+    <a href="#coffee">Coffee</a>
+    <a href="#subscribe">Subscriptions</a>
+    <a href="#wholesale">Wholesale</a>
+    <span class="spacer"></span>
+    <a class="btn ghost" href="/admin">Ops dashboard</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="hero">
+    <div>
+      <span class="eyebrow">Roasted to order · Portland, OR</span>
+      <h1>Coffee that ships the day it is roasted.</h1>
+      <p class="lede">Fourteen producing partners, five roast profiles, and a
+        support assistant that actually knows the shipping cut-off. Ask it
+        anything in the corner.</p>
+      <div class="cta">
+        <a class="btn" href="#coffee">Shop coffee</a>
+        <button class="btn ghost" onclick="NorthwindChat.open()">Ask the assistant</button>
+      </div>
+    </div>
+    <div class="beans">
+      <div><small>Since 2016</small><b>Northwind</b><small>Coffee Co.</small></div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <div><b>24 h</b><span>From roast to shipment</span></div>
+    <div><b>$45+</b><span>Free US shipping</span></div>
+    <div><b>15%</b><span>Off with a subscription</span></div>
+    <div><b>45%</b><span>Max wholesale discount</span></div>
+  </div>
+
+  <section id="coffee">
+    <h2>This week&rsquo;s roasts</h2>
+    <p class="sub">Every bag carries a roast date. Best between day 5 and day 21.</p>
+    <div class="grid">
+      <div class="card"><div class="thumb t1"></div><div class="body">
+        <h3>Harbor Blend</h3><p>Chocolate and hazelnut, medium roast. Our best seller.</p>
+        <div class="row"><span class="price">$16.00</span><a class="btn" href="#">Add</a></div>
+      </div></div>
+      <div class="card"><div class="thumb t2"></div><div class="body">
+        <h3>Cascade Dark</h3><p>Molasses and toasted almond, dark roast.</p>
+        <div class="row"><span class="price">$16.00</span><a class="btn" href="#">Add</a></div>
+      </div></div>
+      <div class="card"><div class="thumb t3"></div><div class="body">
+        <h3>Ethiopia Yirgacheffe</h3><p>Blueberry and jasmine, light roast single origin.</p>
+        <div class="row"><span class="price">$18.50</span><a class="btn" href="#">Add</a></div>
+      </div></div>
+      <div class="card"><div class="thumb t4"></div><div class="body">
+        <h3>Colombia Huila</h3><p>Caramel and red apple, medium roast single origin.</p>
+        <div class="row"><span class="price">$18.50</span><a class="btn" href="#">Add</a></div>
+      </div></div>
+      <div class="card"><div class="thumb t5"></div><div class="body">
+        <h3>Decaf Sunset</h3><p>Swiss water process, medium roast, all the flavour.</p>
+        <div class="row"><span class="price">$18.50</span><a class="btn" href="#">Add</a></div>
+      </div></div>
+      <div class="card"><div class="thumb t1"></div><div class="body">
+        <h3>Bulk 5 lb bag</h3><p>Any blend, for offices and heavy drinkers.</p>
+        <div class="row"><span class="price">$78.00</span><a class="btn" href="#">Add</a></div>
+      </div></div>
+    </div>
+  </section>
+
+  <section id="subscribe">
+    <div class="band">
+      <div>
+        <h2>Subscribe and save 15%</h2>
+        <p class="sub" style="margin-bottom:0">Every 1, 2 or 4 weeks. Pause, skip or
+          cancel from your account, no fees, no minimum term.</p>
+        <ul>
+          <li>Charged 48 hours before each roast</li>
+          <li>First box includes a free 4 oz micro-lot</li>
+          <li>Change coffee or frequency any time</li>
+        </ul>
+      </div>
+      <div><a class="btn" href="#">Start a subscription</a></div>
+    </div>
+  </section>
+
+  <section id="wholesale">
+    <h2>Wholesale &amp; office coffee</h2>
+    <p class="sub">Cafes, restaurants, hotels and offices. 30% to 45% off retail
+      depending on volume, net 30 after three orders.</p>
+    <div class="grid">
+      <div class="card"><div class="body">
+        <h3>Cafes</h3><p>Free grinder loan at 40 lb/month, plus barista training.</p>
+        <button class="btn" onclick="NorthwindChat.send('I need wholesale pricing for my cafe')">Get pricing</button>
+      </div></div>
+      <div class="card"><div class="body">
+        <h3>Offices</h3><p>From $180/month for 25 people, equipment included.</p>
+        <button class="btn" onclick="NorthwindChat.send('What does office coffee service cost?')">Get pricing</button>
+      </div></div>
+      <div class="card"><div class="body">
+        <h3>Private label</h3><p>Your brand on our roast, from 500 lb per order.</p>
+        <button class="btn" onclick="NorthwindChat.send('Tell me about private label roasting')">Get pricing</button>
+      </div></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    1420 NW Quimby Street, Portland OR · support@northwindcoffee.example · +1 503 555 0142
+    <div class="demo-note">
+      <b>Portfolio demo.</b> Northwind Coffee Co. is a fictional brand used to show a
+      real AI support agent: RAG over a company knowledge base, lead scoring, and an
+      n8n hand-off to CRM. Open the chat, ask about shipping, then ask about wholesale
+      pricing and watch the lead form appear. Results land in the
+      <a href="/admin">ops dashboard</a>.
+    </div>
+  </div>
+</footer>
+
+<script src="/static/widget.js"
+        data-api=""
+        data-title="Northwind Support"
+        data-agent="Nora"
+        data-accent="#7c4a2d" defer></script>
+</body>
+</html>
