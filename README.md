@@ -241,7 +241,7 @@ web/
   widget.css    themeable via CSS variables
 knowledge/      the bot's source of truth (.md / .txt)
 n8n/            importable lead-routing workflow
-scripts/        ingest · seed_demo · smoke_test
+scripts/        ingest · seed_demo · smoke_test · fake_n8n · screenshots
 ```
 
 ## Verifying it works
@@ -249,6 +249,10 @@ scripts/        ingest · seed_demo · smoke_test
 ```bash
 python -m scripts.smoke_test
 ```
+
+No n8n handy? `python -m scripts.fake_n8n` is a signature-verifying
+webhook sink, so the outbound half of the integration can be demonstrated
+in one terminal window instead of a Docker stack.
 
 Twenty checks with no server and no API keys: indexing, retrieval quality on six
 real questions, chat, intent scoring, both lead-capture paths, admin auth, and

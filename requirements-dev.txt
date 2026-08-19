@@ -1,0 +1,4 @@
+# Only needed to regenerate the portfolio screenshots. The app itself runs on
+# the four packages in requirements.txt.
+#   pip install -r requirements-dev.txt && playwright install chromium
+playwright>=1.40
