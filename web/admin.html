@@ -44,6 +44,7 @@
   .warm { background: #3b2f18; color: var(--warn); }
   .yes { color: var(--ok); }
   .no { color: #f8a29a; }
+  .off { color: var(--muted); }
   .empty { padding: 34px 18px; text-align: center; color: var(--muted); font-size: 14px; }
   .muted { color: var(--muted); }
   .cols { display: grid; grid-template-columns: 1.55fr 1fr; gap: 18px; align-items: start; }
@@ -140,14 +141,28 @@ async function loadAll() {
             <div class="muted">${escapeHtml(l.email || l.phone || "—")}</div></td>
         <td>${escapeHtml(l.intent || "—")}</td>
         <td><span class="pill ${l.lead_score >= 60 ? "hot" : "warm"}">${l.lead_score}</span></td>
-        <td class="${l.delivered ? "yes" : "no"}" title="${escapeHtml(l.delivery_error || "")}">
-            ${l.delivered ? "sent" : "pending"}</td>`;
+        <td class="${deliveryClass(l)}" title="${escapeHtml(l.delivery_error || "")}">
+            ${deliveryLabel(l)}</td>`;
       tr.onclick = () => showTranscript(l.conversation_id);
       body.appendChild(tr);
     }
   } catch (e) {
     $("err").textContent = "Error: " + e.message + " (check the admin token)";
   }
+}
+
+// Three states, not two. "No webhook configured" is a deliberate setup, not a
+// failure, and colouring it like an error makes a healthy demo look broken.
+const NO_WEBHOOK = "N8N_WEBHOOK_URL not configured";
+
+function deliveryClass(l) {
+  if (l.delivered) return "yes";
+  return l.delivery_error === NO_WEBHOOK ? "off" : "no";
+}
+
+function deliveryLabel(l) {
+  if (l.delivered) return "sent";
+  return l.delivery_error === NO_WEBHOOK ? "n8n off" : "failed";
 }
 
 function escapeHtml(s) {
@@ -157,15 +172,22 @@ function escapeHtml(s) {
 
 async function showTranscript(id) {
   $("tx-title").textContent = "Transcript · " + id;
-  $("tx").innerHTML = '<div class="empty">Loading…</div>';
+  // The container starts as .empty (centred, muted). Drop that class once real
+  // messages go in, or the transcript renders centred and greyed out.
+  $("tx").className = "empty";
+  $("tx").innerHTML = "Loading…";
   try {
     const data = await api("/api/conversations/" + encodeURIComponent(id));
-    $("tx").innerHTML = data.messages.length
-      ? data.messages.map(m =>
-          `<div class="msg"><b>${m.role}</b>${escapeHtml(m.content)}</div>`).join("")
-      : '<div class="empty">No messages.</div>';
+    if (data.messages.length) {
+      $("tx").className = "";
+      $("tx").innerHTML = data.messages.map(m =>
+        `<div class="msg"><b>${m.role}</b>${escapeHtml(m.content)}</div>`).join("");
+    } else {
+      $("tx").innerHTML = "No messages.";
+    }
   } catch (e) {
-    $("tx").innerHTML = `<div class="empty">${escapeHtml(e.message)}</div>`;
+    $("tx").className = "empty";
+    $("tx").innerHTML = escapeHtml(e.message);
   }
 }
 

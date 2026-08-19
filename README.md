@@ -23,6 +23,19 @@ pricing, and watch the lead form appear. Results land in the
 
 > Пошаговая инструкция на русском, с нуля: **[docs/SETUP-RU.md](docs/SETUP-RU.md)**
 
+|  |  |
+|---|---|
+| ![Grounded answer](docs/screenshots/01-grounded-answer.png) | ![Lead capture](docs/screenshots/02-lead-capture.png) |
+| Answers come from the company's own documents, with the source section shown under each reply | The moment intent turns commercial, the bot stops answering and starts qualifying |
+
+![Ops dashboard](docs/screenshots/03-ops-dashboard.png)
+
+*Deflection rate, captured leads with their intent score, n8n delivery status,
+and the full transcript behind every lead.*
+
+Screenshots are generated, not cropped by hand — `python -m scripts.screenshots`
+drives the real app in a real browser and rewrites `docs/screenshots/`.
+
 ---
 
 ## The problem this solves
