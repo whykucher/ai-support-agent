@@ -158,9 +158,11 @@ N8N_WEBHOOK_SECRET=a-long-random-string
 The payload is HMAC-SHA256 signed in the `X-Signature` header and verified by
 the first Code node, so a leaked webhook URL is not enough to inject fake leads.
 
-Leads are written to SQLite **before** the webhook fires. If n8n is down the
-lead is not lost — the dashboard shows it as `pending` and **Retry n8n** replays
-every undelivered lead with the full transcript attached.
+Leads are written to SQLite **before** the webhook fires, so a lead is never
+lost to a webhook outage. The dashboard reports three distinct states — `sent`,
+`n8n off` (no webhook configured, which is a setup choice rather than a fault),
+and `failed` — and **Retry n8n** replays every undelivered lead with its full
+transcript attached.
 
 ### 4. Deploying
 
