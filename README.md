@@ -1,5 +1,9 @@
 # AI Support & Lead Agent
 
+**Live demo → <https://ai-support-agent-jett.onrender.com>**
+Open the chat, ask *"how fast is shipping?"*, then ask *"what's your wholesale
+price for 80 lb a month?"* and watch it switch from answering to selling.
+
 A website chat agent that answers customer questions from the company's own
 documents, scores every conversation for buying intent, and pushes hot leads
 into the client's CRM through n8n — while the cold ones quietly get logged.
