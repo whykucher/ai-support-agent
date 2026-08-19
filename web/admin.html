@@ -151,19 +151,20 @@ async function loadAll() {
   }
 }
 
-// Three states, not two. "No webhook configured" is a deliberate setup, not a
-// failure, and colouring it like an error makes a healthy demo look broken.
+// Three states, not two. Only an actual delivery error is a failure: a lead
+// that was never attempted (no webhook configured, or seeded straight into the
+// database) is a setup choice, and colouring it red makes a healthy demo look
+// broken. Red is reserved for "we tried and it did not work".
 const NO_WEBHOOK = "N8N_WEBHOOK_URL not configured";
 
-function deliveryClass(l) {
-  if (l.delivered) return "yes";
-  return l.delivery_error === NO_WEBHOOK ? "off" : "no";
+function deliveryState(l) {
+  if (l.delivered) return ["yes", "sent"];
+  if (!l.delivery_error || l.delivery_error === NO_WEBHOOK) return ["off", "n8n off"];
+  return ["no", "failed"];
 }
 
-function deliveryLabel(l) {
-  if (l.delivered) return "sent";
-  return l.delivery_error === NO_WEBHOOK ? "n8n off" : "failed";
-}
+function deliveryClass(l) { return deliveryState(l)[0]; }
+function deliveryLabel(l) { return deliveryState(l)[1]; }
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c =>
