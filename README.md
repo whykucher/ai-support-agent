@@ -168,10 +168,21 @@ replays every undelivered one with its transcript.
 
 ### Deploying
 
-`render.yaml` is a Render blueprint — **New → Blueprint**, pick the repo, enter
-an `ADMIN_TOKEN`. The Dockerfile reads `$PORT`, so Railway, Fly and Cloud Run
-work the same way. `SEED_ON_START=true` fills an empty database on free tiers
-that have no persistent disk.
+The image is built for the stricter host so it runs on all of them: it drops to
+uid 1000, keeps its database under the app user's home, and listens on `$PORT`
+falling back to 7860.
+
+* **Hugging Face Spaces** — free CPU Basic is 2 vCPU / 16 GB and needs no card,
+  and a Space only pauses after 48 hours idle. Steps in
+  [docs/DEPLOY-HF-RU.md](docs/DEPLOY-HF-RU.md).
+* **Render** — `render.yaml` is a blueprint: **New → Blueprint**, pick the repo,
+  enter an `ADMIN_TOKEN`. Free instances sleep after 15 minutes and take ~50s to
+  wake, which is worth knowing before putting the link in front of a client.
+* **Fly, Railway, Cloud Run** — same image, they inject `$PORT`.
+
+`SEED_ON_START=true` fills an empty database at boot, because none of the free
+tiers give you a persistent disk and a dashboard of zeros is a bad first
+impression.
 
 ---
 
