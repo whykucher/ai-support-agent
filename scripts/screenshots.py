@@ -52,6 +52,12 @@ def main() -> int:
         page.evaluate("localStorage.removeItem('nw_conversation_id')")
         page.reload(wait_until="networkidle")
 
+        # --- 0. the page as a visitor first meets it, widget still closed ---
+        page.wait_for_selector(".nw-launcher", timeout=30_000)
+        page.wait_for_timeout(2600)   # let the roast curve finish drawing
+        page.screenshot(path=OUT / "00-storefront.png")
+        shots.append(("00-storefront.png", "The client site the widget is installed on"))
+
         page.click(".nw-launcher")
         page.fill("#nw-input", SHIPPING_Q)
         page.press("#nw-input", "Enter")

@@ -45,12 +45,12 @@
     '<button class="nw-launcher" type="button" aria-label="Open chat">',
     '  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
     '    <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-4-.9L3 21l1.9-4.6A8.4 8.4 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.5 8.5 0 0 1 21 11.5z"/>',
-    '  </svg><span>Chat with us</span>',
+    '  </svg><span>Ask us</span>',
     '</button>',
     '<div class="nw-panel" role="dialog" aria-label="Support chat">',
     '  <div class="nw-head">',
     '    <div class="nw-avatar">' + cfg.agent.charAt(0).toUpperCase() + '</div>',
-    '    <div><h3>' + esc(cfg.title) + '</h3><p>Usually replies instantly</p></div>',
+    '    <div><h3>' + esc(cfg.title) + '</h3><p>Replies instantly</p></div>',
     '    <button class="nw-close" type="button" aria-label="Close chat">&times;</button>',
     '  </div>',
     '  <div class="nw-log" id="nw-log"></div>',
@@ -62,7 +62,7 @@
     '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>',
     '    </button>',
     '  </form>',
-    '  <div class="nw-foot">AI assistant &middot; answers come from the company knowledge base</div>',
+    '  <div class="nw-foot">Answers come from the company knowledge base</div>',
     '</div>'
   ].join("");
 
@@ -137,7 +137,7 @@
     box.className = "nw-lead";
     box.innerHTML = [
       "<h4>Want a specialist to follow up?</h4>",
-      "<p>Leave your details and we reply within one business day.</p>",
+      "<p>Leave your details and the wholesale team replies within one business day.</p>",
       '<input id="nw-l-name" placeholder="Name" autocomplete="name">',
       '<input id="nw-l-email" type="email" placeholder="Email" autocomplete="email">',
       '<button type="button" id="nw-l-send">Send my details</button>'

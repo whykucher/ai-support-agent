@@ -23,10 +23,17 @@ pricing, and watch the lead form appear. Results land in the
 
 > Пошаговая инструкция на русском, с нуля: **[docs/SETUP-RU.md](docs/SETUP-RU.md)**
 
+![Storefront](docs/screenshots/00-storefront.png)
+
+*The client site the widget installs on. The roast curve is that morning's
+batch; the counter beside it runs to the same 2:00 PM shipping cut-off the
+assistant quotes from the knowledge base, so the page and the bot never
+disagree.*
+
 |  |  |
 |---|---|
 | ![Grounded answer](docs/screenshots/01-grounded-answer.png) | ![Lead capture](docs/screenshots/02-lead-capture.png) |
-| Answers come from the company's own documents, with the source section shown under each reply | The moment intent turns commercial, the bot stops answering and starts qualifying |
+| Answers come from the company's own documents, with the source section named under each reply | The moment intent turns commercial, the bot stops answering and starts qualifying |
 
 ![Ops dashboard](docs/screenshots/03-ops-dashboard.png)
 

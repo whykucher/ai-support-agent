@@ -4,116 +4,298 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Northwind Coffee Co. — Roasted to order in Portland</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  /* Palette taken from the roast itself: green coffee is what the roaster buys,
+     first-crack orange is heat, and the browns are where the beans end up.
+     Every colour here means a stage, which is why none of them is decorative. */
   :root {
-    --ink: #1c1917;
-    --muted: #78716c;
-    --accent: #7c4a2d;
-    --soft: #f5efe9;
-    --line: #e7e5e4;
-    --bg: #fffdfb;
+    --paper:  #F1F2ED;
+    --card:   #FBFBF8;
+    --ink:    #17150F;
+    --soft:   #6C6F62;
+    --green:  #6E7F4E;
+    --green-d:#55643B;
+    --crack:  #C9622B;
+    --roast:  #4A3122;
+    --rule:   #D5D8CE;
+    --rule-2: #E4E6DF;
+
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
+
   * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
   body {
     margin: 0;
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--paper);
     color: var(--ink);
-    background: var(--bg);
-    line-height: 1.6;
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.55;
+    font-variant-numeric: tabular-nums;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
 
-  header {
-    position: sticky; top: 0; z-index: 10;
-    background: rgb(255 253 251 / 88%);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--line);
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+
+  /* Every small-caps label on this page is a field name off a batch sheet. */
+  .label {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--soft);
   }
-  .nav { display: flex; align-items: center; gap: 28px; height: 68px; }
-  .logo { font-weight: 800; letter-spacing: -.02em; font-size: 18px; }
-  .logo span { color: var(--accent); }
-  .nav a { color: var(--muted); text-decoration: none; font-size: 14.5px; }
-  .nav a:hover { color: var(--ink); }
-  .nav .spacer { margin-left: auto; }
+
+  a { color: inherit; }
+
+  :focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- top bar ---------- */
+
+  .bar {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .bar-in { display: flex; align-items: center; gap: 26px; height: 58px; }
+  .mark {
+    font-weight: 800;
+    font-variation-settings: "wdth" 118;
+    letter-spacing: -.02em;
+    font-size: 17px;
+  }
+  .mark i { font-style: normal; color: var(--green); }
+  .bar nav { display: flex; gap: 22px; margin-left: auto; }
+  .bar nav a {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .08em;
+    text-transform: uppercase; text-decoration: none; color: var(--soft);
+    padding: 4px 0; border-bottom: 1px solid transparent;
+  }
+  .bar nav a:hover { color: var(--ink); border-bottom-color: var(--green); }
+
+  /* ---------- buttons ---------- */
+
   .btn {
-    display: inline-block; padding: 10px 18px; border-radius: 999px;
-    background: var(--accent); color: #fff !important; text-decoration: none;
-    font-weight: 600; font-size: 14.5px; border: 0; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    letter-spacing: .09em; text-transform: uppercase; text-decoration: none;
+    padding: 11px 18px; border-radius: 2px; cursor: pointer;
+    border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
   }
-  .btn.ghost { background: transparent; color: var(--accent) !important; border: 1px solid var(--accent); }
+  .btn:hover { background: var(--green-d); border-color: var(--green-d); }
+  .btn.line { background: transparent; color: var(--ink); border-color: var(--rule); }
+  .btn.line:hover { border-color: var(--ink); background: transparent; color: var(--ink); }
 
-  .hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; padding: 76px 0 64px; }
-  .eyebrow {
-    display: inline-block; padding: 5px 12px; border-radius: 999px;
-    background: var(--soft); color: var(--accent);
-    font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  /* ---------- hero ---------- */
+
+  /* align-items:start keeps the roast curve in the top-right. The bottom-right
+     of any page with a chat widget belongs to the widget, so nothing that
+     matters is allowed to sit there. */
+  .hero { padding: 58px 0 44px; display: grid; grid-template-columns: 1.05fr .95fr; gap: 52px; align-items: start; }
+
+  .eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+
+  h1 {
+    margin: 0 0 22px;
+    font-size: clamp(40px, 6.2vw, 74px);
+    line-height: .96;
+    letter-spacing: -.035em;
+    font-weight: 800;
+    font-variation-settings: "wdth" 108;
   }
-  h1 { font-size: clamp(34px, 5vw, 52px); line-height: 1.08; letter-spacing: -.03em; margin: 18px 0 16px; }
-  .lede { font-size: 18px; color: var(--muted); max-width: 46ch; }
-  .cta { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+  h1 em { font-style: normal; color: var(--green); }
 
-  .beans {
-    aspect-ratio: 4/3; border-radius: 22px;
-    background:
-      radial-gradient(120% 90% at 20% 10%, #a56a44 0%, transparent 55%),
-      radial-gradient(100% 80% at 85% 80%, #4a2c1a 0%, transparent 60%),
-      linear-gradient(150deg, #8a5433, #3f2617);
-    display: grid; place-items: center; color: #f7ece3; text-align: center; padding: 32px;
+  .lede { margin: 0; max-width: 44ch; color: var(--soft); font-size: 17px; }
+
+  .hero-cta { display: flex; gap: 10px; margin-top: 26px; flex-wrap: wrap; }
+
+  /* ---------- roast curve: the signature ---------- */
+
+  .roast {
+    border: 1px solid var(--rule);
+    background: var(--card);
+    border-radius: 3px;
+    overflow: hidden;
   }
-  .beans b { display: block; font-size: 40px; letter-spacing: -.02em; }
-  .beans small { opacity: .8; letter-spacing: .18em; text-transform: uppercase; font-size: 11.5px; }
+  .roast-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 13px 16px; border-bottom: 1px solid var(--rule-2);
+  }
+  .roast svg { display: block; width: 100%; height: auto; }
 
-  .strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; padding: 28px 0 56px; border-top: 1px solid var(--line); }
-  .strip div b { display: block; font-size: 22px; letter-spacing: -.02em; }
-  .strip div span { font-size: 13.5px; color: var(--muted); }
+  .grid-line { stroke: var(--rule-2); stroke-width: 1; }
+  .axis-tick { font-family: var(--mono); font-size: 9.5px; fill: var(--soft); letter-spacing: .06em; }
+  .curve {
+    fill: none; stroke: var(--roast); stroke-width: 2.25;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 1200; stroke-dashoffset: 1200;
+    animation: draw 2.1s cubic-bezier(.32,.72,.3,1) .25s forwards;
+  }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .crack-line { stroke: var(--crack); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0; animation: fade .5s ease 1.7s forwards; }
+  .crack-dot  { fill: var(--crack); opacity: 0; animation: fade .5s ease 1.75s forwards; }
+  .crack-text { font-family: var(--mono); font-size: 9.5px; fill: var(--crack); letter-spacing: .08em; opacity: 0; animation: fade .5s ease 1.8s forwards; }
+  @keyframes fade { to { opacity: 1; } }
 
-  section { padding: 56px 0; border-top: 1px solid var(--line); }
-  h2 { font-size: 28px; letter-spacing: -.02em; margin: 0 0 8px; }
-  .sub { color: var(--muted); margin: 0 0 32px; }
+  .roast-foot {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--rule-2);
+  }
+  .roast-foot div { padding: 12px 16px; }
+  .roast-foot div + div { border-left: 1px solid var(--rule-2); }
+  .roast-foot b { display: block; font-family: var(--mono); font-size: 15px; font-weight: 600; margin-top: 3px; }
 
-  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-  .card { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: #fff; }
-  .card .thumb { height: 132px; }
-  .t1 { background: linear-gradient(140deg, #b07d55, #6b4227); }
-  .t2 { background: linear-gradient(140deg, #4a3325, #221610); }
-  .t3 { background: linear-gradient(140deg, #c9a06a, #8a5f34); }
-  .t4 { background: linear-gradient(140deg, #9e6f4c, #5c3a22); }
-  .t5 { background: linear-gradient(140deg, #7f8b74, #414a3a); }
-  .card .body { padding: 16px 18px 20px; }
-  .card h3 { margin: 0 0 4px; font-size: 16.5px; }
-  .card p { margin: 0 0 14px; font-size: 13.5px; color: var(--muted); min-height: 40px; }
-  .price { font-weight: 700; }
-  .row { display: flex; align-items: center; justify-content: space-between; }
+  /* ---------- cut-off clock ---------- */
 
-  .band { background: var(--soft); border-radius: 20px; padding: 36px 40px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: center; }
-  .band ul { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 14.5px; }
-
-  footer { border-top: 1px solid var(--line); padding: 32px 0 64px; color: var(--muted); font-size: 13.5px; }
-  .demo-note {
-    margin-top: 14px; padding: 12px 16px; border: 1px dashed var(--accent);
-    border-radius: 12px; color: var(--accent); font-size: 13px; background: #fff;
+  .cutoff {
+    margin-top: 30px; border: 1px solid var(--ink); border-radius: 3px;
+    background: var(--ink); color: var(--paper);
+    padding: 16px 18px; display: flex; align-items: center; gap: 18px;
+  }
+  .cutoff .label { color: #9DA292; }
+  .cutoff-time {
+    font-family: var(--mono); font-size: 26px; font-weight: 600;
+    letter-spacing: -.02em; line-height: 1.1; margin-top: 2px;
+  }
+  .cutoff .pip {
+    margin-left: auto; display: flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  }
+  .cutoff .pip i {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--green) 70%, transparent);
+    animation: pulse 2.4s ease-out infinite;
+  }
+  .cutoff[data-state="soon"] .pip i { background: var(--crack); box-shadow: 0 0 0 0 color-mix(in srgb, var(--crack) 70%, transparent); }
+  .cutoff[data-state="closed"] .pip i { background: #7C8072; animation: none; }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 currentColor; }
+    70%  { box-shadow: 0 0 0 9px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
   }
 
-  @media (max-width: 860px) {
-    .hero { grid-template-columns: 1fr; gap: 32px; padding: 48px 0; }
-    .strip { grid-template-columns: repeat(2, 1fr); }
-    .grid { grid-template-columns: 1fr 1fr; }
+  /* ---------- section frame ---------- */
+
+  section { border-top: 1px solid var(--rule); padding: 54px 0; }
+  .sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 30px; flex-wrap: wrap; }
+  h2 {
+    margin: 0; font-size: 27px; letter-spacing: -.025em; font-weight: 700;
+    font-variation-settings: "wdth" 106;
+  }
+  .sec-head p { margin: 0; color: var(--soft); font-size: 15px; }
+  .rule-count { margin-left: auto; }
+
+  /* ---------- lot cards ---------- */
+
+  .lots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; }
+  .lot { background: var(--card); padding: 22px; display: flex; flex-direction: column; gap: 16px; }
+  .lot:hover { background: #fff; }
+
+  .lot-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .lot h3 { margin: 0; font-size: 18px; letter-spacing: -.02em; font-weight: 700; }
+  .lot .price { font-family: var(--mono); font-size: 14px; font-weight: 600; white-space: nowrap; }
+  .notes { margin: -8px 0 0; color: var(--soft); font-size: 14px; }
+
+  /* The meter is not decoration: five steps of actual roast level, and the
+     Agtron number beside it is how roasters measure exactly that. */
+  .meter { display: flex; flex-direction: column; gap: 7px; }
+  .meter-bar { display: flex; gap: 3px; }
+  .meter-bar span { height: 7px; flex: 1; background: var(--rule-2); border-radius: 1px; }
+  .meter-bar span.on:nth-child(1) { background: #D8C9A0; }
+  .meter-bar span.on:nth-child(2) { background: #BC9256; }
+  .meter-bar span.on:nth-child(3) { background: #94623A; }
+  .meter-bar span.on:nth-child(4) { background: #67402A; }
+  .meter-bar span.on:nth-child(5) { background: #3B241A; }
+  .meter-row { display: flex; justify-content: space-between; }
+
+  .spec { display: grid; grid-template-columns: auto 1fr; gap: 5px 14px; border-top: 1px solid var(--rule-2); padding-top: 14px; margin-top: auto; }
+  .spec dt { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--soft); }
+  .spec dd { margin: 0; font-family: var(--mono); font-size: 12px; text-align: right; }
+
+  /* ---------- subscription band ---------- */
+
+  .band { display: grid; grid-template-columns: 1.15fr 1fr; gap: 40px; align-items: center; border: 1px solid var(--rule); border-radius: 3px; background: var(--card); padding: 34px; }
+  .band h2 { margin-bottom: 10px; }
+  .band p { margin: 0 0 20px; color: var(--soft); max-width: 46ch; }
+  .cadence { display: flex; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+  .cadence div { background: var(--card); padding: 16px 14px; flex: 1; text-align: center; }
+  .cadence b { display: block; font-family: var(--mono); font-size: 20px; font-weight: 600; }
+
+  /* ---------- wholesale routes ---------- */
+
+  .routes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .route { border: 1px solid var(--rule); border-radius: 3px; background: var(--card); padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+  .route h3 { margin: 0; font-size: 17px; letter-spacing: -.02em; }
+  .route p { margin: 0; color: var(--soft); font-size: 14px; flex: 1; }
+  .route .btn { align-self: flex-start; }
+  .route .qty { font-family: var(--mono); font-size: 12px; color: var(--green-d); }
+
+  /* ---------- footer ---------- */
+
+  footer { border-top: 1px solid var(--rule); padding: 40px 0 72px; }
+  .foot-grid { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
+  .foot-grid .label { line-height: 1.9; }
+  .contact { font-family: var(--mono); font-size: 13px; color: var(--soft); }
+  .contact a { color: var(--green-d); }
+
+  .demo {
+    margin-top: 32px; border: 1px solid var(--green); border-radius: 3px;
+    background: color-mix(in srgb, var(--green) 7%, var(--card));
+    padding: 18px 20px; font-size: 14px; max-width: 780px;
+  }
+  .demo b { font-variation-settings: "wdth" 106; }
+  .demo a { color: var(--green-d); }
+  .demo ol { margin: 10px 0 0; padding-left: 20px; color: var(--soft); }
+  .demo li { margin-bottom: 3px; }
+
+  /* ---------- responsive ---------- */
+
+  @media (max-width: 940px) {
+    .hero { grid-template-columns: 1fr; gap: 40px; align-items: start; padding: 44px 0; }
+    .lots, .routes { grid-template-columns: 1fr; }
     .band { grid-template-columns: 1fr; }
-    .nav a:not(.btn) { display: none; }
+    .bar nav a:nth-child(-n+2) { display: none; }
   }
-  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) {
+    .wrap { padding: 0 18px; }
+    .roast-foot { grid-template-columns: 1fr 1fr; }
+    .roast-foot div:nth-child(3) { display: none; }
+    .cadence { flex-direction: column; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .curve { animation: none; stroke-dashoffset: 0; }
+    .crack-line, .crack-dot, .crack-text { animation: none; opacity: 1; }
+    .cutoff .pip i { animation: none; }
+    * { scroll-behavior: auto; }
+  }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="wrap nav">
-    <div class="logo">Northwind<span>.</span></div>
-    <a href="#coffee">Coffee</a>
-    <a href="#subscribe">Subscriptions</a>
-    <a href="#wholesale">Wholesale</a>
-    <span class="spacer"></span>
-    <a class="btn ghost" href="/admin">Ops dashboard</a>
+<header class="bar">
+  <div class="wrap bar-in">
+    <div class="mark">Northwind<i>.</i></div>
+    <nav>
+      <a href="#lots">Lots</a>
+      <a href="#subscribe">Subscription</a>
+      <a href="#wholesale">Wholesale</a>
+      <a href="/admin">Ops</a>
+    </nav>
   </div>
 </header>
 
@@ -121,92 +303,203 @@
 
   <div class="hero">
     <div>
-      <span class="eyebrow">Roasted to order · Portland, OR</span>
-      <h1>Coffee that ships the day it is roasted.</h1>
-      <p class="lede">Fourteen producing partners, five roast profiles, and a
-        support assistant that actually knows the shipping cut-off. Ask it
-        anything in the corner.</p>
-      <div class="cta">
-        <a class="btn" href="#coffee">Shop coffee</a>
-        <button class="btn ghost" onclick="NorthwindChat.open()">Ask the assistant</button>
+      <div class="eyebrow">
+        <span class="dot"></span>
+        <span class="label">Roastery no. 14 · Portland, Oregon</span>
+      </div>
+      <h1>Green on Monday.<br>In your grinder<br>by <em>Thursday</em>.</h1>
+      <p class="lede">Roasted to order five days a week, on a van the same
+        afternoon. Fourteen producing partners, five profiles, one cut-off.</p>
+      <div class="hero-cta">
+        <a class="btn" href="#lots">See today's lots</a>
+        <button class="btn line" type="button" onclick="NorthwindChat.open()">Ask the assistant</button>
+      </div>
+
+      <div class="cutoff" id="cutoff">
+        <div>
+          <div class="label">Same-day shipping cut-off</div>
+          <div class="cutoff-time" id="cutoff-time">—</div>
+        </div>
+        <div class="pip"><i></i><span id="cutoff-state">checking</span></div>
       </div>
     </div>
-    <div class="beans">
-      <div><small>Since 2016</small><b>Northwind</b><small>Coffee Co.</small></div>
+
+    <!-- The roast curve is the one thing on this page that could not belong to
+         another business: bean temperature over eleven minutes, first crack
+         marked where it actually happened. -->
+    <figure class="roast" style="margin:0">
+      <figcaption class="roast-head">
+        <span class="label">Batch 2417 · Harbor Blend · bean temp</span>
+        <span class="label">°C / min</span>
+      </figcaption>
+      <svg viewBox="0 0 560 290" role="img" aria-label="Roast curve for batch 2417: bean temperature rises from 95°C at the turning point to 214°C at drop, with first crack at nine minutes.">
+        <line class="grid-line" x1="44" y1="227" x2="536" y2="227"/>
+        <line class="grid-line" x1="44" y1="145" x2="536" y2="145"/>
+        <line class="grid-line" x1="44" y1="63"  x2="536" y2="63"/>
+        <text class="axis-tick" x="8" y="231">100</text>
+        <text class="axis-tick" x="8" y="149">150</text>
+        <text class="axis-tick" x="8" y="67">200</text>
+
+        <path class="curve"
+              d="M 44 63 C 52 130, 60 165, 68 178 C 80 200, 92 228, 101 235
+                 C 120 236, 148 212, 167 194 C 195 172, 225 160, 249 148
+                 C 280 132, 305 120, 331 109 C 360 95, 390 79, 413 69
+                 C 435 60, 458 54, 474 50 C 492 46, 510 42, 524 40"/>
+
+        <!-- Label sits down by the axis: at the dot it would collide with the
+             curve, which is the one line on this chart that must stay clean. -->
+        <line class="crack-line" x1="413" y1="73" x2="413" y2="238"/>
+        <circle class="crack-dot" cx="413" cy="69" r="3.5"/>
+        <text class="crack-text" x="409" y="254" text-anchor="end">FIRST CRACK 9:04</text>
+
+        <text class="axis-tick" x="44" y="278">0:00</text>
+        <text class="axis-tick" x="248" y="278">6:00</text>
+        <text class="axis-tick" x="500" y="278">11:40</text>
+      </svg>
+      <div class="roast-foot">
+        <div><span class="label">Drop temp</span><b>214 °C</b></div>
+        <div><span class="label">Development</span><b>18.4 %</b></div>
+        <div><span class="label">Roasted</span><b id="roast-stamp">today</b></div>
+      </div>
+    </figure>
+  </div>
+
+  <section id="lots">
+    <div class="sec-head">
+      <h2>On the roaster</h2>
+      <p>Every bag carries its roast date. Best between day 5 and day 21.</p>
+      <span class="label rule-count">5 lots · 1 bulk</span>
     </div>
-  </div>
 
-  <div class="strip">
-    <div><b>24 h</b><span>From roast to shipment</span></div>
-    <div><b>$45+</b><span>Free US shipping</span></div>
-    <div><b>15%</b><span>Off with a subscription</span></div>
-    <div><b>45%</b><span>Max wholesale discount</span></div>
-  </div>
+    <div class="lots">
+      <article class="lot">
+        <div class="lot-top"><h3>Harbor Blend</h3><span class="price">$16.00</span></div>
+        <p class="notes">Chocolate and hazelnut. The one most people re-order.</p>
+        <div class="meter">
+          <div class="meter-bar"><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span></div>
+          <div class="meter-row"><span class="label">Medium</span><span class="label">Agtron 58</span></div>
+        </div>
+        <dl class="spec">
+          <dt>Origin</dt><dd>Brazil · Colombia</dd>
+          <dt>Process</dt><dd>Washed · Natural</dd>
+          <dt>Cupping</dt><dd>85.5</dd>
+        </dl>
+      </article>
 
-  <section id="coffee">
-    <h2>This week&rsquo;s roasts</h2>
-    <p class="sub">Every bag carries a roast date. Best between day 5 and day 21.</p>
-    <div class="grid">
-      <div class="card"><div class="thumb t1"></div><div class="body">
-        <h3>Harbor Blend</h3><p>Chocolate and hazelnut, medium roast. Our best seller.</p>
-        <div class="row"><span class="price">$16.00</span><a class="btn" href="#">Add</a></div>
-      </div></div>
-      <div class="card"><div class="thumb t2"></div><div class="body">
-        <h3>Cascade Dark</h3><p>Molasses and toasted almond, dark roast.</p>
-        <div class="row"><span class="price">$16.00</span><a class="btn" href="#">Add</a></div>
-      </div></div>
-      <div class="card"><div class="thumb t3"></div><div class="body">
-        <h3>Ethiopia Yirgacheffe</h3><p>Blueberry and jasmine, light roast single origin.</p>
-        <div class="row"><span class="price">$18.50</span><a class="btn" href="#">Add</a></div>
-      </div></div>
-      <div class="card"><div class="thumb t4"></div><div class="body">
-        <h3>Colombia Huila</h3><p>Caramel and red apple, medium roast single origin.</p>
-        <div class="row"><span class="price">$18.50</span><a class="btn" href="#">Add</a></div>
-      </div></div>
-      <div class="card"><div class="thumb t5"></div><div class="body">
-        <h3>Decaf Sunset</h3><p>Swiss water process, medium roast, all the flavour.</p>
-        <div class="row"><span class="price">$18.50</span><a class="btn" href="#">Add</a></div>
-      </div></div>
-      <div class="card"><div class="thumb t1"></div><div class="body">
-        <h3>Bulk 5 lb bag</h3><p>Any blend, for offices and heavy drinkers.</p>
-        <div class="row"><span class="price">$78.00</span><a class="btn" href="#">Add</a></div>
-      </div></div>
+      <article class="lot">
+        <div class="lot-top"><h3>Cascade Dark</h3><span class="price">$16.00</span></div>
+        <p class="notes">Molasses and toasted almond. Holds up to milk and to mornings.</p>
+        <div class="meter">
+          <div class="meter-bar"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span></div>
+          <div class="meter-row"><span class="label">Dark</span><span class="label">Agtron 38</span></div>
+        </div>
+        <dl class="spec">
+          <dt>Origin</dt><dd>Sumatra · Brazil</dd>
+          <dt>Process</dt><dd>Wet-hulled</dd>
+          <dt>Cupping</dt><dd>84.0</dd>
+        </dl>
+      </article>
+
+      <article class="lot">
+        <div class="lot-top"><h3>Ethiopia Yirgacheffe</h3><span class="price">$18.50</span></div>
+        <p class="notes">Blueberry and jasmine. Brew it as filter and leave it alone.</p>
+        <div class="meter">
+          <div class="meter-bar"><span class="on"></span><span></span><span></span><span></span><span></span></div>
+          <div class="meter-row"><span class="label">Light</span><span class="label">Agtron 72</span></div>
+        </div>
+        <dl class="spec">
+          <dt>Origin</dt><dd>Yirgacheffe</dd>
+          <dt>Altitude</dt><dd>1,950 masl</dd>
+          <dt>Cupping</dt><dd>87.5</dd>
+        </dl>
+      </article>
+
+      <article class="lot">
+        <div class="lot-top"><h3>Colombia Huila</h3><span class="price">$18.50</span></div>
+        <p class="notes">Caramel and red apple. The safe answer that is still interesting.</p>
+        <div class="meter">
+          <div class="meter-bar"><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span></div>
+          <div class="meter-row"><span class="label">Medium</span><span class="label">Agtron 56</span></div>
+        </div>
+        <dl class="spec">
+          <dt>Origin</dt><dd>Huila</dd>
+          <dt>Altitude</dt><dd>1,700 masl</dd>
+          <dt>Cupping</dt><dd>86.0</dd>
+        </dl>
+      </article>
+
+      <article class="lot">
+        <div class="lot-top"><h3>Decaf Sunset</h3><span class="price">$18.50</span></div>
+        <p class="notes">Swiss Water process. Decaf that does not taste like a compromise.</p>
+        <div class="meter">
+          <div class="meter-bar"><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span></div>
+          <div class="meter-row"><span class="label">Medium</span><span class="label">Agtron 54</span></div>
+        </div>
+        <dl class="spec">
+          <dt>Origin</dt><dd>Colombia</dd>
+          <dt>Process</dt><dd>Swiss Water</dd>
+          <dt>Cupping</dt><dd>84.0</dd>
+        </dl>
+      </article>
+
+      <article class="lot">
+        <div class="lot-top"><h3>Bulk 5 lb</h3><span class="price">$78.00</span></div>
+        <p class="notes">Any blend, one bag. For offices and for households that behave like offices.</p>
+        <div class="meter">
+          <div class="meter-bar"><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span></div>
+          <div class="meter-row"><span class="label">Your profile</span><span class="label">5 lb</span></div>
+        </div>
+        <dl class="spec">
+          <dt>Grind</dt><dd>Whole bean</dd>
+          <dt>Saving</dt><dd>13 % vs 12 oz</dd>
+          <dt>Lead time</dt><dd>Same day</dd>
+        </dl>
+      </article>
     </div>
   </section>
 
   <section id="subscribe">
     <div class="band">
       <div>
-        <h2>Subscribe and save 15%</h2>
-        <p class="sub" style="margin-bottom:0">Every 1, 2 or 4 weeks. Pause, skip or
-          cancel from your account, no fees, no minimum term.</p>
-        <ul>
-          <li>Charged 48 hours before each roast</li>
-          <li>First box includes a free 4 oz micro-lot</li>
-          <li>Change coffee or frequency any time</li>
-        </ul>
+        <h2>Subscribe and save 15 %</h2>
+        <p>Charged 48 hours before each roast, so your coffee is scheduled rather
+          than stored. Pause, skip or change the coffee from your account. No
+          minimum term, no cancellation fee.</p>
+        <a class="btn" href="#">Start a subscription</a>
       </div>
-      <div><a class="btn" href="#">Start a subscription</a></div>
+      <div class="cadence">
+        <div><span class="label">Every</span><b>1 wk</b></div>
+        <div><span class="label">Every</span><b>2 wk</b></div>
+        <div><span class="label">Every</span><b>4 wk</b></div>
+      </div>
     </div>
   </section>
 
   <section id="wholesale">
-    <h2>Wholesale &amp; office coffee</h2>
-    <p class="sub">Cafes, restaurants, hotels and offices. 30% to 45% off retail
-      depending on volume, net 30 after three orders.</p>
-    <div class="grid">
-      <div class="card"><div class="body">
-        <h3>Cafes</h3><p>Free grinder loan at 40 lb/month, plus barista training.</p>
-        <button class="btn" onclick="NorthwindChat.send('I need wholesale pricing for my cafe')">Get pricing</button>
-      </div></div>
-      <div class="card"><div class="body">
-        <h3>Offices</h3><p>From $180/month for 25 people, equipment included.</p>
-        <button class="btn" onclick="NorthwindChat.send('What does office coffee service cost?')">Get pricing</button>
-      </div></div>
-      <div class="card"><div class="body">
-        <h3>Private label</h3><p>Your brand on our roast, from 500 lb per order.</p>
-        <button class="btn" onclick="NorthwindChat.send('Tell me about private label roasting')">Get pricing</button>
-      </div></div>
+    <div class="sec-head">
+      <h2>Wholesale</h2>
+      <p>30 % to 45 % off retail by volume. Net 30 after three orders.</p>
+      <span class="label rule-count">Ask the assistant for a quote</span>
+    </div>
+    <div class="routes">
+      <article class="route">
+        <span class="qty">from 20 lb / month</span>
+        <h3>Cafes</h3>
+        <p>Free grinder loan at 40 lb a month, plus barista training on site or over video.</p>
+        <button class="btn line" type="button" onclick="NorthwindChat.send('I run a cafe and need wholesale pricing for about 80 lb a month')">Get cafe pricing</button>
+      </article>
+      <article class="route">
+        <span class="qty">from $180 / month</span>
+        <h3>Offices</h3>
+        <p>Monthly delivery, equipment maintenance and a consumption dashboard. Plans start at 25 people.</p>
+        <button class="btn line" type="button" onclick="NorthwindChat.send('What does office coffee service cost for 40 people?')">Get office pricing</button>
+      </article>
+      <article class="route">
+        <span class="qty">from 500 lb / order</span>
+        <h3>Private label</h3>
+        <p>Your brand on our roast, including bag design and printing. Three week lead time.</p>
+        <button class="btn line" type="button" onclick="NorthwindChat.send('Tell me about private label roasting and the minimum order')">Ask about private label</button>
+      </article>
     </div>
   </section>
 
@@ -214,21 +507,93 @@
 
 <footer>
   <div class="wrap">
-    1420 NW Quimby Street, Portland OR · support@northwindcoffee.example · +1 503 555 0142
-    <div class="demo-note">
-      <b>Portfolio demo.</b> Northwind Coffee Co. is a fictional brand used to show a
-      real AI support agent: RAG over a company knowledge base, lead scoring, and an
-      n8n hand-off to CRM. Open the chat, ask about shipping, then ask about wholesale
-      pricing and watch the lead form appear. Results land in the
-      <a href="/admin">ops dashboard</a>.
+    <div class="foot-grid">
+      <div>
+        <div class="label">Roastery</div>
+        <div class="contact">1420 NW Quimby Street, Portland OR<br>Pickup Tue–Sat, 9:00–16:00</div>
+      </div>
+      <div>
+        <div class="label">Support</div>
+        <div class="contact"><a href="mailto:support@northwindcoffee.example">support@northwindcoffee.example</a><br>+1 503 555 0142 · Mon–Fri 8:00–17:00 PT</div>
+      </div>
+      <div>
+        <div class="label">Wholesale</div>
+        <div class="contact"><a href="mailto:wholesale@northwindcoffee.example">wholesale@northwindcoffee.example</a><br>Replies within one business day</div>
+      </div>
+    </div>
+
+    <div class="demo">
+      <b>This is a portfolio demo.</b> Northwind Coffee Co. is invented. The
+      assistant in the corner is not: it answers from a real knowledge base,
+      scores each conversation for buying intent, and hands qualified leads to
+      n8n. Try it in this order:
+      <ol>
+        <li>Ask <em>“how fast is shipping?”</em> — note the source sections under the answer.</li>
+        <li>Ask <em>“wholesale pricing for 80 lb a month”</em> — the contact form appears on its own.</li>
+        <li>Open the <a href="/admin">ops dashboard</a> to see the lead and the full transcript.</li>
+      </ol>
     </div>
   </div>
 </footer>
+
+<script>
+  // The cut-off clock is the same fact the assistant answers from the knowledge
+  // base ("orders before 2:00 PM Pacific ship the same business day"), so the
+  // page and the bot never contradict each other.
+  (function () {
+    const CUTOFF_HOUR = 14;
+    const timeEl = document.getElementById("cutoff-time");
+    const stateEl = document.getElementById("cutoff-state");
+    const box = document.getElementById("cutoff");
+    const stamp = document.getElementById("roast-stamp");
+
+    const pacific = () =>
+      new Date(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
+
+    function nextCutoff(now) {
+      const target = new Date(now);
+      target.setHours(CUTOFF_HOUR, 0, 0, 0);
+      // Past today's cut-off, or a weekend: roll to the next working day.
+      while (target <= now || target.getDay() === 0 || target.getDay() === 6) {
+        target.setDate(target.getDate() + 1);
+        target.setHours(CUTOFF_HOUR, 0, 0, 0);
+      }
+      return target;
+    }
+
+    function render() {
+      const now = pacific();
+      const target = nextCutoff(now);
+      const mins = Math.floor((target - now) / 60000);
+      const sameDay = target.toDateString() === now.toDateString();
+
+      if (sameDay) {
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        timeEl.textContent = (h ? h + "h " : "") + m + "m left";
+        box.dataset.state = mins <= 60 ? "soon" : "open";
+        stateEl.textContent = mins <= 60 ? "closing" : "roasting";
+      } else {
+        const day = target.toLocaleDateString("en-US", { weekday: "long" });
+        timeEl.textContent = day + " 14:00 PT";
+        box.dataset.state = "closed";
+        stateEl.textContent = "next batch";
+      }
+
+      stamp.textContent = now.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+
+    render();
+    setInterval(render, 30000);
+  })();
+</script>
 
 <script src="/static/widget.js"
         data-api=""
         data-title="Northwind Support"
         data-agent="Nora"
-        data-accent="#7c4a2d" defer></script>
+        data-accent="#6E7F4E"
+        data-quick="How fast is shipping?|What is your return policy?|I need wholesale pricing"
+        defer></script>
 </body>
 </html>

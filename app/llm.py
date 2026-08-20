@@ -47,8 +47,11 @@ CUSTOMER: {question}"""
 
 # --- demo backend -----------------------------------------------------------
 
+# "subscription" deliberately absent: someone asking to pause or cancel one is
+# a retention question, not a purchase, and scoring it as buying intent made the
+# bot pitch a sales call at an existing customer.
 _BUY_WORDS = ("wholesale", "bulk", "volume", "reseller", "quote", "invoice",
-              "b2b", "subscription", "contract", "partnership", "integrate",
+              "b2b", "contract", "partnership", "integrate",
               "api", "custom", "office", "corporate")
 _PRICE_WORDS = ("price", "cost", "how much", "discount", "pricing", "cheap")
 _ANGRY_WORDS = ("refund", "broken", "damaged", "late", "never arrived",
