@@ -18,6 +18,10 @@
     title: (script && script.dataset.title) || "Northwind Support",
     agent: (script && script.dataset.agent) || "Nora",
     accent: (script && script.dataset.accent) || "",
+    site: (script && script.dataset.site) || "demo",
+    leadTitle: (script && script.dataset.leadTitle) || "Want a specialist to follow up?",
+    leadNote: (script && script.dataset.leadNote) ||
+      "Leave your details and we reply within one business day.",
     greeting: (script && script.dataset.greeting) ||
       "Hi! I can help with orders, shipping, subscriptions and wholesale. What do you need?",
     quick: ((script && script.dataset.quick) ||
@@ -32,7 +36,7 @@
     document.head.appendChild(link);
   }
 
-  var STORE_KEY = "nw_conversation_id";
+  var STORE_KEY = "nw_conversation_id_" + cfg.site;
   var conversationId = null;
   try { conversationId = localStorage.getItem(STORE_KEY); } catch (e) { /* private mode */ }
 
@@ -136,8 +140,8 @@
     var box = document.createElement("div");
     box.className = "nw-lead";
     box.innerHTML = [
-      "<h4>Want a specialist to follow up?</h4>",
-      "<p>Leave your details and the wholesale team replies within one business day.</p>",
+      "<h4>" + esc(cfg.leadTitle) + "</h4>",
+      "<p>" + esc(cfg.leadNote) + "</p>",
       '<input id="nw-l-name" placeholder="Name" autocomplete="name">',
       '<input id="nw-l-email" type="email" placeholder="Email" autocomplete="email">',
       '<button type="button" id="nw-l-send">Send my details</button>'
@@ -155,6 +159,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           conversation_id: conversationId || "",
+          site: cfg.site,
           name: box.querySelector("#nw-l-name").value.trim(),
           email: email,
           message: "Requested follow-up from chat widget",
@@ -172,6 +177,9 @@
   function send(text) {
     text = (text || input.value).trim();
     if (!text) return;
+    // A page can call send() from its own button. Opening first means the
+    // visitor actually sees the answer instead of nothing appearing to happen.
+    open();
     hideQuick();
     bubble(text, "user");
     input.value = "";
@@ -184,6 +192,7 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         message: text,
+        site: cfg.site,
         conversation_id: conversationId,
         page_url: window.location.href
       })

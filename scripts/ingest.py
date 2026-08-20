@@ -31,7 +31,7 @@ def main() -> int:
         return 1
 
     for name, count in result.items():
-        print(f"  {name}: {count} chunks")
+        print(f"  {name:38} {count:>3} sections")
     stats = db.chunk_stats()
     print(f"\nindexed {stats['n']} chunks from {stats['sources']} file(s); "
           f"{stats['vectorised']} have embeddings "

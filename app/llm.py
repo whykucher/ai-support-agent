@@ -53,17 +53,37 @@ CUSTOMER: {question}"""
 _BUY_WORDS = ("wholesale", "bulk", "volume", "reseller", "quote", "invoice",
               "b2b", "contract", "partnership", "integrate",
               "api", "custom", "office", "corporate")
+
+# The portfolio sells project work, so its buying signals are different ones.
+_BUY_WORDS_PORTFOLIO = ("hire", "budget", "quote", "project", "engage", "start",
+                        "available", "availability", "retainer", "contract",
+                        "proposal", "scope", "timeline", "deadline", "cost",
+                        "price", "pricing", "rate", "charge", "pilot",
+                        "how much", "estimate", "package", "deposit", "invoice")
+
 _PRICE_WORDS = ("price", "cost", "how much", "discount", "pricing", "cheap")
 _ANGRY_WORDS = ("refund", "broken", "damaged", "late", "never arrived",
                 "complaint", "wrong item", "cancel")
 
+# What the assistant offers next once it detects commercial interest.
+_FOLLOW_UP = {
+    "demo": " Want me to have our wholesale team send you a quote?",
+    "portfolio": " If you tell me what the task is, I can pass it to Nikita with"
+                 " your details and he will come back within a business day.",
+}
 
-def _demo_reply(question: str, chunks: list[dict[str, Any]]) -> dict[str, Any]:
+
+def _demo_reply(question: str, chunks: list[dict[str, Any]],
+                site: str | None = None) -> dict[str, Any]:
     """Deterministic, no network. Good enough to demo the whole pipeline."""
+    site = site or config.DEFAULT_SITE
+    conf = config.site_conf(site)
+    buy_words = _BUY_WORDS_PORTFOLIO if site == "portfolio" else _BUY_WORDS
     q = question.lower()
-    if any(w in q for w in _ANGRY_WORDS):
+
+    if site != "portfolio" and any(w in q for w in _ANGRY_WORDS):
         intent, score, handoff = "complaint", 25, True
-    elif any(w in q for w in _BUY_WORDS):
+    elif any(w in q for w in buy_words):
         intent, score, handoff = "buying", 80, False
     elif any(w in q for w in _PRICE_WORDS):
         intent, score, handoff = "pricing", 50, False
@@ -74,20 +94,18 @@ def _demo_reply(question: str, chunks: list[dict[str, Any]]) -> dict[str, Any]:
 
     if not chunks:
         answer = (
-            f"I do not have that in {config.COMPANY_NAME}'s knowledge base yet. "
-            "Leave your email and a specialist will follow up today."
+            f"I do not have that in {conf['company']}'s knowledge base yet. "
+            "Leave your email and you will get a proper answer today."
         )
     else:
-        best = chunks[0]
-        body = " ".join(best["content"].split())
+        body = " ".join(chunks[0]["content"].split())
         if len(body) > 420:
             body = body[:420].rsplit(" ", 1)[0] + "..."
         answer = body
         if intent == "buying":
-            answer += " Want me to have our wholesale team send you a quote?"
+            answer += _FOLLOW_UP.get(site, "")
         elif intent == "complaint":
-            answer = ("Sorry about that - I am handing this to a human agent now. "
-                      + answer)
+            answer = "Sorry about that - I am handing this to a human agent now. " + answer
 
     return {
         "answer": answer,
@@ -177,12 +195,13 @@ def _parse_envelope(raw: str, fallback: str) -> dict[str, Any]:
 
 
 def answer(question: str, chunks: list[dict[str, Any]], context: str,
-           history: list[dict[str, str]]) -> dict[str, Any]:
+           history: list[dict[str, str]], site: str | None = None) -> dict[str, Any]:
     """Main entry point. Never raises - a broken provider falls back to demo mode."""
+    conf = config.site_conf(site)
     if config.LLM_PROVIDER == "demo":
-        return _demo_reply(question, chunks)
+        return _demo_reply(question, chunks, site)
 
-    system = SYSTEM_PROMPT.format(agent=config.AGENT_NAME, company=config.COMPANY_NAME)
+    system = SYSTEM_PROMPT.format(agent=conf["agent"], company=conf["company"])
     messages = [
         *history[-6:],
         {"role": "user", "content": USER_TEMPLATE.format(
@@ -196,7 +215,7 @@ def answer(question: str, chunks: list[dict[str, Any]], context: str,
             raw = _openai_chat(system, messages)
             model = config.OPENAI_MODEL
     except Exception as exc:  # noqa: BLE001 - a live widget must always reply
-        result = _demo_reply(question, chunks)
+        result = _demo_reply(question, chunks, site)
         result["model"] = f"demo-fallback ({type(exc).__name__})"
         return result
 

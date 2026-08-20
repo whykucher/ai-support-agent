@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab — working demos by Nikita Denisov</title>
+<meta name="description" content="Three automation tools running live: a page scraper, a message classifier and a CSV cleaner. Run them yourself, no signup.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,300..500;1,6..72,300..400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:#EDEFF2; --card:#F7F8FA; --ink:#0F1A2B; --ink-2:#3D4A5C;
+    --soft:#6B7688; --line:#C9D0DB; --line-2:#DDE2E9;
+    --signal:#D98324; --signal-d:#A96417; --ok:#2F7A55; --bad:#B23B2E;
+    --display:"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+    --prose:"Newsreader", Georgia, serif;
+    --mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--prose); font-size: 17px; line-height: 1.6;
+    font-variant-numeric: tabular-nums;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.025em; }
+  .tag {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: .13em; text-transform: uppercase; color: var(--soft);
+  }
+
+  /* header */
+  .top { border-bottom: 1px solid var(--line); }
+  .top-in { display: flex; align-items: center; gap: 20px; height: 62px; }
+  .who { font-family: var(--display); font-weight: 700; font-size: 16px; letter-spacing: -.02em; text-decoration: none; }
+  .topnav { margin-left: auto; display: flex; gap: 20px; }
+  .topnav a {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .09em;
+    text-transform: uppercase; text-decoration: none; color: var(--soft);
+    padding: 3px 0; border-bottom: 1px solid transparent;
+  }
+  .topnav a:hover, .topnav a[aria-current] { color: var(--ink); border-bottom-color: var(--signal); }
+
+  /* intro */
+  .intro { padding: 56px 0 40px; }
+  h1 { font-size: clamp(32px, 5vw, 50px); line-height: 1.03; margin: 0 0 18px; max-width: 18ch; }
+  .stand { font-size: 19px; color: var(--ink-2); max-width: 58ch; margin: 0; }
+
+  /* tools */
+  .tool { border-top: 1px solid var(--line); padding: 48px 0; }
+  .tool-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 8px; }
+  h2 { font-size: 27px; margin: 0; }
+  .endpoint {
+    margin-left: auto; font-family: var(--mono); font-size: 11px;
+    color: var(--soft); border: 1px solid var(--line); padding: 3px 8px;
+  }
+  .tool > .wrap > p.note { color: var(--soft); margin: 0 0 22px; max-width: 62ch; font-size: 16px; }
+
+  .panel { border: 1px solid var(--line); background: var(--card); }
+  .panel-in { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row > input { flex: 1; min-width: 260px; }
+
+  input[type=text], textarea {
+    font-family: var(--mono); font-size: 13.5px; color: var(--ink);
+    background: #fff; border: 1px solid var(--line); border-radius: 0;
+    padding: 11px 13px; width: 100%;
+  }
+  textarea { resize: vertical; min-height: 130px; line-height: 1.5; }
+  input:focus, textarea:focus { outline: none; border-color: var(--signal); }
+
+  button {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .09em;
+    text-transform: uppercase; cursor: pointer;
+    border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
+    padding: 11px 18px;
+  }
+  button:hover:not(:disabled) { background: var(--signal-d); border-color: var(--signal-d); color: #fff; }
+  button:disabled { opacity: .45; cursor: default; }
+  button.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  button.ghost:hover:not(:disabled) { background: transparent; color: var(--signal-d); border-color: var(--signal-d); }
+
+  .samples { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .samples span { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--soft); }
+  .samples button {
+    font-size: 11px; padding: 5px 10px; text-transform: none; letter-spacing: 0;
+    background: var(--paper); color: var(--ink-2); border-color: var(--line);
+  }
+  .samples button:hover:not(:disabled) { background: #fff; color: var(--signal-d); border-color: var(--signal); }
+
+  /* results */
+  .out { border-top: 1px solid var(--line); }
+  .out-empty { padding: 22px 20px; color: var(--soft); font-size: 15.5px; }
+  .out-err { padding: 18px 20px; color: var(--bad); font-family: var(--mono); font-size: 13px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1px; background: var(--line-2); }
+  .stat { background: var(--card); padding: 14px 18px; }
+  .stat b { display: block; font-family: var(--mono); font-size: 20px; font-weight: 500; }
+  .stat span { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--soft); }
+  .stat.hit b { color: var(--signal-d); }
+
+  .block { padding: 18px 20px; border-top: 1px solid var(--line-2); }
+  .block h4 { margin: 0 0 10px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--soft); font-weight: 500; }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 15px; }
+  .kv dt { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--soft); }
+  .kv dd { margin: 0; overflow-wrap: anywhere; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    font-family: var(--mono); font-size: 11px; padding: 3px 8px;
+    border: 1px solid var(--line); background: #fff; color: var(--ink-2);
+  }
+  .chip.on { border-color: var(--signal); color: var(--signal-d); }
+  .hlist { margin: 0; padding: 0; list-style: none; font-size: 15px; }
+  .hlist li { padding: 4px 0; border-bottom: 1px solid var(--line-2); display: flex; gap: 10px; }
+  .hlist li:last-child { border-bottom: 0; }
+  .hlist .lvl { font-family: var(--mono); font-size: 10px; color: var(--soft); text-transform: uppercase; padding-top: 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+  th { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); color: var(--soft); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; font-size: 10px; }
+  td { padding: 7px 10px; border-bottom: 1px solid var(--line-2); overflow-wrap: anywhere; }
+  .scroll { overflow-x: auto; }
+
+  pre {
+    margin: 0; padding: 14px; background: #fff; border: 1px solid var(--line);
+    font-family: var(--mono); font-size: 12px; line-height: 1.55;
+    max-height: 260px; overflow: auto;
+  }
+
+  footer { border-top: 1px solid var(--line); padding: 30px 0 64px; }
+  footer p { margin: 0; color: var(--soft); font-size: 15px; max-width: 62ch; }
+
+  @media (max-width: 700px) {
+    .wrap { padding: 0 18px; }
+    .endpoint { margin-left: 0; }
+    .topnav { gap: 12px; }
+    .who { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="who" href="/">Nikita Denisov</a>
+    <nav class="topnav">
+      <a href="/lab" aria-current="page">Lab</a>
+      <a href="/demo">Client demo</a>
+      <a href="/admin">Ops</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap intro">
+    <h1>Three tools, running on this server.</h1>
+    <p class="stand">Every button below makes a real request and returns a real
+      result. Nothing is pre-recorded, nothing needs an account, and each run is
+      written to the log you can see on the <a href="/#live">front page</a>.</p>
+  </div>
+
+  <!-- ---------------- scraper ---------------- -->
+  <section class="tool" id="scrape">
+    <div class="wrap">
+      <div class="tool-head">
+        <h2>Page scraper</h2>
+        <code class="endpoint">POST /api/lab/scrape</code>
+      </div>
+      <p class="note">Fetches a public page and pulls out the parts a client
+        usually wants: title, description, heading outline, contact details and
+        the link graph. Private and loopback addresses are refused — a scraper
+        that will fetch anything from inside your network is a security hole,
+        not a feature.</p>
+
+      <div class="panel">
+        <div class="panel-in">
+          <div class="row">
+            <input type="text" id="scrape-url" placeholder="https://example.com" value="https://n8n.io" autocomplete="off">
+            <button id="scrape-go">Scrape</button>
+          </div>
+          <div class="samples">
+            <span>Try</span>
+            <button type="button" class="s-url" data-v="https://n8n.io">n8n.io</button>
+            <button type="button" class="s-url" data-v="https://news.ycombinator.com">news.ycombinator.com</button>
+            <button type="button" class="s-url" data-v="http://localhost:8010">localhost (blocked)</button>
+          </div>
+        </div>
+        <div class="out" id="scrape-out"><div class="out-empty">Results appear here.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------------- classifier ---------------- -->
+  <section class="tool" id="classify">
+    <div class="wrap">
+      <div class="tool-head">
+        <h2>Message classifier</h2>
+        <code class="endpoint">POST /api/lab/classify</code>
+      </div>
+      <p class="note">The same scoring the live agent runs on every conversation.
+        It returns an intent, a lead score, the entities it found, and where the
+        message would be routed. A complaint outranks a purchase in the same
+        message, because that person needs a human first.</p>
+
+      <div class="panel">
+        <div class="panel-in">
+          <textarea id="cl-text" placeholder="Paste a customer message…">Hi — we run a 40-person studio and need a quote for automating our invoice handling. Budget is around $3,000. Can you call me next week? +1 415 555 0123</textarea>
+          <div class="row">
+            <button id="cl-go">Classify</button>
+          </div>
+          <div class="samples">
+            <span>Try</span>
+            <button type="button" class="s-cl" data-v="My last order arrived broken and I would like a refund, but I also want to reorder two more.">complaint + purchase</button>
+            <button type="button" class="s-cl" data-v="Where do I reset my password? I cannot log in.">support</button>
+            <button type="button" class="s-cl" data-v="Здравствуйте! Сколько стоит автоматизация обработки заявок? Нужно срочно.">russian, urgent</button>
+          </div>
+        </div>
+        <div class="out" id="cl-out"><div class="out-empty">Results appear here.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------------- cleaner ---------------- -->
+  <section class="tool" id="clean">
+    <div class="wrap">
+      <div class="tool-head">
+        <h2>CSV cleaner</h2>
+        <code class="endpoint">POST /api/lab/clean</code>
+      </div>
+      <p class="note">Paste an export. It normalises each column by what the
+        column is (emails lowercased, phone numbers stripped to digits), drops
+        blank and duplicate rows, pads ragged ones, flags invalid emails, and
+        hands the cleaned file back.</p>
+
+      <div class="panel">
+        <div class="panel-in">
+          <textarea id="cs-text" spellcheck="false">Name,Email,Phone,City
+John Doe,  JOHN@Example.COM ,+1 (415) 555-0100,portland
+john doe,john@example.com,+14155550100,Portland
+
+Jane Roe,jane@example.com,+1 415 555 0111,SEATTLE
+Bad Row,not-an-email,555,Denver
+Ada Lovelace,ADA@example.com,+44 20 7946 0000</textarea>
+          <div class="row">
+            <button id="cs-go">Clean</button>
+            <button id="cs-copy" class="ghost" disabled>Copy cleaned CSV</button>
+          </div>
+        </div>
+        <div class="out" id="cs-out"><div class="out-empty">Results appear here.</div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>These are deliberately small. The point is not that scraping a page is
+      hard — it is that each one is a real endpoint with error handling, input
+      validation, rate limiting and a log entry behind it, which is the part
+      that decides whether an automation survives contact with a real business.
+      <a href="/#contact">Tell me what you need automated.</a></p>
+  </div>
+</footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+async function call(path, body, outEl, btn, render) {
+  const label = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Working…";
+  outEl.innerHTML = '<div class="out-empty">Running…</div>';
+  try {
+    const res = await fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || res.statusText);
+    outEl.innerHTML = render(data);
+  } catch (e) {
+    outEl.innerHTML = `<div class="out-err">${esc(e.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+}
+
+const ms = (n) => (n > 0 ? n + " ms" : "<1 ms");
+const stat = (v, l, hit) => `<div class="stat${hit ? " hit" : ""}"><b>${esc(v)}</b><span>${esc(l)}</span></div>`;
+const chips = (arr, on) => arr.length
+  ? `<div class="chips">${arr.map((v) => `<span class="chip${on ? " on" : ""}">${esc(v)}</span>`).join("")}</div>`
+  : '<span class="out-empty" style="padding:0">none found</span>';
+
+// --- scraper ---------------------------------------------------------------
+function renderScrape(d) {
+  return `
+    <div class="stats">
+      ${stat(d.status, "HTTP status")}
+      ${stat(d.headings.length, "headings")}
+      ${stat(d.links.internal + " / " + d.links.external, "links int/ext")}
+      ${stat(d.emails.length, "emails", d.emails.length > 0)}
+      ${stat(d.words.toLocaleString(), "words")}
+      ${stat(ms(d.duration_ms), "round trip")}
+    </div>
+    <div class="block">
+      <h4>Page</h4>
+      <dl class="kv">
+        <dt>URL</dt><dd>${esc(d.url)}</dd>
+        <dt>Title</dt><dd>${esc(d.title) || "—"}</dd>
+        <dt>Description</dt><dd>${esc(d.description) || "—"}</dd>
+        ${d.site_name ? `<dt>Site</dt><dd>${esc(d.site_name)}</dd>` : ""}
+      </dl>
+    </div>
+    ${d.headings.length ? `<div class="block"><h4>Heading outline</h4>
+      <ul class="hlist">${d.headings.slice(0, 12).map((h) =>
+        `<li><span class="lvl">${esc(h.level)}</span><span>${esc(h.text)}</span></li>`).join("")}</ul></div>` : ""}
+    ${(d.emails.length || d.phones.length) ? `<div class="block"><h4>Contacts found</h4>
+      ${chips([...d.emails, ...d.phones], true)}</div>` : ""}
+    ${d.links.sample.length ? `<div class="block"><h4>Sample links</h4>
+      <ul class="hlist">${d.links.sample.map((l) =>
+        `<li><span>${esc(l.text || "(no text)")}</span></li>`).join("")}</ul></div>` : ""}`;
+}
+
+$("scrape-go").addEventListener("click", () =>
+  call("/api/lab/scrape", { url: $("scrape-url").value.trim() },
+       $("scrape-out"), $("scrape-go"), renderScrape));
+$("scrape-url").addEventListener("keydown", (e) => { if (e.key === "Enter") $("scrape-go").click(); });
+document.querySelectorAll(".s-url").forEach((b) => b.addEventListener("click", () => {
+  $("scrape-url").value = b.dataset.v; $("scrape-go").click();
+}));
+
+// --- classifier ------------------------------------------------------------
+function renderClassify(d) {
+  const ents = d.entities;
+  const all = [...ents.emails, ...ents.phones, ...ents.amounts, ...ents.dates];
+  return `
+    <div class="stats">
+      ${stat(d.intent, "intent", true)}
+      ${stat(d.lead_score, "lead score", d.lead_score >= 60)}
+      ${stat(d.priority, "priority", d.priority === "hot")}
+      ${stat(d.language, "language")}
+      ${stat(d.urgent ? "yes" : "no", "urgent", d.urgent)}
+      ${stat(ms(d.duration_ms), "took")}
+    </div>
+    <div class="block">
+      <h4>Routing decision</h4>
+      <div style="font-size:16px">${esc(d.route)}</div>
+    </div>
+    <div class="block">
+      <h4>Entities extracted</h4>
+      ${chips(all, true)}
+    </div>
+    ${d.matched_terms.length ? `<div class="block"><h4>Terms that decided it</h4>
+      ${chips(d.matched_terms)}</div>` : ""}`;
+}
+
+$("cl-go").addEventListener("click", () =>
+  call("/api/lab/classify", { text: $("cl-text").value },
+       $("cl-out"), $("cl-go"), renderClassify));
+document.querySelectorAll(".s-cl").forEach((b) => b.addEventListener("click", () => {
+  $("cl-text").value = b.dataset.v; $("cl-go").click();
+}));
+
+// --- cleaner ---------------------------------------------------------------
+let cleanedCsv = "";
+
+function renderClean(d) {
+  cleanedCsv = d.csv;
+  $("cs-copy").disabled = false;
+  const head = d.columns.map((c) => `<th>${esc(c)}</th>`).join("");
+  const body = d.preview.map((r) =>
+    `<tr>${r.map((c) => `<td>${esc(c) || "—"}</td>`).join("")}</tr>`).join("");
+  return `
+    <div class="stats">
+      ${stat(d.rows_in, "rows in")}
+      ${stat(d.rows_out, "rows out", true)}
+      ${stat(d.duplicates_removed, "duplicates", d.duplicates_removed > 0)}
+      ${stat(d.blank_rows_removed, "blank rows", d.blank_rows_removed > 0)}
+      ${stat(d.ragged_rows_padded, "ragged rows", d.ragged_rows_padded > 0)}
+      ${stat(d.invalid_emails, "invalid emails", d.invalid_emails > 0)}
+    </div>
+    <div class="block">
+      <h4>Cleaned preview</h4>
+      <div class="scroll"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>
+    </div>
+    <div class="block">
+      <h4>Output</h4>
+      <pre>${esc(d.csv)}</pre>
+    </div>`;
+}
+
+$("cs-go").addEventListener("click", () =>
+  call("/api/lab/clean", { csv: $("cs-text").value },
+       $("cs-out"), $("cs-go"), renderClean));
+
+$("cs-copy").addEventListener("click", async () => {
+  const btn = $("cs-copy");
+  try {
+    await navigator.clipboard.writeText(cleanedCsv);
+    btn.textContent = "Copied";
+  } catch (e) {
+    btn.textContent = "Copy blocked";
+  }
+  setTimeout(() => { btn.textContent = "Copy cleaned CSV"; }, 1800);
+});
+</script>
+</body>
+</html>

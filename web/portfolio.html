@@ -65,7 +65,13 @@
   .top { border-bottom: 1px solid var(--line); }
   .top-in { display: flex; align-items: center; gap: 20px; height: 62px; }
   .who { font-family: var(--display); font-weight: 700; font-size: 16px; letter-spacing: -.02em; }
-  .top .tag { margin-left: auto; }
+  .topnav { margin-left: auto; display: flex; gap: 20px; }
+  .topnav a {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .09em;
+    text-transform: uppercase; text-decoration: none; color: var(--soft);
+    padding: 3px 0; border-bottom: 1px solid transparent;
+  }
+  .topnav a:hover { color: var(--ink); border-bottom-color: var(--signal); }
   .top a.cta {
     font-family: var(--mono); font-size: 11.5px; letter-spacing: .09em;
     text-transform: uppercase; text-decoration: none;
@@ -158,6 +164,53 @@
   .build p { margin: 0; font-size: 16.5px; color: var(--ink-2); }
   .build .tag { color: var(--signal-d); }
 
+  /* ---------- live section ---------- */
+
+  .live { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; }
+
+  .live-ask, .feed { border: 1px solid var(--line); background: var(--card); display: flex; flex-direction: column; }
+  .live-ask { padding: 22px; }
+  .asks { display: flex; flex-direction: column; gap: 8px; margin: 14px 0 auto; }
+  .asks button {
+    text-align: left; font-family: var(--prose); font-size: 16px;
+    background: var(--paper); color: var(--ink);
+    border: 1px solid var(--line); border-left: 2px solid var(--signal);
+    padding: 11px 14px; cursor: pointer;
+  }
+  .asks button:hover { background: #fff; border-left-color: var(--signal-d); }
+  .live-note { margin: 18px 0 0; font-size: 14.5px; color: var(--soft); }
+
+  .feed-head, .feed-foot { padding: 13px 18px; }
+  .feed-head { display: flex; justify-content: space-between; border-bottom: 1px solid var(--line-2); }
+  .feed-foot { border-top: 1px solid var(--line-2); font-size: 13.5px; color: var(--soft); }
+  .feed-list { list-style: none; margin: 0; padding: 0; flex: 1; overflow-y: auto; max-height: 340px; }
+  .feed-list li { padding: 11px 18px; border-bottom: 1px solid var(--line-2); font-size: 14.5px; }
+  .feed-list li:last-child { border-bottom: 0; }
+  .feed-empty { color: var(--soft); }
+  .feed-row { display: flex; gap: 10px; align-items: baseline; }
+  .feed-kind {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--signal-d); white-space: nowrap;
+  }
+  .feed-when { font-family: var(--mono); font-size: 10.5px; color: var(--soft); margin-left: auto; white-space: nowrap; }
+  .feed-sum { color: var(--ink-2); overflow-wrap: anywhere; }
+  /* A row that just arrived gets one pulse, so a visitor sees their own
+     question land rather than having to hunt for it. */
+  .feed-new { animation: land 1.4s ease; }
+  @keyframes land {
+    0% { background: color-mix(in srgb, var(--signal) 22%, var(--card)); }
+    100% { background: transparent; }
+  }
+
+  /* ---------- lab teaser ---------- */
+
+  .tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .tool { background: var(--card); padding: 24px; text-decoration: none; display: flex; flex-direction: column; gap: 9px; }
+  .tool:hover { background: #fff; }
+  .tool h3 { font-size: 18px; margin: 4px 0 0; }
+  .tool p { margin: 0; font-size: 15.5px; color: var(--ink-2); flex: 1; }
+  .tool-go { font-family: var(--mono); font-size: 11.5px; letter-spacing: .06em; color: var(--signal-d); }
+
   /* ---------- case study ---------- */
 
   .case { display: grid; grid-template-columns: 1.15fr .85fr; gap: 44px; align-items: start; }
@@ -218,6 +271,8 @@
 
   @media (max-width: 860px) {
     body { font-size: 17px; }
+    .live, .tools { grid-template-columns: 1fr; }
+    .topnav { gap: 14px; }
     .hero { padding: 52px 0 16px; }
     .builds, .case, .contact { grid-template-columns: 1fr; }
     .contact { gap: 26px; align-items: start; }
@@ -247,7 +302,11 @@
 <header class="top">
   <div class="wrap top-in">
     <span class="who">Nikita Denisov</span>
-    <span class="tag">AI agents · n8n · Python</span>
+    <nav class="topnav">
+      <a href="/lab">Lab</a>
+      <a href="/demo">Client demo</a>
+      <a href="/admin">Ops</a>
+    </nav>
     <a class="cta" href="#contact">Get in touch</a>
   </div>
 </header>
@@ -346,6 +405,81 @@
       </div>
     </figure>
   </div>
+
+  <section id="live">
+    <div class="wrap">
+      <h2>This page is the demo</h2>
+      <p class="sec-note">The assistant in the corner is not a screenshot and not a
+        script. It answers from a knowledge base about how I work, and every answer
+        it gives lands in the log beside it within a second. Ask it something and
+        watch your own question arrive.</p>
+
+      <!-- Feed first, deliberately. The chat widget owns the bottom-right of
+           every page it is on, so the thing a visitor is meant to watch has to
+           live on the left or it gets covered by the very thing being demoed. -->
+      <div class="live">
+        <div class="feed">
+          <div class="feed-head">
+            <span class="tag">Live run log</span>
+            <span class="tag" id="feed-count">—</span>
+          </div>
+          <ol id="feed-list" class="feed-list">
+            <li class="feed-empty">Connecting…</li>
+          </ol>
+          <div class="feed-foot">
+            Every automation this app performs writes a row here: answers, lead
+            capture, scrapes, reindexes. Nothing on this page is claimed without
+            being logged.
+          </div>
+        </div>
+
+        <div class="live-ask">
+          <span class="tag">Try one of these</span>
+          <div class="asks">
+            <button type="button" data-ask="What do you charge for a pilot?">What do you charge for a pilot?</button>
+            <button type="button" data-ask="How long does a project take?">How long does a project take?</button>
+            <button type="button" data-ask="When should I not hire you?">When should I not hire you?</button>
+            <button type="button" data-ask="Which AI models do you use?">Which AI models do you use?</button>
+            <button type="button" data-ask="Do you build mobile apps?">Do you build mobile apps?</button>
+          </div>
+          <p class="live-note">Answers come only from my own documents. Ask it something
+            it does not know and it will say so instead of inventing an answer — that
+            behaviour is the point, not a limitation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="lab-teaser">
+    <div class="wrap">
+      <h2>Three tools you can run yourself</h2>
+      <p class="sec-note">Not a list of technologies. Working endpoints on this server,
+        open to anyone who visits.</p>
+      <div class="tools">
+        <a class="tool" href="/lab#scrape">
+          <span class="tag">Scraping</span>
+          <h3>Pull structure out of any page</h3>
+          <p>Give it a URL. It fetches the page and returns the title, headings,
+            contact details and link graph as JSON.</p>
+          <span class="tool-go">Open the scraper →</span>
+        </a>
+        <a class="tool" href="/lab#classify">
+          <span class="tag">Classification</span>
+          <h3>Score a message the way the agent does</h3>
+          <p>Paste a customer message. It returns intent, a lead score, the entities
+            it found and where it would route the message.</p>
+          <span class="tool-go">Open the classifier →</span>
+        </a>
+        <a class="tool" href="/lab#clean">
+          <span class="tag">Data</span>
+          <h3>Clean a messy export</h3>
+          <p>Paste a CSV. It normalises the columns, removes duplicates and blanks,
+            flags invalid emails and hands the cleaned file back.</p>
+          <span class="tool-go">Open the cleaner →</span>
+        </a>
+      </div>
+    </div>
+  </section>
 
   <section>
     <div class="wrap">
@@ -537,5 +671,92 @@
   </div>
 </footer>
 
+<script>
+  // --- live run log --------------------------------------------------------
+  // Polls the same ledger the admin dashboard reads. Rows that were not in the
+  // previous response get one highlight pulse, which is how a visitor sees the
+  // question they just asked arrive.
+  (function () {
+    const list = document.getElementById("feed-list");
+    const count = document.getElementById("feed-count");
+    const KINDS = {
+      "chat.answer": "answered",
+      "lead.capture": "lead",
+      "lead.retry": "retry",
+      "knowledge.reindex": "reindex",
+      "lab.scrape": "scrape",
+      "lab.classify": "classify",
+      "lab.clean": "clean",
+    };
+    let seen = new Set();
+    let first = true;
+
+    const ago = (ts) => {
+      const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
+      if (s < 60) return s + "s ago";
+      if (s < 3600) return Math.floor(s / 60) + "m ago";
+      if (s < 86400) return Math.floor(s / 3600) + "h ago";
+      return Math.floor(s / 86400) + "d ago";
+    };
+
+    const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    async function tick() {
+      let data;
+      try {
+        data = await (await fetch("/api/runs?limit=14")).json();
+      } catch (e) {
+        list.innerHTML = '<li class="feed-empty">Log unreachable. The page still works.</li>';
+        return;
+      }
+      const runs = data.runs || [];
+      const total = Object.values(data.counts || {}).reduce((a, b) => a + b, 0);
+      count.textContent = total + (total === 1 ? " run logged" : " runs logged");
+
+      if (!runs.length) {
+        list.innerHTML = '<li class="feed-empty">Nothing yet. Ask the assistant a question.</li>';
+        return;
+      }
+
+      list.innerHTML = runs.map((r) => {
+        const isNew = !first && !seen.has(r.id);
+        const ms = r.duration_ms ? r.duration_ms + " ms" : "";
+        return `<li class="${isNew ? "feed-new" : ""}">
+            <div class="feed-row">
+              <span class="feed-kind">${esc(KINDS[r.kind] || r.kind)}</span>
+              <span class="feed-when">${ago(r.created_at)}${ms ? " · " + ms : ""}</span>
+            </div>
+            <div class="feed-sum">${esc(r.summary || r.kind)}</div>
+          </li>`;
+      }).join("");
+
+      seen = new Set(runs.map((r) => r.id));
+      first = false;
+    }
+
+    tick();
+    setInterval(tick, 5000);
+
+    // --- suggested questions open the widget and send for you --------------
+    document.querySelectorAll(".asks button").forEach((b) => {
+      b.addEventListener("click", () => {
+        if (window.NorthwindChat) window.NorthwindChat.send(b.dataset.ask);
+      });
+    });
+  })();
+</script>
+
+<script src="/static/widget.js"
+        data-api=""
+        data-site="portfolio"
+        data-title="Ask about working with Nikita"
+        data-agent="Ada"
+        data-accent="#A96417"
+        data-greeting="I answer from Nikita's own notes: scope, pricing, timelines, and what he turns down. What would you like to know?"
+        data-quick="What do you charge?|How long does it take?|When should I not hire you?"
+        data-lead-title="Want Nikita to look at your case?"
+        data-lead-note="One line about the task is enough. You get a reply within a business day."
+        defer></script>
 </body>
 </html>

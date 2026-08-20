@@ -52,7 +52,7 @@ def seed() -> int:
     for offset, (turns, contact) in enumerate(CONVERSATIONS):
         conv_id = f"seed{offset:02d}{random.randint(1000, 9999)}"
         page = random.choice(PAGES)
-        db.touch_conversation(conv_id, page)
+        db.touch_conversation(conv_id, "demo", page)
         # Spread the traffic over the last three days.
         started = now - random.uniform(0, 3 * 86400)
 
@@ -60,8 +60,8 @@ def seed() -> int:
         score = 0
         for turn in turns:
             db.add_message(conv_id, "user", turn)
-            chunks = rag.search(turn)
-            result = llm.answer(turn, chunks, rag.build_context(chunks), [])
+            chunks = rag.search(turn, "demo")
+            result = llm.answer(turn, chunks, rag.build_context(chunks), [], "demo")
             db.add_message(
                 conv_id, "assistant", result["answer"], intent=result["intent"],
                 sources=[c["source"] for c in chunks],
@@ -69,9 +69,17 @@ def seed() -> int:
             )
             intent, score = result["intent"], max(score, result["lead_score"])
             db.set_lead_score(conv_id, result["lead_score"], result["handoff"])
+            db.add_run(
+                "chat.answer", site="demo",
+                summary=" ".join(result["answer"].split())[:110],
+                detail={"intent": result["intent"], "score": result["lead_score"],
+                        "sources": [c["source"] for c in chunks][:2], "model": "demo-retrieval"},
+                duration_ms=random.randint(380, 1600),
+            )
 
         if contact:
             db.add_lead(
+                site="demo",
                 conversation_id=conv_id,
                 name=contact.get("name", ""),
                 email=contact.get("email", ""),
@@ -81,6 +89,9 @@ def seed() -> int:
                 lead_score=max(score, 70),
                 source_page=page,
             )
+            db.add_run("lead.capture", site="demo", status="queued",
+                       summary="hot lead captured, n8n not configured",
+                       detail={"score": max(score, 70), "intent": intent})
             created += 1
 
         # Backdate so the dashboard shows a spread instead of one timestamp.
@@ -91,6 +102,12 @@ def seed() -> int:
                          (started, conv_id))
             conn.execute("UPDATE leads SET created_at = ? WHERE conversation_id = ?",
                          (started + 300, conv_id))
+            # Runs are backdated too, so the log reads as history rather than
+            # as everything having happened the moment the server booted.
+            conn.execute(
+                "UPDATE runs SET created_at = ? WHERE id IN"
+                " (SELECT id FROM runs WHERE site = 'demo' ORDER BY id DESC LIMIT ?)",
+                (started + 120, len(turns) + (1 if contact else 0)))
 
     return created
 

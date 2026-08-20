@@ -3,10 +3,10 @@
     python -m scripts.screenshots                 # against http://127.0.0.1:8010
     python -m scripts.screenshots --base <url>    # or against the deployed site
 
-Writes docs/screenshots/*.png at 2x for crisp uploads. Regenerate these after
-any UI change instead of re-cropping by hand - that is the whole point.
+Writes docs/screenshots/*.png at 2x. Regenerate after any UI change instead of
+re-cropping by hand - that is the whole point of scripting it.
 
-Requires:  pip install playwright  &&  playwright install chromium
+Requires:  pip install -r requirements-dev.txt  &&  playwright install chromium
 """
 import argparse
 import sys
@@ -16,10 +16,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 OUT = ROOT / "docs" / "screenshots"
-WIDTH, HEIGHT = 1440, 900
-
-SHIPPING_Q = "How fast is shipping, and do you deliver to Canada?"
-WHOLESALE_Q = "I run a cafe and need wholesale pricing for about 80 lb a month"
+WIDTH, HEIGHT = 1440, 950
 
 
 def main() -> int:
@@ -34,81 +31,100 @@ def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     shots: list[tuple[str, str]] = []
 
+    def shot(page, name: str, caption: str) -> None:
+        page.screenshot(path=OUT / name)
+        shots.append((name, caption))
+
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        # Pin locale/timezone: the dashboard formats dates with the browser
+        # Pin locale and timezone: the dashboard formats dates with the browser
         # locale, and screenshots aimed at English-speaking clients should not
         # come out in whatever locale this machine happens to run.
         ctx = browser.new_context(
             viewport={"width": WIDTH, "height": HEIGHT},
-            device_scale_factor=2,
-            locale="en-US",
+            device_scale_factor=2, locale="en-US",
             timezone_id="America/Los_Angeles",
         )
         page = ctx.new_page()
 
-        # --- 1. grounded answer with source chips ---------------------------
+        # --- 1. the portfolio as a visitor first meets it -------------------
         page.goto(base, wait_until="networkidle")
-        page.evaluate("localStorage.removeItem('nw_conversation_id')")
+        page.evaluate("localStorage.clear()")
         page.reload(wait_until="networkidle")
+        page.wait_for_timeout(2600)   # let the two lanes finish drawing
+        shot(page, "00-portfolio.png",
+             "Portfolio hero: the same enquiry by hand and by agent")
 
-        # --- 0. the page as a visitor first meets it, widget still closed ---
-        page.wait_for_selector(".nw-launcher", timeout=30_000)
-        page.wait_for_timeout(2600)   # let the roast curve finish drawing
-        page.screenshot(path=OUT / "00-storefront.png")
-        shots.append(("00-storefront.png", "The client site the widget is installed on"))
+        # --- 2. the assistant answering, with the run log beside it ---------
+        page.click(".asks button")
+        page.wait_for_selector(".nw-msg.bot", state="visible", timeout=30_000)
+        page.wait_for_timeout(6_500)  # the feed polls every 5s
+        page.locator("#live").scroll_into_view_if_needed()
+        page.wait_for_timeout(600)
+        shot(page, "01-live-agent.png",
+             "Ask a question and watch it land in the live run log")
+
+        # --- 3. the lab, mid-result ------------------------------------------
+        page.goto(f"{base}/lab", wait_until="networkidle")
+        page.click("#cl-go")
+        page.wait_for_selector("#cl-out .stats", timeout=30_000)
+        page.locator("#classify").scroll_into_view_if_needed()
+        page.wait_for_timeout(600)
+        shot(page, "02-lab-classify.png",
+             "Message classifier: intent, score, entities, routing")
+
+        page.click("#cs-go")
+        page.wait_for_selector("#cs-out .stats", timeout=30_000)
+        page.locator("#clean").scroll_into_view_if_needed()
+        page.wait_for_timeout(600)
+        shot(page, "03-lab-clean.png",
+             "CSV cleaner: dedupe, normalise, flag, hand the file back")
+
+        # --- 4. the client-facing demo ---------------------------------------
+        page.goto(f"{base}/demo", wait_until="networkidle")
+        page.wait_for_timeout(2600)
+        shot(page, "04-client-demo.png", "The storefront the agent was built for")
 
         page.click(".nw-launcher")
-        page.fill("#nw-input", SHIPPING_Q)
-        page.press("#nw-input", "Enter")
-        page.wait_for_selector(".nw-sources", timeout=30_000)
-        page.wait_for_timeout(600)
-        page.screenshot(path=OUT / "01-grounded-answer.png")
-        shots.append(("01-grounded-answer.png", "Answer built from the knowledge base, with the source sections shown"))
-
-        # --- 2. buying intent detected, lead form appears -------------------
-        page.fill("#nw-input", WHOLESALE_Q)
+        page.fill("#nw-input",
+                  "I run a cafe and need wholesale pricing for about 80 lb a month")
         page.press("#nw-input", "Enter")
         page.wait_for_selector(".nw-lead", timeout=30_000)
         page.wait_for_timeout(600)
-        page.screenshot(path=OUT / "02-lead-capture.png")
-        shots.append(("02-lead-capture.png", "Buying intent detected - the bot stops answering and starts qualifying"))
+        shot(page, "05-lead-capture.png",
+             "Buying intent detected: the bot stops answering and starts qualifying")
 
-        # Submit the lead so the dashboard shot has a fresh row to show.
-        page.fill("#nw-l-name", "Marta Iversen")
-        page.fill("#nw-l-email", "marta@harborlanecafe.example")
-        page.click("#nw-l-send")
-        page.wait_for_selector(".nw-done", timeout=30_000)
-
-        # --- 3. ops dashboard with a transcript open ------------------------
+        # --- 5. operations ----------------------------------------------------
         page.goto(f"{base}/admin", wait_until="networkidle")
-        page.evaluate("t => localStorage.setItem('nw_admin_token', t)", args.token)
+        page.evaluate("t => { localStorage.setItem('nw_admin_token', t);"
+                      " localStorage.setItem('nw_admin_site', ''); }", args.token)
         page.reload(wait_until="networkidle")
         page.wait_for_selector("#leads tr", timeout=30_000)
         page.click("#leads tr:first-child")
         page.wait_for_selector("#tx .msg", timeout=30_000)
         page.wait_for_timeout(600)
-        page.screenshot(path=OUT / "03-ops-dashboard.png")
-        shots.append(("03-ops-dashboard.png", "Ops dashboard: deflection rate, captured leads, delivery status, transcripts"))
+        shot(page, "06-ops-leads.png",
+             "Ops: leads across both sites, with the transcript behind each")
 
-        # --- 4. the widget on a phone ---------------------------------------
+        page.click("[data-tab=runs]")
+        page.wait_for_timeout(700)
+        shot(page, "07-ops-runs.png",
+             "Ops: every automation the app has performed")
+
+        # --- 6. the widget on a phone ------------------------------------------
         mobile = browser.new_context(
-            viewport={"width": 390, "height": 844},
-            device_scale_factor=3,
-            is_mobile=True,
-            has_touch=True,
-            locale="en-US",
+            viewport={"width": 390, "height": 844}, device_scale_factor=3,
+            is_mobile=True, has_touch=True, locale="en-US",
             timezone_id="America/Los_Angeles",
         )
         mpage = mobile.new_page()
         mpage.goto(base, wait_until="networkidle")
         mpage.click(".nw-launcher")
-        mpage.fill("#nw-input", "Can I pause my subscription for a month?")
+        mpage.fill("#nw-input", "How long does a project take?")
         mpage.press("#nw-input", "Enter")
-        mpage.wait_for_selector(".nw-sources", timeout=30_000)
+        mpage.wait_for_selector(".nw-sources", state="visible", timeout=30_000)
         mpage.wait_for_timeout(600)
-        mpage.screenshot(path=OUT / "04-mobile.png")
-        shots.append(("04-mobile.png", "Same widget on a phone - no separate mobile build"))
+        shot(mpage, "08-mobile.png", "Same widget on a phone, no separate build")
 
         mobile.close()
         browser.close()
@@ -116,7 +132,7 @@ def main() -> int:
     print(f"wrote {len(shots)} screenshots to {OUT}")
     for name, caption in shots:
         size_kb = (OUT / name).stat().st_size // 1024
-        print(f"  {name:26} {size_kb:>5} KB   {caption}")
+        print(f"  {name:24} {size_kb:>5} KB   {caption}")
     return 0
 
 

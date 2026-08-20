@@ -39,9 +39,41 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
 
-# --- Business logic ---------------------------------------------------------
-COMPANY_NAME = os.getenv("COMPANY_NAME", "Northwind Coffee Co.")
-AGENT_NAME = os.getenv("AGENT_NAME", "Nora")
+# --- Sites ------------------------------------------------------------------
+# One engine, several knowledge bases. A site is a folder under knowledge/ plus
+# the branding its assistant answers with. Adding a client means adding a folder
+# and an entry here - no new deployment, no forked code.
+DEFAULT_SITE = os.getenv("DEFAULT_SITE", "portfolio")
+
+OWNER_NAME = os.getenv("OWNER_NAME", "Nikita Denisov")
+OWNER_EMAIL = os.getenv("OWNER_EMAIL", "hentajp5@gmail.com")
+
+SITES: dict[str, dict[str, str]] = {
+    "portfolio": {
+        "company": OWNER_NAME,
+        "agent": "Ada",
+        "label": "Portfolio assistant",
+        "greeting": "Ask me anything about how Nikita works - scope, pricing, "
+                    "timelines, or what he will not take on.",
+    },
+    "demo": {
+        "company": os.getenv("COMPANY_NAME", "Northwind Coffee Co."),
+        "agent": os.getenv("AGENT_NAME", "Nora"),
+        "label": "Northwind Support",
+        "greeting": "Hi! I can help with orders, shipping, subscriptions and "
+                    "wholesale. What do you need?",
+    },
+}
+
+
+def site_conf(site: str | None) -> dict[str, str]:
+    """Never raise on an unknown site - fall back rather than 500 a chat."""
+    return SITES.get(site or DEFAULT_SITE, SITES[DEFAULT_SITE])
+
+
+# Kept for backwards compatibility with the demo-only entry points.
+COMPANY_NAME = SITES["demo"]["company"]
+AGENT_NAME = SITES["demo"]["agent"]
 TOP_K = int(os.getenv("TOP_K", "4"))
 HANDOFF_SCORE = int(os.getenv("HANDOFF_SCORE", "60"))  # lead_score >= this -> notify sales
 

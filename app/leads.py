@@ -60,11 +60,13 @@ def deliver(lead_id: int, payload: dict[str, Any]) -> bool:
 
 def capture(conversation_id: str, *, name: str = "", email: str = "", phone: str = "",
             message: str = "", intent: str = "", lead_score: int = 0,
-            source_page: str = "") -> dict[str, Any]:
+            source_page: str = "", site: str = "demo") -> dict[str, Any]:
     """Persist a lead, then push it downstream."""
+    started = time.perf_counter()
     lead_id = db.add_lead(
-        conversation_id=conversation_id, name=name, email=email, phone=phone,
-        message=message, intent=intent, lead_score=lead_score, source_page=source_page,
+        site=site, conversation_id=conversation_id, name=name, email=email,
+        phone=phone, message=message, intent=intent, lead_score=lead_score,
+        source_page=source_page,
     )
     payload = {
         "lead_id": lead_id,
@@ -77,11 +79,18 @@ def capture(conversation_id: str, *, name: str = "", email: str = "", phone: str
         "lead_score": lead_score,
         "priority": "hot" if lead_score >= config.HANDOFF_SCORE else "warm",
         "source_page": source_page,
-        "company": config.COMPANY_NAME,
+        "company": config.site_conf(site)["company"],
         "captured_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "transcript": db.history(conversation_id, limit=20),
     }
     delivered = deliver(lead_id, payload)
+    db.add_run(
+        "lead.capture", site=site, status="ok" if delivered else "queued",
+        summary=f"{payload['priority']} lead captured"
+                + (" and delivered to n8n" if delivered else ", n8n not configured"),
+        detail={"lead_id": lead_id, "score": lead_score, "intent": intent},
+        duration_ms=int((time.perf_counter() - started) * 1000),
+    )
     return {"lead_id": lead_id, "delivered": delivered, "priority": payload["priority"]}
 
 

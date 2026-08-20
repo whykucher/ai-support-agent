@@ -3,172 +3,137 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ops dashboard — AI Support &amp; Lead Agent</title>
+<title>Ops — AI Support &amp; Lead Agent</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* Dark counterpart to the storefront, same system: green-coffee accent,
-     mono for every number, hairline rules, 2px corners. Nothing is rounded or
-     glowing, because this is a log people read, not a marketing surface. */
+  /* The dark counterpart to the portfolio: same navy, same amber signal.
+     This is the operator's own tool, so it wears his colours rather than a
+     client's. Amber marks anything that needs a person. */
   :root {
-    --bg:      #131512;
-    --panel:   #191C18;
-    --panel-2: #1F231D;
-    --ink:     #E9EBE4;
-    --soft:    #8B9082;
-    --green:   #9CB275;
-    --green-d: #6E7F4E;
-    --crack:   #E08A4C;
-    --rule:    #2A2E27;
-    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-    --sans: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --bg:#0D1420; --panel:#131C2B; --panel-2:#1A2536; --ink:#E4E9F0;
+    --soft:#7C8AA0; --line:#22303F;
+    --signal:#E4A155; --signal-d:#C07E33; --ok:#5FBF8F; --bad:#E2796B;
+    --display:"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+    --mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
-
   * { box-sizing: border-box; }
-
   body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: var(--sans);
-    font-size: 15px;
-    line-height: 1.55;
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--display); font-size: 14px; line-height: 1.5;
     font-variant-numeric: tabular-nums;
   }
+  .wrap { max-width: 1340px; margin: 0 auto; padding: 22px 24px 72px; }
+  :focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
 
-  .wrap { max-width: 1220px; margin: 0 auto; padding: 26px 26px 72px; }
-
-  :focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
-
-  /* ---------- header ---------- */
-
-  header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 26px; }
-
-  h1 {
-    font-size: 17px; margin: 0; font-weight: 700;
-    letter-spacing: -.015em; font-variation-settings: "wdth" 108;
-  }
-
+  header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  h1 { font-size: 16px; margin: 0; font-weight: 700; letter-spacing: -.015em; }
   .tag {
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .11em;
     text-transform: uppercase; color: var(--soft);
-    border: 1px solid var(--rule); padding: 4px 9px; border-radius: 2px;
+    border: 1px solid var(--line); padding: 4px 9px;
   }
-
   .spacer { margin-left: auto; }
-
   input, button {
-    font-family: var(--mono); font-size: 11.5px; letter-spacing: .07em;
-    border-radius: 2px; border: 1px solid var(--rule);
-    background: var(--panel); color: var(--ink); padding: 8px 12px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .07em;
+    border: 1px solid var(--line); background: var(--panel);
+    color: var(--ink); padding: 8px 11px; border-radius: 0;
   }
-  input::placeholder { color: var(--soft); text-transform: none; letter-spacing: 0; }
+  input::placeholder { color: var(--soft); letter-spacing: 0; }
   button { cursor: pointer; text-transform: uppercase; }
-  button:hover { border-color: var(--green-d); color: var(--green); }
-  button.primary {
-    background: var(--green-d); border-color: var(--green-d);
-    color: #0F110E; font-weight: 600;
-  }
-  button.primary:hover { background: var(--green); border-color: var(--green); color: #0F110E; }
-
-  .back {
-    font-family: var(--mono); font-size: 11.5px; letter-spacing: .07em;
-    text-transform: uppercase; color: var(--green); text-decoration: none; margin-left: 4px;
-  }
+  button:hover { border-color: var(--signal-d); color: var(--signal); }
+  button.primary { background: var(--signal-d); border-color: var(--signal-d); color: #10161f; font-weight: 500; }
+  button.primary:hover { background: var(--signal); border-color: var(--signal); color: #10161f; }
+  .back { font-family: var(--mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--signal); text-decoration: none; }
   .back:hover { text-decoration: underline; }
 
-  /* ---------- kpis ---------- */
+  .sites { display: flex; border: 1px solid var(--line); }
+  .sites button { border: 0; border-right: 1px solid var(--line); background: transparent; color: var(--soft); padding: 8px 14px; }
+  .sites button:last-child { border-right: 0; }
+  .sites button[aria-pressed="true"] { background: var(--panel-2); color: var(--ink); }
+  .sites button:hover { color: var(--signal); }
 
-  .kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--rule);
-          border: 1px solid var(--rule); border-radius: 2px; margin-bottom: 22px; }
-  .kpi { background: var(--panel); padding: 18px 20px; }
-  .kpi b {
-    display: block; font-family: var(--mono); font-size: 30px; font-weight: 500;
-    letter-spacing: -.03em; line-height: 1.1;
-  }
-  .kpi span {
-    font-family: var(--mono); font-size: 10px; letter-spacing: .12em;
-    text-transform: uppercase; color: var(--soft);
-  }
+  .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: var(--line);
+          border: 1px solid var(--line); margin-bottom: 18px; }
+  .kpi { background: var(--panel); padding: 16px 18px; }
+  .kpi b { display: block; font-family: var(--mono); font-size: 27px; font-weight: 500; letter-spacing: -.03em; line-height: 1.15; }
+  .kpi span { font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--soft); }
 
-  /* ---------- panels ---------- */
+  .tabs { display: flex; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+  .tabs button { background: transparent; border: 0; border-bottom: 2px solid transparent; color: var(--soft); padding: 10px 16px; }
+  .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--signal); }
+  .tabs button:hover { color: var(--signal); }
 
-  .panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; }
+  .panel { background: var(--panel); border: 1px solid var(--line); overflow: hidden; }
   .panel h2 {
-    font-size: 11px; margin: 0; padding: 13px 18px; border-bottom: 1px solid var(--rule);
+    font-size: 10px; margin: 0; padding: 12px 18px; border-bottom: 1px solid var(--line);
     font-family: var(--mono); font-weight: 500; letter-spacing: .13em;
     text-transform: uppercase; color: var(--soft);
   }
+  .cols { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; align-items: start; }
+  [hidden] { display: none !important; }
 
-  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th {
-    text-align: left; font-family: var(--mono); font-size: 10px;
+    text-align: left; font-family: var(--mono); font-size: 9.5px;
     text-transform: uppercase; letter-spacing: .12em; color: var(--soft);
-    padding: 10px 18px; border-bottom: 1px solid var(--rule); font-weight: 500;
+    padding: 9px 18px; border-bottom: 1px solid var(--line); font-weight: 500;
   }
-  td { padding: 13px 18px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td { padding: 12px 18px; border-bottom: 1px solid var(--line); vertical-align: top; }
   tr:last-child td { border-bottom: 0; }
   tr.clickable:hover { background: var(--panel-2); cursor: pointer; }
   tr.clickable td:first-child { position: relative; }
   tr.clickable:hover td:first-child::before {
-    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--green);
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--signal);
   }
 
-  .when { font-family: var(--mono); font-size: 11.5px; color: var(--soft); }
-  .email { font-family: var(--mono); font-size: 11.5px; color: var(--soft); }
-  .intent { font-family: var(--mono); font-size: 11.5px; letter-spacing: .05em; }
-
-  /* Score is a measurement, so it reads as one: the bar under the number is
-     drawn to the score itself, not to which bucket it landed in. */
-  .pill { display: inline-block; font-family: var(--mono); font-size: 12px; font-weight: 600; }
-  .pill::after {
-    content: ""; display: block; height: 2px; margin-top: 3px;
-    width: var(--score-w, 20px); background: currentColor; opacity: .55;
+  .mono { font-family: var(--mono); font-size: 11px; color: var(--soft); }
+  .site-pill {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase;
+    border: 1px solid var(--line); padding: 2px 7px; color: var(--soft);
   }
-  .hot  { color: var(--crack); }
-  .warm { color: var(--green); }
 
-  .yes { color: var(--green); }
-  .no  { color: #E4796B; }
-  .off { color: var(--soft); }
-  .yes, .no, .off { font-family: var(--mono); font-size: 11.5px; letter-spacing: .07em; }
+  /* Score reads as a measurement: the bar is drawn to the score itself. */
+  .pill { display: inline-block; font-family: var(--mono); font-size: 12px; font-weight: 500; }
+  .pill::after { content: ""; display: block; height: 2px; margin-top: 3px; width: var(--score-w, 20px); background: currentColor; opacity: .55; }
+  .hot { color: var(--signal); }
+  .warm { color: var(--ok); }
+  .yes { color: var(--ok); } .no { color: var(--bad); } .off { color: var(--soft); }
+  .yes, .no, .off { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; }
 
-  .empty { padding: 34px 18px; text-align: center; color: var(--soft); font-size: 13.5px; }
-  .muted { color: var(--soft); }
-
-  .cols { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; align-items: start; }
-
-  .msg { padding: 12px 18px; border-bottom: 1px solid var(--rule); font-size: 13.5px; }
-  .msg:last-child { border-bottom: 0; }
-  .msg b {
-    display: block; font-family: var(--mono); font-size: 9.5px; text-transform: uppercase;
-    letter-spacing: .13em; color: var(--soft); margin-bottom: 4px;
-  }
-  .msg.user { background: var(--panel-2); }
-
-  #err { color: #E4796B; font-family: var(--mono); font-size: 12px; margin-bottom: 14px; }
+  .empty { padding: 32px 18px; text-align: center; color: var(--soft); font-size: 13px; }
+  #err { color: var(--bad); font-family: var(--mono); font-size: 12px; margin-bottom: 12px; }
   #err:empty { margin: 0; }
 
-  @media (max-width: 1000px) {
-    .kpis { grid-template-columns: repeat(2, 1fr); }
-    .cols { grid-template-columns: 1fr; }
-  }
+  .msg { padding: 11px 18px; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .msg:last-child { border-bottom: 0; }
+  .msg b { display: block; font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: .13em; color: var(--soft); margin-bottom: 4px; }
+  .msg.user { background: var(--panel-2); }
+
+  .run-kind { font-family: var(--mono); font-size: 9.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--signal); white-space: nowrap; }
+  .run-detail { font-family: var(--mono); font-size: 10.5px; color: var(--soft); margin-top: 4px; overflow-wrap: anywhere; }
+
+  .kb-site { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--signal); padding: 14px 18px 6px; }
+  .kb-file { font-family: var(--mono); font-size: 11px; color: var(--soft); padding: 4px 18px 10px; }
+
+  @media (max-width: 1100px) { .kpis { grid-template-columns: repeat(3, 1fr); } .cols { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) { .kpis { grid-template-columns: repeat(2, 1fr); } .wrap { padding: 16px 14px 60px; } }
 </style>
 </head>
 <body>
 <div class="wrap">
 
   <header>
-    <h1>AI Support &amp; Lead Agent</h1>
-    <span class="tag" id="provider">provider: …</span>
-    <span class="tag" id="kb">knowledge: …</span>
+    <h1>Ops</h1>
+    <span class="tag" id="provider">provider …</span>
+    <div class="sites" id="sites"></div>
     <span class="spacer"></span>
-    <input id="token" placeholder="admin token" size="18">
+    <input id="token" placeholder="admin token" size="16">
     <button class="primary" id="load">Load</button>
     <button id="reindex" title="Re-read the knowledge folder">Reindex</button>
     <button id="retry" title="Resend leads that never reached n8n">Retry n8n</button>
-    <a class="back" href="/">← storefront</a>
+    <a class="back" href="/">← site</a>
   </header>
 
   <div id="err"></div>
@@ -179,30 +144,59 @@
     <div class="kpi"><b id="k-lead">–</b><span>Leads captured</span></div>
     <div class="kpi"><b id="k-defl">–</b><span>Deflection rate</span></div>
     <div class="kpi"><b id="k-lat">–</b><span>Avg response</span></div>
+    <div class="kpi"><b id="k-runs">–</b><span>Automation runs</span></div>
   </div>
 
-  <div class="cols">
-    <div class="panel">
-      <h2>Recent leads</h2>
-      <table>
-        <thead><tr><th>When</th><th>Contact</th><th>Intent</th><th>Score</th><th>n8n</th></tr></thead>
-        <tbody id="leads"></tbody>
-      </table>
-      <div class="empty" id="leads-empty">No leads yet — open the storefront and ask the bot about wholesale pricing.</div>
-    </div>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true"  data-tab="leads">Leads</button>
+    <button role="tab" aria-selected="false" data-tab="runs">Run log</button>
+    <button role="tab" aria-selected="false" data-tab="kb">Knowledge base</button>
+  </div>
 
+  <div id="tab-leads">
+    <div class="cols">
+      <div class="panel">
+        <h2>Recent leads</h2>
+        <table>
+          <thead><tr><th>When</th><th>Site</th><th>Contact</th><th>Intent</th><th>Score</th><th>n8n</th></tr></thead>
+          <tbody id="leads"></tbody>
+        </table>
+        <div class="empty" id="leads-empty" hidden>No leads yet. Ask an assistant about pricing and leave an email.</div>
+      </div>
+      <div class="panel">
+        <h2 id="tx-title">Transcript</h2>
+        <div id="tx" class="empty">Select a lead to read its conversation.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-runs" hidden>
     <div class="panel">
-      <h2 id="tx-title">Transcript</h2>
-      <div id="tx" class="empty">Select a lead to read its conversation.</div>
+      <h2>Every automation this app has performed</h2>
+      <table>
+        <thead><tr><th>When</th><th>Site</th><th>Action</th><th>What happened</th><th>Took</th></tr></thead>
+        <tbody id="runs"></tbody>
+      </table>
+      <div class="empty" id="runs-empty" hidden>Nothing logged yet.</div>
+    </div>
+  </div>
+
+  <div id="tab-kb" hidden>
+    <div class="panel">
+      <h2>Indexed sections — what the assistants can answer from</h2>
+      <div id="kb"></div>
     </div>
   </div>
 
 </div>
 
 <script>
-const $ = id => document.getElementById(id);
+const $ = (id) => document.getElementById(id);
 const tokenBox = $("token");
 tokenBox.value = localStorage.getItem("nw_admin_token") || "demo-admin-token";
+
+let site = localStorage.getItem("nw_admin_site") || "";   // "" means all sites
+let health = null;
 
 const hdr = () => ({ "X-Admin-Token": tokenBox.value.trim() });
 
@@ -213,97 +207,150 @@ async function api(path, opts = {}) {
   return data;
 }
 
-const when = ts => new Date(ts * 1000).toLocaleString(undefined,
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+const when = (ts) => new Date(ts * 1000).toLocaleString(undefined,
   { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
-async function loadAll() {
-  $("err").textContent = "";
-  try {
-    const health = await (await fetch("/api/health")).json();
-    $("provider").textContent = "provider: " + health.provider;
-    $("kb").textContent = `knowledge: ${health.knowledge.n} chunks / ${health.knowledge.sources} file(s)`;
-
-    const m = await api("/api/metrics");
-    $("k-conv").textContent = m.conversations;
-    $("k-msg").textContent = m.user_messages;
-    $("k-lead").textContent = m.leads;
-    $("k-defl").textContent = m.deflection_rate + "%";
-    $("k-lat").textContent = m.avg_latency_ms + " ms";
-
-    const { leads } = await api("/api/leads?limit=50");
-    const body = $("leads");
-    body.innerHTML = "";
-    $("leads-empty").style.display = leads.length ? "none" : "block";
-    for (const l of leads) {
-      const tr = document.createElement("tr");
-      tr.className = "clickable";
-      tr.innerHTML = `
-        <td class="when">${when(l.created_at)}</td>
-        <td>${l.name ? `<div>${escapeHtml(l.name)}</div>` : ""}
-            <div class="email">${escapeHtml(l.email || l.phone || "—")}</div></td>
-        <td class="intent">${escapeHtml(l.intent || "—")}</td>
-        <td><span class="pill ${l.lead_score >= 60 ? "hot" : "warm"}"
-                  style="--score-w:${Math.max(6, Math.round(l.lead_score * 0.44))}px"
-            >${l.lead_score}</span></td>
-        <td class="${deliveryClass(l)}" title="${escapeHtml(l.delivery_error || "")}">
-            ${deliveryLabel(l)}</td>`;
-      tr.onclick = () => showTranscript(l.conversation_id);
-      body.appendChild(tr);
-    }
-  } catch (e) {
-    $("err").textContent = "Error: " + e.message + " (check the admin token)";
-  }
-}
-
-// Three states, not two. Only an actual delivery error is a failure: a lead
-// that was never attempted (no webhook configured, or seeded straight into the
-// database) is a setup choice, and colouring it red makes a healthy demo look
-// broken. Red is reserved for "we tried and it did not work".
+// Three states, not two. A lead nobody tried to deliver is not a failure.
 const NO_WEBHOOK = "N8N_WEBHOOK_URL not configured";
-
-function deliveryState(l) {
+function delivery(l) {
   if (l.delivered) return ["yes", "sent"];
   if (!l.delivery_error || l.delivery_error === NO_WEBHOOK) return ["off", "n8n off"];
   return ["no", "failed"];
 }
 
-function deliveryClass(l) { return deliveryState(l)[0]; }
-function deliveryLabel(l) { return deliveryState(l)[1]; }
+const scoped = (extra) => {
+  const p = new URLSearchParams(extra);
+  if (site) p.set("site", site);
+  return "?" + p.toString();
+};
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function renderSites() {
+  const names = health ? Object.keys(health.sites) : [];
+  $("sites").innerHTML = [["", "All"], ...names.map((n) => [n, n])]
+    .map(([v, label]) =>
+      `<button data-site="${esc(v)}" aria-pressed="${site === v}">${esc(label)}</button>`).join("");
+  $("sites").querySelectorAll("button").forEach((b) => b.onclick = () => {
+    site = b.dataset.site;
+    localStorage.setItem("nw_admin_site", site);
+    renderSites();
+    loadAll();
+  });
+}
+
+async function loadAll() {
+  $("err").textContent = "";
+  try {
+    health = await (await fetch("/api/health")).json();
+    $("provider").textContent = "provider " + health.provider;
+    renderSites();
+
+    const m = await api("/api/metrics" + scoped());
+    const s = site ? m.focus : m.all;
+    $("k-conv").textContent = s.conversations;
+    $("k-msg").textContent = s.user_messages;
+    $("k-lead").textContent = s.leads;
+    $("k-defl").textContent = s.deflection_rate + "%";
+    $("k-lat").textContent = s.avg_latency_ms + " ms";
+    $("k-runs").textContent = s.runs;
+
+    await Promise.all([loadLeads(), loadRuns(), loadKb()]);
+  } catch (e) {
+    $("err").textContent = "Error: " + e.message + " (check the admin token)";
+  }
+}
+
+async function loadLeads() {
+  const { leads } = await api("/api/leads" + scoped({ limit: 50 }));
+  $("leads-empty").hidden = leads.length > 0;
+  $("leads").innerHTML = leads.map((l) => {
+    const [cls, label] = delivery(l);
+    return `<tr class="clickable" data-conv="${esc(l.conversation_id)}">
+      <td class="mono">${when(l.created_at)}</td>
+      <td><span class="site-pill">${esc(l.site)}</span></td>
+      <td>${l.name ? `<div>${esc(l.name)}</div>` : ""}
+          <div class="mono">${esc(l.email || l.phone || "—")}</div></td>
+      <td class="mono">${esc(l.intent || "—")}</td>
+      <td><span class="pill ${l.lead_score >= 60 ? "hot" : "warm"}"
+                style="--score-w:${Math.max(6, Math.round(l.lead_score * 0.44))}px"
+          >${l.lead_score}</span></td>
+      <td class="${cls}" title="${esc(l.delivery_error || "")}">${label}</td>
+    </tr>`;
+  }).join("");
+  $("leads").querySelectorAll("tr").forEach((tr) =>
+    tr.onclick = () => showTranscript(tr.dataset.conv));
+}
+
+async function loadRuns() {
+  const { runs } = await api("/api/runs" + scoped({ limit: 50 }));
+  $("runs-empty").hidden = runs.length > 0;
+  $("runs").innerHTML = runs.map((r) => {
+    const detail = Object.entries(r.detail || {})
+      .filter(([, v]) => v !== "" && v !== null && !(Array.isArray(v) && !v.length))
+      .map(([k, v]) => `${k}=${Array.isArray(v) ? v.join("/") : v}`).join("   ");
+    return `<tr>
+      <td class="mono">${when(r.created_at)}</td>
+      <td><span class="site-pill">${esc(r.site)}</span></td>
+      <td><span class="run-kind">${esc(r.kind)}</span></td>
+      <td>${esc(r.summary || "—")}${detail ? `<div class="run-detail">${esc(detail)}</div>` : ""}</td>
+      <td class="mono">${r.duration_ms ? r.duration_ms + " ms" : "&lt;1 ms"}</td>
+    </tr>`;
+  }).join("");
+}
+
+async function loadKb() {
+  const { sections } = await api("/api/knowledge");
+  const shown = site ? sections.filter((s) => s.site === site) : sections;
+  if (!shown.length) { $("kb").innerHTML = '<div class="empty">Nothing indexed.</div>'; return; }
+
+  let html = "", lastSite = null, lastFile = null;
+  for (const s of shown) {
+    if (s.site !== lastSite) { html += `<div class="kb-site">${esc(s.site)}</div>`; lastSite = s.site; lastFile = null; }
+    if (s.source !== lastFile) { html += `<div class="kb-file">${esc(s.source)}</div>`; lastFile = s.source; }
+    html += `<div class="msg"><b>${esc(s.heading || "untitled section")}</b>
+      <span class="mono">${s.chars} chars · ${s.vectorised ? "embedded" : "keyword only"}</span></div>`;
+  }
+  $("kb").innerHTML = html;
 }
 
 async function showTranscript(id) {
-  $("tx-title").textContent = "Transcript · " + id.toLowerCase();
-  // The container starts as .empty (centred, muted). Drop that class once real
-  // messages go in, or the transcript renders centred and greyed out.
+  $("tx-title").textContent = "Transcript · " + String(id).toLowerCase();
   $("tx").className = "empty";
   $("tx").innerHTML = "Loading…";
   try {
     const data = await api("/api/conversations/" + encodeURIComponent(id));
     if (data.messages.length) {
       $("tx").className = "";
-      $("tx").innerHTML = data.messages.map(m =>
-        `<div class="msg ${m.role}"><b>${m.role}</b>${escapeHtml(m.content)}</div>`).join("");
+      $("tx").innerHTML = data.messages.map((m) =>
+        `<div class="msg ${esc(m.role)}"><b>${esc(m.role)}</b>${esc(m.content)}</div>`).join("");
     } else {
       $("tx").innerHTML = "No messages.";
     }
   } catch (e) {
     $("tx").className = "empty";
-    $("tx").innerHTML = escapeHtml(e.message);
+    $("tx").innerHTML = esc(e.message);
   }
 }
+
+document.querySelectorAll('[role="tab"]').forEach((b) => b.onclick = () => {
+  document.querySelectorAll('[role="tab"]').forEach((x) =>
+    x.setAttribute("aria-selected", String(x === b)));
+  ["leads", "runs", "kb"].forEach((t) => { $("tab-" + t).hidden = t !== b.dataset.tab; });
+});
 
 $("load").onclick = () => {
   localStorage.setItem("nw_admin_token", tokenBox.value.trim());
   loadAll();
 };
 $("reindex").onclick = async () => {
-  try { const r = await api("/api/reindex", { method: "POST" });
-        alert("Reindexed: " + JSON.stringify(r.indexed)); loadAll(); }
-  catch (e) { alert(e.message); }
+  try {
+    const r = await api("/api/reindex", { method: "POST" });
+    alert("Reindexed in " + r.duration_ms + " ms:\n" +
+          Object.entries(r.indexed).map(([k, v]) => `${k}: ${v}`).join("\n"));
+    loadAll();
+  } catch (e) { alert(e.message); }
 };
 $("retry").onclick = async () => {
   try { const r = await api("/api/leads/retry", { method: "POST" });

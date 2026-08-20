@@ -23,8 +23,33 @@ _STOP = {
 }
 
 
+def _stem(word: str) -> str:
+    """Crude suffix stripping, applied identically to documents and queries.
+
+    A stemmer only has to be *consistent*, not linguistically correct: both
+    sides of the comparison go through it. Without this, "how much does it
+    cost" misses a section that says "running costs" - which is the single
+    most common question a prospect asks, so it is worth thirty lines.
+    """
+    for suffix, keep in (("ing", 5), ("edly", 6), ("ed", 4), ("ly", 4)):
+        if len(word) > keep and word.endswith(suffix):
+            word = word[: -len(suffix)]
+            break
+    if len(word) > 4 and word.endswith("ies"):
+        word = word[:-3] + "y"
+    elif len(word) > 4 and word.endswith(("ses", "xes", "zes", "ches", "shes")):
+        word = word[:-2]
+    elif len(word) > 3 and word.endswith("s") and not word.endswith("ss"):
+        word = word[:-1]
+    # Collapse the silent e so "price" and "pricing" land on the same stem.
+    if len(word) > 4 and word.endswith("e"):
+        word = word[:-1]
+    return word
+
+
 def tokenize(text: str) -> list[str]:
-    return [w for w in _WORD.findall(text.lower()) if w not in _STOP and len(w) > 1]
+    return [_stem(w) for w in _WORD.findall(text.lower())
+            if w not in _STOP and len(w) > 1]
 
 
 # --- ingestion --------------------------------------------------------------
@@ -58,7 +83,13 @@ def chunk_markdown(text: str, max_chars: int = 900) -> list[dict[str, Any]]:
 
 
 def ingest_directory(directory: Path | None = None, *, embed: bool = True) -> dict[str, int]:
-    """Read every .md/.txt file in the knowledge dir and refresh the index."""
+    """Index every .md/.txt under the knowledge folder.
+
+    A first-level subdirectory is a site: knowledge/portfolio/*.md answers as
+    the portfolio, knowledge/demo/*.md answers as the demo shop. Files sitting
+    loose at the root fall back to DEFAULT_SITE so an existing flat folder keeps
+    working without being reorganised.
+    """
     from . import llm  # local import: keeps ingestion usable without a provider
 
     directory = directory or config.KNOWLEDGE_DIR
@@ -66,12 +97,15 @@ def ingest_directory(directory: Path | None = None, *, embed: bool = True) -> di
     for path in sorted(directory.glob("**/*")):
         if path.suffix.lower() not in {".md", ".txt"} or not path.is_file():
             continue
+        rel = path.relative_to(directory)
+        site = rel.parts[0] if len(rel.parts) > 1 else config.DEFAULT_SITE
+
         rows = chunk_markdown(path.read_text(encoding="utf-8"))
         if embed and config.LLM_PROVIDER != "demo":
             texts = [f"{r['heading']}\n{r['content']}" for r in rows]
             for row, vector in zip(rows, llm.embed(texts)):
                 row["embedding"] = vector
-        result[path.name] = db.replace_chunks(path.name, rows)
+        result[f"{site}/{path.name}"] = db.replace_chunks(site, path.name, rows)
     return result
 
 
@@ -125,12 +159,13 @@ def _normalise(values: list[float]) -> list[float]:
     return [v / top for v in values] if top > 0 else [0.0] * len(values)
 
 
-def search(query: str, k: int | None = None) -> list[dict[str, Any]]:
-    """Hybrid retrieval. Returns chunks ordered by blended relevance."""
+def search(query: str, site: str | None = None,
+           k: int | None = None) -> list[dict[str, Any]]:
+    """Hybrid retrieval inside one site. Returns chunks by blended relevance."""
     from . import llm
 
     k = k or config.TOP_K
-    rows = db.all_chunks()
+    rows = db.site_chunks(site or config.DEFAULT_SITE)
     if not rows:
         return []
 

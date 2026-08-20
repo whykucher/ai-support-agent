@@ -1,8 +1,16 @@
-"""SQLite storage: knowledge chunks (with vectors), conversations, messages, leads.
+"""SQLite storage: knowledge chunks, conversations, messages, leads, run log.
 
-One file, no external services - deliberate. A support bot for an SMB handles a
-few thousand chunks; a dedicated vector DB would be operational cost without a
-payoff. Swapping in pgvector/Qdrant later only touches rag.search().
+Two things worth knowing before reading further.
+
+**Sites.** One engine serves several knowledge bases - the portfolio answers
+questions about the freelancer, the demo answers questions about a coffee
+roaster - so almost every table carries a `site` column and every query is
+scoped by it. That is cheaper and far easier to reason about than running two
+deployments, and it is the same shape a real multi-client install would take.
+
+**Runs.** Every automation the app performs writes a row to `runs`. The public
+activity feed and the admin log both read from it, which means the site is
+never claiming an automation happened - it is showing the ledger.
 """
 import json
 import sqlite3
@@ -15,6 +23,7 @@ from . import config
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS chunks (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    site        TEXT    NOT NULL DEFAULT 'demo',
     source      TEXT    NOT NULL,
     heading     TEXT    NOT NULL DEFAULT '',
     content     TEXT    NOT NULL,
@@ -22,10 +31,11 @@ CREATE TABLE IF NOT EXISTS chunks (
     embedding   TEXT,
     created_at  REAL    NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_chunks_source ON chunks(source);
+CREATE INDEX IF NOT EXISTS idx_chunks_site ON chunks(site);
 
 CREATE TABLE IF NOT EXISTS conversations (
     id          TEXT    PRIMARY KEY,
+    site        TEXT    NOT NULL DEFAULT 'demo',
     started_at  REAL    NOT NULL,
     last_seen   REAL    NOT NULL,
     page_url    TEXT    NOT NULL DEFAULT '',
@@ -41,13 +51,13 @@ CREATE TABLE IF NOT EXISTS messages (
     intent          TEXT    NOT NULL DEFAULT '',
     sources         TEXT    NOT NULL DEFAULT '[]',
     latency_ms      INTEGER NOT NULL DEFAULT 0,
-    created_at      REAL    NOT NULL,
-    FOREIGN KEY (conversation_id) REFERENCES conversations(id)
+    created_at      REAL    NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_messages_conv ON messages(conversation_id);
 
 CREATE TABLE IF NOT EXISTS leads (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    site            TEXT    NOT NULL DEFAULT 'demo',
     conversation_id TEXT    NOT NULL,
     name            TEXT    NOT NULL DEFAULT '',
     email           TEXT    NOT NULL DEFAULT '',
@@ -61,7 +71,27 @@ CREATE TABLE IF NOT EXISTS leads (
     created_at      REAL    NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_leads_created ON leads(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS runs (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    site        TEXT    NOT NULL DEFAULT 'demo',
+    kind        TEXT    NOT NULL,
+    status      TEXT    NOT NULL DEFAULT 'ok',
+    summary     TEXT    NOT NULL DEFAULT '',
+    detail      TEXT    NOT NULL DEFAULT '{}',
+    duration_ms INTEGER NOT NULL DEFAULT 0,
+    created_at  REAL    NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_runs_created ON runs(created_at DESC);
 """
+
+# Columns added after the first release. SQLite has no "ADD COLUMN IF NOT
+# EXISTS", so this runs once against whatever shape the database already has.
+MIGRATIONS = [
+    ("chunks", "site", "TEXT NOT NULL DEFAULT 'demo'"),
+    ("conversations", "site", "TEXT NOT NULL DEFAULT 'demo'"),
+    ("leads", "site", "TEXT NOT NULL DEFAULT 'demo'"),
+]
 
 
 @contextmanager
@@ -80,20 +110,25 @@ def connect() -> Iterator[sqlite3.Connection]:
 def init() -> None:
     with connect() as conn:
         conn.executescript(SCHEMA)
+        for table, column, decl in MIGRATIONS:
+            cols = {r["name"] for r in conn.execute(f"PRAGMA table_info({table})")}
+            if column not in cols:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {decl}")
 
 
 # --- knowledge base ---------------------------------------------------------
 
-def replace_chunks(source: str, rows: list[dict[str, Any]]) -> int:
-    """Re-ingest one source file atomically."""
+def replace_chunks(site: str, source: str, rows: list[dict[str, Any]]) -> int:
+    """Re-ingest one source file atomically, within its site."""
     now = time.time()
     with connect() as conn:
-        conn.execute("DELETE FROM chunks WHERE source = ?", (source,))
+        conn.execute("DELETE FROM chunks WHERE site = ? AND source = ?", (site, source))
         conn.executemany(
-            "INSERT INTO chunks (source, heading, content, tokens, embedding, created_at)"
-            " VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO chunks (site, source, heading, content, tokens, embedding,"
+            " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
             [
                 (
+                    site,
                     source,
                     r.get("heading", ""),
                     r["content"],
@@ -107,32 +142,51 @@ def replace_chunks(source: str, rows: list[dict[str, Any]]) -> int:
     return len(rows)
 
 
-def all_chunks() -> list[sqlite3.Row]:
+def site_chunks(site: str) -> list[sqlite3.Row]:
     with connect() as conn:
         return conn.execute(
-            "SELECT id, source, heading, content, embedding FROM chunks"
+            "SELECT id, source, heading, content, embedding FROM chunks WHERE site = ?",
+            (site,),
         ).fetchall()
 
 
-def chunk_stats() -> dict[str, Any]:
+def chunk_stats(site: str | None = None) -> dict[str, Any]:
+    where, params = ("WHERE site = ?", (site,)) if site else ("", ())
     with connect() as conn:
         row = conn.execute(
-            "SELECT COUNT(*) AS n, COUNT(embedding) AS vectorised,"
-            " COUNT(DISTINCT source) AS sources FROM chunks"
+            f"SELECT COUNT(*) AS n, COUNT(embedding) AS vectorised,"
+            f" COUNT(DISTINCT source) AS sources FROM chunks {where}",
+            params,
         ).fetchone()
     return dict(row)
 
 
+def knowledge_index() -> list[dict[str, Any]]:
+    """Per-site, per-file, per-section listing for the admin knowledge browser."""
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT site, source, heading, LENGTH(content) AS chars,"
+            " embedding IS NOT NULL AS vectorised"
+            " FROM chunks ORDER BY site, source, id"
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def sites() -> list[str]:
+    with connect() as conn:
+        return [r[0] for r in conn.execute("SELECT DISTINCT site FROM chunks ORDER BY site")]
+
+
 # --- conversations ----------------------------------------------------------
 
-def touch_conversation(conv_id: str, page_url: str = "") -> None:
+def touch_conversation(conv_id: str, site: str, page_url: str = "") -> None:
     now = time.time()
     with connect() as conn:
         conn.execute(
-            "INSERT INTO conversations (id, started_at, last_seen, page_url)"
-            " VALUES (?, ?, ?, ?)"
+            "INSERT INTO conversations (id, site, started_at, last_seen, page_url)"
+            " VALUES (?, ?, ?, ?, ?)"
             " ON CONFLICT(id) DO UPDATE SET last_seen = excluded.last_seen",
-            (conv_id, now, now, page_url),
+            (conv_id, site, now, now, page_url),
         )
 
 
@@ -171,11 +225,12 @@ def set_lead_score(conv_id: str, score: int, handed_off: bool) -> None:
 def add_lead(**kw: Any) -> int:
     with connect() as conn:
         cur = conn.execute(
-            "INSERT INTO leads (conversation_id, name, email, phone, message, intent,"
-            " lead_score, source_page, created_at)"
-            " VALUES (:conversation_id, :name, :email, :phone, :message, :intent,"
-            " :lead_score, :source_page, :created_at)",
+            "INSERT INTO leads (site, conversation_id, name, email, phone, message,"
+            " intent, lead_score, source_page, created_at)"
+            " VALUES (:site, :conversation_id, :name, :email, :phone, :message,"
+            " :intent, :lead_score, :source_page, :created_at)",
             {
+                "site": kw.get("site", "demo"),
                 "conversation_id": kw.get("conversation_id", ""),
                 "name": kw.get("name", ""),
                 "email": kw.get("email", ""),
@@ -198,33 +253,93 @@ def mark_delivered(lead_id: int, ok: bool, error: str = "") -> None:
         )
 
 
-def recent_leads(limit: int = 50) -> list[dict[str, Any]]:
+def recent_leads(limit: int = 50, site: str | None = None) -> list[dict[str, Any]]:
+    where, params = ("WHERE site = ?", [site]) if site else ("", [])
     with connect() as conn:
         rows = conn.execute(
-            "SELECT * FROM leads ORDER BY created_at DESC LIMIT ?", (limit,)
+            f"SELECT * FROM leads {where} ORDER BY created_at DESC LIMIT ?",
+            (*params, limit),
         ).fetchall()
     return [dict(r) for r in rows]
 
 
-def metrics() -> dict[str, Any]:
+# --- run log ----------------------------------------------------------------
+
+def add_run(kind: str, *, site: str = "demo", status: str = "ok", summary: str = "",
+            detail: dict[str, Any] | None = None, duration_ms: int = 0) -> int:
+    """Record one automation execution. Never raises: a failure to log must not
+    take down the thing being logged."""
+    try:
+        with connect() as conn:
+            cur = conn.execute(
+                "INSERT INTO runs (site, kind, status, summary, detail, duration_ms,"
+                " created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (site, kind, status, summary[:200],
+                 json.dumps(detail or {}, ensure_ascii=False)[:2000],
+                 duration_ms, time.time()),
+            )
+        return int(cur.lastrowid)
+    except Exception:  # noqa: BLE001
+        return 0
+
+
+def recent_runs(limit: int = 30, site: str | None = None) -> list[dict[str, Any]]:
+    where, params = ("WHERE site = ?", [site]) if site else ("", [])
     with connect() as conn:
-        convs = conn.execute("SELECT COUNT(*) FROM conversations").fetchone()[0]
-        msgs = conn.execute(
-            "SELECT COUNT(*) FROM messages WHERE role = 'user'").fetchone()[0]
-        leads = conn.execute("SELECT COUNT(*) FROM leads").fetchone()[0]
-        handed = conn.execute(
-            "SELECT COUNT(*) FROM conversations WHERE handed_off = 1").fetchone()[0]
+        rows = conn.execute(
+            f"SELECT * FROM runs {where} ORDER BY created_at DESC LIMIT ?",
+            (*params, limit),
+        ).fetchall()
+    out = []
+    for r in rows:
+        d = dict(r)
+        try:
+            d["detail"] = json.loads(d["detail"])
+        except ValueError:
+            d["detail"] = {}
+        out.append(d)
+    return out
+
+
+def run_counts() -> dict[str, int]:
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT kind, COUNT(*) AS n FROM runs GROUP BY kind ORDER BY n DESC"
+        ).fetchall()
+    return {r["kind"]: r["n"] for r in rows}
+
+
+# --- metrics ----------------------------------------------------------------
+
+def metrics(site: str | None = None) -> dict[str, Any]:
+    # Build one predicate and reuse it, rather than splicing fragments per query.
+    scoped = " AND site = ?" if site else ""
+    joined = " AND c.site = ?" if site else ""
+    p = [site] if site else []
+
+    with connect() as conn:
+        one = lambda sql, args=(): conn.execute(sql, args).fetchone()[0]  # noqa: E731
+        convs = one(f"SELECT COUNT(*) FROM conversations WHERE 1=1{scoped}", p)
+        handed = one(
+            f"SELECT COUNT(*) FROM conversations WHERE handed_off = 1{scoped}", p)
+        leads = one(f"SELECT COUNT(*) FROM leads WHERE 1=1{scoped}", p)
+        runs = one(f"SELECT COUNT(*) FROM runs WHERE 1=1{scoped}", p)
+        msgs = one(
+            "SELECT COUNT(*) FROM messages m JOIN conversations c"
+            f" ON c.id = m.conversation_id WHERE m.role = 'user'{joined}", p)
         latency = conn.execute(
-            "SELECT AVG(latency_ms) FROM messages"
-            " WHERE role = 'assistant' AND latency_ms > 0").fetchone()[0]
-    # "Deflected" = conversations the bot closed out without escalating to a human.
+            "SELECT AVG(m.latency_ms) FROM messages m JOIN conversations c"
+            " ON c.id = m.conversation_id"
+            f" WHERE m.role = 'assistant' AND m.latency_ms > 0{joined}", p).fetchone()[0]
+    # "Deflected" = conversations the bot closed out without escalating.
     deflected = round(100 * (convs - handed) / convs) if convs else 0
     return {
         "conversations": convs,
         "user_messages": msgs,
         "leads": leads,
         "handoffs": handed,
+        "runs": runs,
         "deflection_rate": deflected,
         "avg_latency_ms": round(latency or 0),
-        "knowledge": chunk_stats(),
+        "knowledge": chunk_stats(site),
     }
