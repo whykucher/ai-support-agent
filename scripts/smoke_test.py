@@ -2,9 +2,10 @@
 
     python -m scripts.smoke_test
 
-Exercises every surface: both knowledge bases, retrieval quality, chat, intent
-scoring, lead capture, the run log, all three lab tools, SSRF refusal, admin
-auth and the four pages. Exit code 0 means the whole thing works on this
+Exercises every surface: all seven knowledge bases, retrieval quality, tenant
+isolation, every question the industry picker advertises, chat and scoring, lead
+capture, the run log, all three lab tools, SSRF refusal, admin auth and the four
+pages. Exit code 0 means the whole thing works on this
 machine. Network is only needed for the one live-scrape check, which is skipped
 rather than failed when offline.
 """
@@ -40,9 +41,34 @@ def main() -> int:
         # --- 1. health and both knowledge bases -----------------------------
         health = client.get("/api/health").json()
         check("health endpoint", health.get("status") == "ok", health.get("provider", ""))
-        for site in ("portfolio", "demo"):
+        for site in config.SITES:
             n = health["sites"][site]["knowledge"]["n"]
             check(f"knowledge indexed: {site}", n > 0, f"{n} sections")
+
+        # --- 1b. every industry the page advertises actually works ----------
+        verticals = config.verticals()
+        check("industry picker has content", len(verticals) >= 5,
+              f"{len(verticals)} verticals")
+        for key, conf in verticals.items():
+            shape_ok = (len(conf["pipeline"]) == 4 and len(conf["questions"]) == 3
+                        and conf.get("accent", "").startswith("#"))
+            check(f"vertical shape: {key}", shape_ok, conf["industry"])
+
+        from app import rag as _rag
+        for key, conf in verticals.items():
+            # Every question the page offers must return something. An advertised
+            # question that produces "I do not know" is worse than not offering it.
+            answered = sum(1 for q in conf["questions"] if _rag.search(q, key))
+            check(f"advertised questions answered: {key}",
+                  answered == len(conf["questions"]),
+                  f"{answered}/{len(conf['questions'])}")
+
+        # Isolation is about provenance, not scores: BM25 is normalised, so the
+        # top hit is always 1.0. What matters is which file it came out of.
+        cross = _rag.search("dental hygiene appointment price", "garage")
+        check("no cross-tenant leakage",
+              all("lockwood" in c["source"] for c in cross),
+              f"garage answered from {cross[0]['source'] if cross else 'nothing'}")
 
         # --- 2. retrieval quality, per site ---------------------------------
         from app import rag
@@ -65,6 +91,10 @@ def main() -> int:
         check("sites are isolated",
               not rag.search("wholesale coffee roast profile", "portfolio"),
               "portfolio knows nothing about coffee")
+        check("every site is separately indexed",
+              len({tuple(sorted(c["heading"] for c in rag.search("prices", s)))
+                   for s in ("clinic", "garage", "legal")}) == 3,
+              "three industries, three different answers to the same word")
 
         # --- 4. chat on the portfolio ---------------------------------------
         r = client.post("/api/chat", json={"message": "What do you charge for a pilot?",
@@ -159,8 +189,9 @@ def main() -> int:
         check("metrics can focus one site", focus is not None
               and focus["leads"] <= m.json()["all"]["leads"])
         kb = client.get("/api/knowledge", headers=admin).json()
-        check("knowledge browser", len(kb["sections"]) > 0 and len(kb["sites"]) == 2,
-              f"{len(kb['sections'])} sections across {kb['sites']}")
+        check("knowledge browser",
+              len(kb["sections"]) > 0 and set(kb["sites"]) == set(config.SITES),
+              f"{len(kb['sections'])} sections across {len(kb['sites'])} sites")
         check("leads listing", bool(client.get("/api/leads", headers=admin).json()["leads"]))
 
         # --- 13. pages ------------------------------------------------------------

@@ -7,7 +7,7 @@ software — the software, running, with the ledger open.
 
 | | |
 |---|---|
-| [`/`](https://ai-support-agent-jett.onrender.com/) | Portfolio. Its assistant answers from a knowledge base about how I work, and every answer lands in a live run log beside it. |
+| [`/`](https://ai-support-agent-jett.onrender.com/) | Portfolio. Its assistant answers from a knowledge base about how I work, every answer lands in a live run log beside it, and an industry picker retargets the same widget at six different businesses. |
 | [`/lab`](https://ai-support-agent-jett.onrender.com/lab) | Three tools you can run: a page scraper, a message classifier, a CSV cleaner. |
 | [`/demo`](https://ai-support-agent-jett.onrender.com/demo) | The client-facing storefront the agent was built for. |
 | [`/admin`](https://ai-support-agent-jett.onrender.com/admin) | Operations: leads, transcripts, run log and knowledge base across both sites. |
@@ -33,6 +33,13 @@ by the agent.*
 
 *Ask the assistant something and your own question appears in the run log within
 five seconds. Nothing on the page is claimed without being logged.*
+
+![Industries](docs/screenshots/01b-industries.png)
+
+*Six businesses, six knowledge bases, one engine. Pick an industry and the chat
+in the corner becomes that company's assistant, answering from its own documents.
+The picker is rendered from the server's site registry, so adding an industry is
+a folder and a config entry — the page needs no edit.*
 
 |  |  |
 |---|---|
@@ -90,11 +97,29 @@ Every LLM call returns the same envelope, which is what makes routing possible:
 
 ### Sites
 
-One engine, several knowledge bases. A site is a folder under `knowledge/` plus
-an entry in `config.SITES`. `knowledge/portfolio/` answers as me;
-`knowledge/demo/` answers as the coffee roaster. Chunks, conversations, leads
-and runs all carry a `site`, so adding a client is a folder and four lines — not
-a second deployment.
+One engine, seven knowledge bases. A site is a folder under `knowledge/` plus an
+entry in `config.SITES`. Chunks, conversations, leads and runs all carry a
+`site`, so adding a client is a folder and a dict — not a second deployment.
+
+| Site | Business | Sections |
+|---|---|---|
+| `portfolio` | how I work: scope, pricing, what I turn down | 9 |
+| `demo` | Northwind Coffee Co., specialty roaster | 9 |
+| `clinic` | Brightwater Dental, five chairs | 9 |
+| `realty` | Kestrel Property, estate agency | 8 |
+| `fitness` | Ironhouse Strength, 480 members | 9 |
+| `garage` | Lockwood Auto, MOT centre | 9 |
+| `legal` | Marsden Law, six solicitors | 9 |
+
+Entries marked `vertical` also render the industry picker on the front page,
+including each one's pipeline and sample questions. The smoke test asserts that
+every question the page advertises actually returns an answer — an advertised
+question that produces "I do not know" is worse than not offering it.
+
+The six businesses are invented. Their documents are written the way a real
+FAQ is, and the pipelines describe what would get wired, but there are no
+percentages anywhere: I have not measured these companies, and an invented
+saving would undermine everything else on the page.
 
 ---
 
@@ -192,10 +217,10 @@ scripts/        ingest · seed_demo · smoke_test · fake_n8n · screenshots
 python -m scripts.smoke_test
 ```
 
-48 checks, no server and no API keys: both knowledge bases, retrieval quality on
-twelve real questions, site isolation, chat and scoring on both sites, lead
-capture, the run log, all three lab tools, SSRF refusal on four hostile URLs,
-admin auth and every page. The one live-network check skips rather than fails
+68 checks, no server and no API keys: all seven knowledge bases, retrieval
+quality, tenant isolation by provenance, every question the industry picker
+advertises, chat and scoring, lead capture, the run log, all three lab tools,
+SSRF refusal on four hostile URLs, admin auth and every page. The one live-network check skips rather than fails
 when offline.
 
 ---

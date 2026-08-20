@@ -202,6 +202,53 @@
     100% { background: transparent; }
   }
 
+  /* ---------- industry picker ---------- */
+
+  .ind-tabs { display: flex; gap: 1px; background: var(--line); border: 1px solid var(--line); flex-wrap: wrap; }
+  .ind-tabs button {
+    flex: 1 1 150px; background: var(--card); border: 0; cursor: pointer;
+    padding: 15px 16px; text-align: left; font-family: var(--display);
+    border-bottom: 2px solid transparent;
+  }
+  .ind-tabs button:hover { background: #fff; }
+  .ind-tabs button[aria-selected="true"] { background: #fff; border-bottom-color: var(--pick, var(--signal)); }
+  .ind-tabs .i-name { display: block; font-weight: 700; font-size: 15.5px; letter-spacing: -.015em; }
+  .ind-tabs .i-co {
+    display: block; font-family: var(--mono); font-size: 10px;
+    letter-spacing: .09em; text-transform: uppercase; color: var(--soft); margin-top: 4px;
+  }
+
+  .ind-panel { border: 1px solid var(--line); border-top: 0; background: var(--card); }
+  .ind-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); }
+  .ind-cell { background: var(--card); padding: 24px; }
+  .ind-cell h3 { font-size: 17px; margin: 0 0 10px; }
+  .ind-cell p { margin: 0; font-size: 16px; color: var(--ink-2); }
+
+  /* The pipeline is a real sequence, so it is numbered; the numbers carry the
+     order in which the automation actually fires. */
+  .pipe { margin: 0; padding: 0; list-style: none; counter-reset: step; }
+  .pipe li {
+    counter-increment: step; position: relative; padding: 9px 0 9px 34px;
+    font-size: 15.5px; color: var(--ink-2); border-bottom: 1px solid var(--line-2);
+  }
+  .pipe li:last-child { border-bottom: 0; }
+  .pipe li::before {
+    content: "0" counter(step); position: absolute; left: 0; top: 11px;
+    font-family: var(--mono); font-size: 10.5px; color: var(--pick, var(--signal-d));
+  }
+
+  .ind-ask { padding: 22px 24px; border-top: 1px solid var(--line); }
+  .ind-ask .tag { display: block; margin-bottom: 12px; }
+  .ind-qs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ind-qs button {
+    font-family: var(--prose); font-size: 15.5px; text-align: left;
+    background: var(--paper); color: var(--ink); cursor: pointer;
+    border: 1px solid var(--line); border-left: 2px solid var(--pick, var(--signal));
+    padding: 10px 14px;
+  }
+  .ind-qs button:hover { background: #fff; }
+  .ind-note { margin: 14px 0 0; font-size: 14px; color: var(--soft); }
+
   /* ---------- lab teaser ---------- */
 
   .tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
@@ -271,7 +318,8 @@
 
   @media (max-width: 860px) {
     body { font-size: 17px; }
-    .live, .tools { grid-template-columns: 1fr; }
+    .live, .tools, .ind-grid { grid-template-columns: 1fr; }
+    .ind-tabs button { flex-basis: 100%; }
     .topnav { gap: 14px; }
     .hero { padding: 52px 0 16px; }
     .builds, .case, .contact { grid-template-columns: 1fr; }
@@ -447,6 +495,18 @@
             behaviour is the point, not a limitation.</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section id="industries">
+    <div class="wrap">
+      <h2>Pick a business. The assistant becomes theirs.</h2>
+      <p class="sec-note">Six knowledge bases behind one engine. Choose an industry
+        and the chat in the corner switches to that business, answering from its
+        own documents. Nothing is pre-scripted — ask it whatever you like.</p>
+
+      <div class="ind-tabs" id="ind-tabs" role="tablist"></div>
+      <div class="ind-panel" id="ind-panel"></div>
     </div>
   </section>
 
@@ -741,8 +801,127 @@
     // --- suggested questions open the widget and send for you --------------
     document.querySelectorAll(".asks button").forEach((b) => {
       b.addEventListener("click", () => {
-        if (window.NorthwindChat) window.NorthwindChat.send(b.dataset.ask);
+        if (window.NorthwindChat) {
+          window.NorthwindChat.setSite("portfolio", PORTFOLIO_SITE);
+          window.NorthwindChat.send(b.dataset.ask);
+        }
       });
+    });
+  })();
+
+  // --- industry picker -----------------------------------------------------
+  // Rendered from /api/health, which reports the site registry the server is
+  // actually running. Adding an industry is a knowledge folder plus a config
+  // entry; this page needs no edit at all.
+  const PORTFOLIO_SITE = {
+    title: "Ask about working with Nikita",
+    agent: "Ada",
+    accent: "#A96417",
+    accentDark: "#8A5013",
+    greeting: "I answer from Nikita's own notes: scope, pricing, timelines, and what he turns down. What would you like to know?",
+    quick: ["What do you charge?", "How long does it take?", "When should I not hire you?"],
+    leadTitle: "Want Nikita to look at your case?",
+    leadNote: "One line about the task is enough. You get a reply within a business day.",
+  };
+
+  (function () {
+    const tabs = document.getElementById("ind-tabs");
+    const panel = document.getElementById("ind-panel");
+    if (!tabs || !panel) return;
+
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    // Nudge a hex a little darker for hover and rules, so each industry gets a
+    // coherent pair from the single colour the config declares.
+    const darken = (hex, amount = 0.22) => {
+      const n = parseInt(hex.slice(1), 16);
+      const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+        .map((v) => Math.max(0, Math.round(v * (1 - amount))));
+      return "#" + ch.map((v) => v.toString(16).padStart(2, "0")).join("");
+    };
+
+    let sites = {};
+    let active = null;
+
+    function renderTabs() {
+      tabs.innerHTML = Object.entries(sites).map(([key, s]) =>
+        `<button role="tab" data-site="${esc(key)}" aria-selected="${key === active}">
+           <span class="i-name">${esc(s.industry)}</span>
+           <span class="i-co">${esc(s.company)}</span>
+         </button>`).join("");
+      tabs.querySelectorAll("button").forEach((b) =>
+        b.onclick = () => select(b.dataset.site));
+    }
+
+    function renderPanel() {
+      const s = sites[active];
+      const dark = darken(s.accent);
+      panel.style.setProperty("--pick", dark);
+      tabs.style.setProperty("--pick", dark);
+      panel.innerHTML = `
+        <div class="ind-grid">
+          <div class="ind-cell">
+            <h3>What the day looks like now</h3>
+            <p>${esc(s.pain)}</p>
+            <p style="margin-top:14px;font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--soft)">
+              ${esc(s.tagline)} · ${s.knowledge.n} sections indexed
+            </p>
+          </div>
+          <div class="ind-cell">
+            <h3>What gets wired</h3>
+            <ol class="pipe">${s.pipeline.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>
+          </div>
+        </div>
+        <div class="ind-ask">
+          <span class="tag">Ask ${esc(s.company)} yourself</span>
+          <div class="ind-qs">
+            ${s.questions.map((q) => `<button type="button" data-q="${esc(q)}">${esc(q)}</button>`).join("")}
+          </div>
+          <p class="ind-note">The chat in the corner is now ${esc(s.company)}'s assistant,
+            answering from ${s.knowledge.n} sections of that business's own documents.
+            Every answer appears in the run log above.</p>
+        </div>`;
+
+      panel.querySelectorAll(".ind-qs button").forEach((b) =>
+        b.onclick = () => {
+          switchWidget(s);
+          window.NorthwindChat.send(b.dataset.q);
+        });
+    }
+
+    function switchWidget(s) {
+      if (!window.NorthwindChat) return;
+      window.NorthwindChat.setSite(active, {
+        title: s.label,
+        agent: s.agent,
+        accent: s.accent,
+        accentDark: darken(s.accent),
+        greeting: s.greeting,
+        quick: s.questions,
+        leadTitle: "Want " + s.company + " to get back to you?",
+        leadNote: "Leave your details and the team replies within one business day.",
+        open: false,
+      });
+    }
+
+    function select(key) {
+      active = key;
+      renderTabs();
+      renderPanel();
+      switchWidget(sites[key]);
+    }
+
+    fetch("/api/health").then((r) => r.json()).then((h) => {
+      sites = Object.fromEntries(
+        Object.entries(h.sites).filter(([, s]) => s.vertical));
+      const first = Object.keys(sites)[0];
+      if (!first) { panel.innerHTML = '<div class="ind-ask">No industries configured.</div>'; return; }
+      active = first;
+      renderTabs();
+      renderPanel();
+    }).catch(() => {
+      panel.innerHTML = '<div class="ind-ask">Could not load the industry list.</div>';
     });
   })();
 </script>

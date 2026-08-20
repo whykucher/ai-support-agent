@@ -64,6 +64,13 @@ def main() -> int:
         shot(page, "01-live-agent.png",
              "Ask a question and watch it land in the live run log")
 
+        # --- 2b. the industry picker, mid-switch ------------------------------
+        page.locator('#industries').scroll_into_view_if_needed()
+        page.click('#ind-tabs button:nth-child(2)')
+        page.wait_for_timeout(400)
+        page.screenshot(path=OUT / '01b-industries.png')
+        shots.append(('01b-industries.png', 'Pick an industry and the assistant becomes that business'))
+
         # --- 3. the lab, mid-result ------------------------------------------
         page.goto(f"{base}/lab", wait_until="networkidle")
         page.click("#cl-go")

@@ -36,9 +36,9 @@
     document.head.appendChild(link);
   }
 
-  var STORE_KEY = "nw_conversation_id_" + cfg.site;
+  var storeKey = function () { return "nw_conversation_id_" + cfg.site; };
   var conversationId = null;
-  try { conversationId = localStorage.getItem(STORE_KEY); } catch (e) { /* private mode */ }
+  try { conversationId = localStorage.getItem(storeKey()); } catch (e) { /* private mode */ }
 
   var root = document.createElement("div");
   root.className = "nw-widget";
@@ -202,7 +202,7 @@
         typing(false);
         if (data.error) { bubble(data.error, "bot"); return; }
         conversationId = data.conversation_id;
-        try { localStorage.setItem(STORE_KEY, conversationId); } catch (e) { /* noop */ }
+        try { localStorage.setItem(storeKey(), conversationId); } catch (e) { /* noop */ }
         bubble(data.answer, "bot");
         showSources(data.sources);
         if (data.show_lead_form) showLeadForm();
@@ -242,5 +242,42 @@
     root.setAttribute("data-open", "false");
   });
 
-  window.NorthwindChat = { open: open, send: send };
+  /**
+   * Point the widget at a different tenant without a page reload.
+   * Used by the industry picker: one widget, several businesses. Each site
+   * keeps its own conversation, so switching back does not lose the thread.
+   */
+  function setSite(site, opts) {
+    opts = opts || {};
+    if (site === cfg.site && !opts.force) return;
+
+    cfg.site = site;
+    if (opts.title) cfg.title = opts.title;
+    if (opts.agent) cfg.agent = opts.agent;
+    if (opts.greeting) cfg.greeting = opts.greeting;
+    if (opts.quick) cfg.quick = opts.quick;
+    cfg.leadTitle = opts.leadTitle || "Want a specialist to follow up?";
+    cfg.leadNote = opts.leadNote ||
+      "Leave your details and we reply within one business day.";
+    if (opts.accent) root.style.setProperty("--nw-accent", opts.accent);
+    if (opts.accentDark) root.style.setProperty("--nw-accent-d", opts.accentDark);
+
+    root.querySelector(".nw-head h3").textContent = cfg.title;
+    root.querySelector(".nw-avatar").textContent = cfg.agent.charAt(0).toUpperCase();
+
+    conversationId = null;
+    try { conversationId = localStorage.getItem(storeKey()); } catch (e) { /* noop */ }
+
+    log.innerHTML = "";
+    leadSlot.innerHTML = "";
+    hideQuick();
+
+    // If the panel is already open, re-greet as the new business. Clearing the
+    // log without this leaves the visitor staring at an empty window after
+    // switching industries.
+    var isOpen = root.getAttribute("data-open") === "true";
+    if (opts.open !== false || isOpen) open();
+  }
+
+  window.NorthwindChat = { open: open, send: send, setSite: setSite };
 })();
