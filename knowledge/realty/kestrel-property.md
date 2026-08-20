@@ -17,7 +17,8 @@ The fee covers professional photography, a floor plan, an EPC if you do not have
 a valid one, listings on Rightmove and Zoopla, accompanied viewings and
 negotiation through to completion.
 
-A free valuation takes about 45 minutes at the property. We will tell you what
+To get started, book a free valuation. It takes about 45 minutes at the
+property. We will tell you what
 we think it is worth and what we think it will actually sell for, which are not
 always the same number.
 

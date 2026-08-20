@@ -90,29 +90,54 @@ SITES: dict[str, dict[str, Any]] = {
             "Can I pause my subscription?",
         ],
     },
-    "clinic": {
-        "company": "Brightwater Dental",
-        "agent": "Rowan",
-        "label": "Brightwater Dental",
-        "accent": "#2F7D91",
-        "greeting": "I can help with appointments, prices, insurance and what to "
-                    "do in a dental emergency. What do you need?",
+    "agency": {
+        "company": "Halyard Digital",
+        "agent": "Wren",
+        "label": "Halyard Digital",
+        "accent": "#3E6B8C",
+        "greeting": "I can cover retainers, pricing, onboarding, reporting and "
+                    "who we are a bad fit for. What are you looking at?",
         "vertical": True,
-        "industry": "Dental clinic",
-        "tagline": "Five chairs, about 340 patients a month",
-        "pain": "Reception answers the same price and availability questions all "
-                "day, and misses calls while doing it. Every missed call is a "
-                "patient who rings the practice down the road.",
+        "industry": "Marketing agency",
+        "tagline": "Eleven people, roster capped at eighteen clients",
+        "pain": "Inbound enquiries arrive from four channels and half of them are "
+                "brands too small for the retainer. Founders spend discovery calls "
+                "discovering the budget does not exist.",
         "pipeline": [
-            "Answer prices, hours, insurance and emergency questions around the clock",
-            "Recognise pain and urgency, and route those to the on-call slot list",
-            "Capture new-patient enquiries with the details reception would ask for",
-            "Send the registration form and add the follow-up to the practice CRM",
+            "Answer scope, retainer and minimum-spend questions before a call is booked",
+            "Qualify on ad spend, channels and timeline, and say so when it is too small",
+            "Book the discovery call straight into the strategist's calendar",
+            "Push the brief and the qualifying answers into the CRM with the transcript",
         ],
         "questions": [
-            "How much is a new patient check-up?",
-            "I have severe toothache, can I be seen today?",
-            "Do you take Bupa insurance?",
+            "How much do you charge to manage Google Ads?",
+            "Is there a minimum contract length?",
+            "Can you guarantee a specific ROAS?",
+        ],
+    },
+    "saas": {
+        "company": "Latchkey",
+        "agent": "Juno",
+        "label": "Latchkey Support",
+        "accent": "#4C6EA8",
+        "greeting": "I can help with plans, the trial, integrations, security and "
+                    "migration. What do you need to know?",
+        "vertical": True,
+        "industry": "B2B SaaS",
+        "tagline": "Field service scheduling, 1,400 companies",
+        "pain": "Support answers the same twelve pricing and integration questions "
+                "all day, while the enterprise security questionnaire that would "
+                "close a five-figure deal waits three days in the same queue.",
+        "pipeline": [
+            "Deflect plan, trial, integration and cancellation questions from the docs",
+            "Spot enterprise signals - SSO, SOC 2, procurement, seat counts - and escalate",
+            "Route security questionnaires to the security inbox, not to support",
+            "Nudge trials that have stalled and hand warm ones to sales with context",
+        ],
+        "questions": [
+            "How much is the Growth plan per user?",
+            "Are you SOC 2 compliant and where is data hosted?",
+            "Can I cancel any time?",
         ],
     },
     "realty": {
@@ -123,13 +148,13 @@ SITES: dict[str, dict[str, Any]] = {
         "greeting": "I can help with fees, valuations, viewings and lettings. "
                     "Buying, selling or renting?",
         "vertical": True,
-        "industry": "Estate agency",
+        "industry": "Real estate",
         "tagline": "Four negotiators, about 25 sales a month",
         "pain": "Portal enquiries arrive at all hours and go cold overnight. "
                 "Negotiators spend mornings re-asking budget and position instead "
                 "of booking viewings.",
         "pipeline": [
-            "Answer fee, process and local market questions from the office notes",
+            "Answer commission, process and local market questions from the office notes",
             "Qualify buyers on budget, area, position and mortgage readiness",
             "Book the valuation or viewing straight into the diary",
             "Hand a scored, qualified lead to the right negotiator within seconds",
@@ -140,79 +165,54 @@ SITES: dict[str, dict[str, Any]] = {
             "What fees do tenants pay?",
         ],
     },
-    "fitness": {
-        "company": "Ironhouse Strength",
-        "agent": "Mica",
-        "label": "Ironhouse Strength",
-        "accent": "#C4553A",
-        "greeting": "I can help with memberships, classes, freezing and personal "
-                    "training. What do you want to know?",
+    "coaching": {
+        "company": "Northlight Coaching",
+        "agent": "Tess",
+        "label": "Northlight Coaching",
+        "accent": "#8A5A7A",
+        "greeting": "I can explain the programmes, prices, payment plans and "
+                    "whether this is the right fit. What are you weighing up?",
         "vertical": True,
-        "industry": "Gym and studio",
-        "tagline": "480 members, eight lifting platforms",
-        "pain": "Staff are on the gym floor, not at a desk. Membership and "
-                "cancellation questions pile up across three channels and get "
-                "answered inconsistently.",
+        "industry": "Coaching and courses",
+        "tagline": "Two coaches, about 40 clients a year",
+        "pain": "Most enquiries are people deciding whether the programme is for "
+                "them at all. Answering that well takes a real conversation, and "
+                "there are only two coaches to have them.",
         "pipeline": [
-            "Answer price, class, freeze and cancellation questions from one source",
-            "Spot trial and corporate enquiries and treat them as leads, not FAQs",
-            "Book the free intro session into the coach's calendar",
-            "Flag cancellation intent to a human before the member walks",
+            "Answer programme, price, payment plan and refund questions in full",
+            "Help someone self-select in or out before they book a call",
+            "Book the free discovery call and send the pre-call questions",
+            "Hold waitlist enquiries for the next cohort and follow up when it opens",
         ],
         "questions": [
-            "How much is a full membership?",
-            "Can I freeze my membership while injured?",
-            "Do you do corporate rates for my company?",
+            "How much is the group programme?",
+            "Do you offer payment plans?",
+            "Is this right for me if I was promoted last month?",
         ],
     },
-    "garage": {
-        "company": "Lockwood Auto",
-        "agent": "Sam",
-        "label": "Lockwood Auto",
-        "accent": "#7A6A4F",
-        "greeting": "I can help with servicing, MOTs, prices, warranty and "
-                    "booking. What is the car doing?",
+    "recruiting": {
+        "company": "Havenridge Talent",
+        "agent": "Kit",
+        "label": "Havenridge Talent",
+        "accent": "#4F7A63",
+        "greeting": "I can cover fees, the replacement guarantee, how the process "
+                    "runs, and what happens if you are applying. Hiring or looking?",
         "vertical": True,
-        "industry": "Auto repair",
-        "tagline": "Six ramps, eight technicians, MOT centre",
-        "pain": "The phone rings while technicians are under cars. Callers want a "
-                "price and a date, and the answer is on a whiteboard nobody can "
-                "read from the ramp.",
+        "industry": "Recruiting agency",
+        "tagline": "Seven consultants, 143 placements last year",
+        "pain": "Two audiences in one inbox. Hiring managers want fees and "
+                "timelines; candidates want a reply. Consultants answer both by "
+                "hand and the candidates are the ones who wait.",
         "pipeline": [
-            "Quote standard servicing, MOT and diagnostics from the live price list",
-            "Answer the warranty question that stops people using an independent",
-            "Take the booking with registration, mileage and courtesy car need",
-            "Route fleet enquiries to the manager instead of the booking queue",
+            "Answer fee, guarantee and process questions for hiring companies",
+            "Reply to every candidate the same day, including the rejections",
+            "Split the two audiences and route each to the right consultant",
+            "Take the role brief and open it in the ATS with the salary band attached",
         ],
         "questions": [
-            "How much is a full service and MOT?",
-            "Will servicing here void my manufacturer warranty?",
-            "Do you have a courtesy car available?",
-        ],
-    },
-    "legal": {
-        "company": "Marsden Law",
-        "agent": "Iris",
-        "label": "Marsden Law",
-        "accent": "#5C5470",
-        "greeting": "I can explain how the firm works: fees, first consultations "
-                    "and which areas we cover. I cannot give legal advice.",
-        "vertical": True,
-        "industry": "Law firm",
-        "tagline": "Six solicitors, four practice areas",
-        "pain": "Solicitors bill by the hour, so unqualified enquiries are "
-                "expensive. Half the calls are matters the firm does not take, and "
-                "finding that out costs twenty minutes each time.",
-        "pipeline": [
-            "Explain fees, fixed prices and the consultation process",
-            "Screen the matter type and say plainly when the firm cannot act",
-            "Collect the facts a fee earner needs before the first call",
-            "Book the free consultation and start the conflict check",
-        ],
-        "questions": [
-            "What do you charge for a will?",
-            "How long do I have to bring an unfair dismissal claim?",
-            "Do you handle immigration cases?",
+            "What is your fee for a permanent placement?",
+            "What happens if the hire leaves after a month?",
+            "Do you charge candidates anything?",
         ],
     },
 }

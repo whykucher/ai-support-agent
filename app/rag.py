@@ -31,16 +31,31 @@ def _stem(word: str) -> str:
     cost" misses a section that says "running costs" - which is the single
     most common question a prospect asks, so it is worth thirty lines.
     """
-    for suffix, keep in (("ing", 5), ("edly", 6), ("ed", 4), ("ly", 4)):
-        if len(word) > keep and word.endswith(suffix):
-            word = word[: -len(suffix)]
-            break
+    # Plurals first, so "cancellations" reaches the same place as "cancellation".
     if len(word) > 4 and word.endswith("ies"):
         word = word[:-3] + "y"
     elif len(word) > 4 and word.endswith(("ses", "xes", "zes", "ches", "shes")):
         word = word[:-2]
     elif len(word) > 3 and word.endswith("s") and not word.endswith("ss"):
         word = word[:-1]
+
+    for suffix, keep in (("ing", 5), ("edly", 6), ("ed", 4), ("ly", 4)):
+        if len(word) > keep and word.endswith(suffix):
+            word = word[: -len(suffix)]
+            break
+
+    # Nominalisations. "can I cancel" has to reach a section headed
+    # "cancellation", and "who manages it" a line about "management". The
+    # four-character floor stops "station" collapsing to "st".
+    for suffix in ("ation", "ment", "ance", "ence"):
+        if word.endswith(suffix) and len(word) - len(suffix) >= 4:
+            word = word[: -len(suffix)]
+            break
+
+    # "cancell" -> "cancel", after the suffix above exposed the doubling.
+    if len(word) > 4 and word[-1] == word[-2] and word[-1] not in "s":
+        word = word[:-1]
+
     # Collapse the silent e so "price" and "pricing" land on the same stem.
     if len(word) > 4 and word.endswith("e"):
         word = word[:-1]

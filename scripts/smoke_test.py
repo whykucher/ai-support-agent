@@ -65,10 +65,10 @@ def main() -> int:
 
         # Isolation is about provenance, not scores: BM25 is normalised, so the
         # top hit is always 1.0. What matters is which file it came out of.
-        cross = _rag.search("dental hygiene appointment price", "garage")
+        cross = _rag.search("coffee wholesale roast subscription", "saas")
         check("no cross-tenant leakage",
-              all("lockwood" in c["source"] for c in cross),
-              f"garage answered from {cross[0]['source'] if cross else 'nothing'}")
+              all("latchkey" in c["source"] for c in cross),
+              f"saas answered from {cross[0]['source'] if cross else 'nothing'}")
 
         # --- 2. retrieval quality, per site ---------------------------------
         from app import rag
@@ -92,8 +92,8 @@ def main() -> int:
               not rag.search("wholesale coffee roast profile", "portfolio"),
               "portfolio knows nothing about coffee")
         check("every site is separately indexed",
-              len({tuple(sorted(c["heading"] for c in rag.search("prices", s)))
-                   for s in ("clinic", "garage", "legal")}) == 3,
+              len({tuple(sorted(c["heading"] for c in rag.search("pricing", s)))
+                   for s in ("agency", "saas", "recruiting")}) == 3,
               "three industries, three different answers to the same word")
 
         # --- 4. chat on the portfolio ---------------------------------------

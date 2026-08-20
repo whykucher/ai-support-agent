@@ -101,15 +101,19 @@ One engine, seven knowledge bases. A site is a folder under `knowledge/` plus an
 entry in `config.SITES`. Chunks, conversations, leads and runs all carry a
 `site`, so adding a client is a folder and a dict — not a second deployment.
 
-| Site | Business | Sections |
+The six industries are the ones that actually hire this work on freelance
+platforms — agencies, Shopify brands, SaaS teams, property, coaches and
+recruiters — rather than whichever verticals were easiest to invent.
+
+| Site | Business | Why it is here |
 |---|---|---|
-| `portfolio` | how I work: scope, pricing, what I turn down | 9 |
-| `demo` | Northwind Coffee Co., specialty roaster | 9 |
-| `clinic` | Brightwater Dental, five chairs | 9 |
-| `realty` | Kestrel Property, estate agency | 8 |
-| `fitness` | Ironhouse Strength, 480 members | 9 |
-| `garage` | Lockwood Auto, MOT centre | 9 |
-| `legal` | Marsden Law, six solicitors | 9 |
+| `portfolio` | how I work: scope, pricing, what I turn down | the site's own assistant |
+| `demo` | Northwind Coffee Co., specialty roaster | e-commerce, the most common brief |
+| `agency` | Halyard Digital, performance marketing | agencies buy the most automation |
+| `saas` | Latchkey, field-service SaaS | support deflection plus enterprise routing |
+| `realty` | Kestrel Property, estate agency | lead qualification is the whole job |
+| `coaching` | Northlight Coaching, leadership coaching | high enquiry volume, two people to answer it |
+| `recruiting` | Havenridge Talent, tech recruitment | two audiences in one inbox |
 
 Entries marked `vertical` also render the industry picker on the front page,
 including each one's pipeline and sample questions. The smoke test asserts that
