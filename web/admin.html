@@ -6,29 +6,33 @@
 <title>Ops — AI Support &amp; Lead Agent</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   /* The dark counterpart to the portfolio: same navy, same amber signal.
      This is the operator's own tool, so it wears his colours rather than a
      client's. Amber marks anything that needs a person. */
+  /* Same system as the portfolio: this is the operator's own tool, not a
+     client's, so it wears his colours. Amber marks anything needing a person. */
   :root {
-    --bg:#0D1420; --panel:#131C2B; --panel-2:#1A2536; --ink:#E4E9F0;
-    --soft:#7C8AA0; --line:#22303F;
-    --signal:#E4A155; --signal-d:#C07E33; --ok:#5FBF8F; --bad:#E2796B;
+    --bg:#0B0C0F; --panel:#14161B; --panel-2:#1B1E25; --ink:#F4F3F0;
+    --soft:#848994; --line:#262A32;
+    --signal:#FFB020; --signal-d:#FFC55C; --ok:#5FBF8F; --bad:#E2796B;
     --display:"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+    --prose:"Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
     --mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
+
   * { box-sizing: border-box; }
   body {
     margin: 0; background: var(--bg); color: var(--ink);
-    font-family: var(--display); font-size: 14px; line-height: 1.5;
+    font-family: var(--prose); font-size: 14px; line-height: 1.5;
     font-variant-numeric: tabular-nums;
   }
   .wrap { max-width: 1340px; margin: 0 auto; padding: 22px 24px 72px; }
   :focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
 
   header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-  h1 { font-size: 16px; margin: 0; font-weight: 700; letter-spacing: -.015em; }
+  h1 { font-family: var(--display); font-size: 16px; margin: 0; font-weight: 700; letter-spacing: -.015em; }
   .tag {
     font-family: var(--mono); font-size: 10px; letter-spacing: .11em;
     text-transform: uppercase; color: var(--soft);
@@ -43,8 +47,8 @@
   input::placeholder { color: var(--soft); letter-spacing: 0; }
   button { cursor: pointer; text-transform: uppercase; }
   button:hover { border-color: var(--signal-d); color: var(--signal); }
-  button.primary { background: var(--signal-d); border-color: var(--signal-d); color: #10161f; font-weight: 500; }
-  button.primary:hover { background: var(--signal); border-color: var(--signal); color: #10161f; }
+  button.primary { background: var(--signal-d); border-color: var(--signal-d); color: #0B0C0F; font-weight: 500; }
+  button.primary:hover { background: var(--signal); border-color: var(--signal); color: #0B0C0F; }
   .back { font-family: var(--mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--signal); text-decoration: none; }
   .back:hover { text-decoration: underline; }
 
