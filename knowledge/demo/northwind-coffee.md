@@ -63,7 +63,9 @@ support can apply a credit to the next order.
 
 The first subscription box includes a free 4 oz sample of a rotating micro-lot.
 
-# Wholesale and B2B
+# Wholesale and B2B: yes, we sell wholesale
+
+We do sell wholesale, and we sell to trade buyers directly rather than through a distributor.
 
 Our wholesale program serves cafes, restaurants, offices and hotels. Wholesale
 pricing starts at 30% off retail for orders of 20 lb per month and reaches 45%

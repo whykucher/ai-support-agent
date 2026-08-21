@@ -90,12 +90,14 @@
   .hero .lead { color: var(--muted); max-width: 52ch; margin: 0 0 30px; font-size: 18px; }
 
   /* stacked: poster. one huge column, type does the work. */
-  .l-stacked .hero h1 { font-size: clamp(46px, 11vw, 128px); line-height: .92; }
+  /* Scaled per theme: these sizes were set against Anton, and a wide face
+     at the same measure buries the page under three words. */
+  .l-stacked .hero h1 { font-size: calc(clamp(46px, 11vw, 128px) * var(--h1-scale, 1)); line-height: .92; }
   .l-stacked .hero .lead { font-size: 20px; max-width: 46ch; }
 
   /* split: product site. copy left, a panel of proof right. */
   .l-split .hero-grid { display: grid; grid-template-columns: 1.08fr .92fr; gap: clamp(28px, 5vw, 64px); align-items: center; }
-  .l-split .hero h1 { font-size: clamp(38px, 5.2vw, 62px); }
+  .l-split .hero h1 { font-size: calc(clamp(38px, 5.2vw, 62px) * var(--h1-scale, 1)); }
   .panel-card {
     background: var(--surface); border: 1px solid var(--line);
     border-radius: var(--radius); overflow: hidden;
@@ -111,7 +113,7 @@
 
   /* panel: editorial. big colour field beside the words. */
   .l-panel .hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(28px, 5vw, 60px); align-items: end; }
-  .l-panel .hero h1 { font-size: clamp(36px, 4.6vw, 56px); line-height: 1.05; }
+  .l-panel .hero h1 { font-size: calc(clamp(36px, 4.6vw, 56px) * var(--h1-scale, 1)); line-height: 1.05; }
   .field {
     aspect-ratio: 4/5; border-radius: var(--radius);
     background:
@@ -124,7 +126,7 @@
 
   /* centred: calm. narrow measure, everything on the midline. */
   .l-centred .hero { text-align: center; padding-top: clamp(56px, 9vw, 120px); }
-  .l-centred .hero h1 { font-size: clamp(38px, 5.6vw, 68px); line-height: 1.06; margin-inline: auto; max-width: 20ch; }
+  .l-centred .hero h1 { font-size: calc(clamp(38px, 5.6vw, 68px) * var(--h1-scale, 1)); line-height: 1.06; margin-inline: auto; max-width: 20ch; }
   .l-centred .hero .lead { margin-inline: auto; text-align: center; }
   .l-centred .cta-row { justify-content: center; }
   .l-centred .sec-head { text-align: center; }
@@ -213,6 +215,7 @@ function applyTheme(t) {
   r.setProperty("--display-w", t.display_weight);
   r.setProperty("--display-tr", t.display_tracking);
   r.setProperty("--display-tt", t.display_transform);
+  r.setProperty("--h1-scale", t.h1_scale || "1");
   r.setProperty("--body", `"${t.body}"`);
   document.documentElement.style.colorScheme = t.mode;
 }
@@ -237,6 +240,38 @@ const itemsHtml = (items) =>
        <p>${esc(body)}</p>
      </article>`).join("")}</div>`;
 
+/* The business copy itself arrives from the API in whatever language that
+   business speaks. These are the bits this template adds around it, which
+   would otherwise strand a Russian shop inside an English frame. */
+const STR = {
+  en: {
+    demo: "Demo build",
+    invented: (b, n) => `${b} is invented; the assistant answering is real ` +
+      `and reads ${n} sections of this company's documents`,
+    back: (o) => `\u2190 back to ${o}'s portfolio`,
+    glance: "At a glance",
+    askAny: (b) => `Ask ${b} anything \u2014 the assistant is live`,
+    leadTitle: (c) => `Want ${c} to get back to you?`,
+    leadNote: "Leave your details and the team replies within one business day.",
+    notFound: "Not found",
+    backPlain: "Back to the portfolio",
+  },
+  ru: {
+    demo: "Демо",
+    invented: (b, n) => `${b} — вымышленная компания, но ассистент настоящий ` +
+      `и читает ${n} разделов её документов`,
+    back: () => "\u2190 назад в портфолио",
+    glance: "Коротко",
+    askAny: (b) => `Спросите ${b} о чём угодно \u2014 ассистент работает`,
+    leadTitle: (c) => `Хотите, чтобы ${c} с вами связались?`,
+    leadNote: "Оставьте контакты — ответим в течение рабочего дня.",
+    notFound: "Страница не найдена",
+    backPlain: "Назад в портфолио",
+  },
+};
+
+let T = STR.en;
+
 function heroHtml(p) {
   const h = p.hero;
   const head = `
@@ -251,7 +286,7 @@ function heroHtml(p) {
   if (p.layout === "split") {
     return `<div class="hero-grid"><div>${head}</div>
       <div class="panel-card">
-        <div class="pc-head"><span class="kicker">At a glance</span><span class="kicker">${esc(p.url_label)}</span></div>
+        <div class="pc-head"><span class="kicker">${esc(T.glance)}</span><span class="kicker">${esc(p.url_label)}</span></div>
         ${p.stats.map(([v, l]) =>
           `<div class="pc-row"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("")}
       </div></div>`;
@@ -264,6 +299,8 @@ function heroHtml(p) {
 }
 
 function render(d) {
+  T = STR[d.lang] || STR.en;
+  document.documentElement.lang = d.lang || "en";
   const p = { ...d.page, questions: d.assistant.questions };
   document.title = `${p.brand} — ${p.hero.eyebrow}`;
   applyTheme(p.theme);
@@ -274,10 +311,9 @@ function render(d) {
 
   document.getElementById("root").innerHTML = `
     <div class="strip"><div class="wrap strip-in">
-      <b>Demo build</b><span class="sep">·</span>
-      <span>${esc(p.brand)} is invented; the assistant answering is real and reads
-        ${d.knowledge.n} sections of this company's documents</span>
-      <a class="right" href="/#industries">← back to Nikita's portfolio</a>
+      <b>${esc(T.demo)}</b><span class="sep">·</span>
+      <span>${esc(T.invented(p.brand, d.knowledge.n))}</span>
+      <a class="right" href="${esc(d.home)}#industries">${esc(T.back(d.owner))}</a>
     </div></div>
 
     <header class="nav"><div class="wrap nav-in">
@@ -310,7 +346,7 @@ function render(d) {
       </div></div></div>
 
       <div class="ask"><div class="wrap"><div class="ask-in">
-        <span class="kicker">Ask ${esc(p.brand)} anything — the assistant is live</span>
+        <span class="kicker">${esc(T.askAny(p.brand))}</span>
         <div class="qs">${p.questions.map((q) =>
           `<button data-ask="${esc(q)}">${esc(q)}</button>`).join("")}</div>
       </div></div></div>
@@ -337,13 +373,14 @@ function mountWidget(d) {
   Object.assign(s.dataset, {
     api: "",
     site: d.site,
+    lang: d.lang || "en",
     title: d.assistant.label,
     agent: d.assistant.agent,
     accent: t.accent,
     greeting: d.assistant.greeting,
     quick: d.assistant.questions.join("|"),
-    leadTitle: `Want ${d.assistant.company} to get back to you?`,
-    leadNote: "Leave your details and the team replies within one business day.",
+    leadTitle: T.leadTitle(d.assistant.company),
+    leadNote: T.leadNote,
   });
   document.body.appendChild(s);
 }
@@ -352,9 +389,11 @@ fetch(`/api/site/${encodeURIComponent(key)}`)
   .then((r) => { if (!r.ok) throw new Error("not found"); return r.json(); })
   .then(render)
   .catch(() => {
+    T = key.startsWith("ru-") ? STR.ru : STR.en;
+    const home = key.startsWith("ru-") ? "/ru" : "/";
     document.getElementById("root").innerHTML =
-      '<div class="wrap" style="padding:80px 0"><h1>Not found</h1>' +
-      '<p><a href="/">Back to the portfolio</a></p></div>';
+      `<div class="wrap" style="padding:80px 0"><h1>${esc(T.notFound)}</h1>` +
+      `<p><a href="${home}">${esc(T.backPlain)}</a></p></div>`;
     document.body.classList.add("ready");
   });
 </script>

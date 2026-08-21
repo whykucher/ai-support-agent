@@ -229,8 +229,14 @@ def site_payload(site: str) -> dict[str, Any]:
     if page is None or site not in config.SITES:
         raise HTTPException(404, "No such business")
     conf = config.SITES[site]
+    lang = conf.get("lang", "en")
     return {
         "site": site,
+        "lang": lang,
+        # Where the "back to the portfolio" link points. A Russian demo has to
+        # return to the Russian portfolio, not the English one.
+        "home": "/ru" if lang == "ru" else "/",
+        "owner": config.OWNER_NAME_RU if lang == "ru" else config.OWNER_NAME,
         "page": page,
         "fonts": sites.FONTS,
         "assistant": {
@@ -334,6 +340,13 @@ def _page(name: str) -> FileResponse:
 @app.get("/")
 def portfolio() -> FileResponse:
     return _page("portfolio.html")
+
+
+@app.get("/ru")
+def portfolio_ru() -> FileResponse:
+    """The Russian portfolio. A separate page rather than a translated one:
+    prices in roubles, Russian services and Russian demo businesses."""
+    return _page("portfolio-ru.html")
 
 
 @app.get("/lab")

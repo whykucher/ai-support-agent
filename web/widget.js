@@ -13,19 +13,77 @@
 
   var script = document.currentScript ||
     document.querySelector('script[src*="widget.js"]');
+
+  /**
+   * Interface strings. Everything the visitor reads that is not supplied by
+   * the host page lives here - without it a Russian business ends up with a
+   * Russian assistant answering under an English "Ask anything..." box, which
+   * looks broken rather than bilingual.
+   */
+  var STR = {
+    en: {
+      ask: "Ask us",
+      instant: "Replies instantly",
+      openChat: "Open chat",
+      chat: "Support chat",
+      closeChat: "Close chat",
+      message: "Message",
+      sendLabel: "Send",
+      placeholder: "Ask anything...",
+      foot: "Answers come from the company knowledge base",
+      name: "Name",
+      email: "Email",
+      leadSend: "Send my details",
+      sending: "Sending...",
+      leadDone: "Thanks! Our team has your details.",
+      retry: "Try again",
+      leadTitle: "Want a specialist to follow up?",
+      leadNote: "Leave your details and we reply within one business day.",
+      passed: "Got it - I passed your contact to the team.",
+      offline: "I could not reach the server. Please try again in a moment.",
+      greeting: "Hi! I can help with orders, shipping, subscriptions and " +
+        "wholesale. What do you need?",
+      quick: "How fast is shipping?|What is your return policy?|" +
+        "I need wholesale pricing"
+    },
+    ru: {
+      ask: "Спросить",
+      instant: "Отвечает сразу",
+      openChat: "Открыть чат",
+      chat: "Чат поддержки",
+      closeChat: "Закрыть чат",
+      message: "Сообщение",
+      sendLabel: "Отправить",
+      placeholder: "Спросите что угодно...",
+      foot: "Ответы берутся из базы знаний компании",
+      name: "Имя",
+      email: "Почта",
+      leadSend: "Отправить контакты",
+      sending: "Отправляю...",
+      leadDone: "Спасибо! Контакты у нас, скоро вернёмся.",
+      retry: "Попробовать ещё раз",
+      leadTitle: "Хотите, чтобы с вами связались?",
+      leadNote: "Оставьте контакты — ответим в течение рабочего дня.",
+      passed: "Записал — передал ваши контакты команде.",
+      offline: "Не получилось достучаться до сервера. Попробуйте ещё раз.",
+      greeting: "Здравствуйте! Отвечу по услугам, ценам и срокам. " +
+        "Что вас интересует?",
+      quick: "Сколько это стоит?|Какие сроки?|Как с вами связаться?"
+    }
+  };
+
+  var T = STR[(script && script.dataset.lang) || "en"] || STR.en;
+
   var cfg = {
     api: (script && script.dataset.api) || window.location.origin,
     title: (script && script.dataset.title) || "Northwind Support",
     agent: (script && script.dataset.agent) || "Nora",
     accent: (script && script.dataset.accent) || "",
     site: (script && script.dataset.site) || "demo",
-    leadTitle: (script && script.dataset.leadTitle) || "Want a specialist to follow up?",
-    leadNote: (script && script.dataset.leadNote) ||
-      "Leave your details and we reply within one business day.",
-    greeting: (script && script.dataset.greeting) ||
-      "Hi! I can help with orders, shipping, subscriptions and wholesale. What do you need?",
-    quick: ((script && script.dataset.quick) ||
-      "How fast is shipping?|What is your return policy?|I need wholesale pricing").split("|")
+    leadTitle: (script && script.dataset.leadTitle) || T.leadTitle,
+    leadNote: (script && script.dataset.leadNote) || T.leadNote,
+    greeting: (script && script.dataset.greeting) || T.greeting,
+    quick: ((script && script.dataset.quick) || T.quick).split("|")
   };
 
   // Stylesheet lives next to this script, whatever host it is served from.
@@ -68,27 +126,27 @@
   setAccent(cfg.accent);
 
   root.innerHTML = [
-    '<button class="nw-launcher" type="button" aria-label="Open chat">',
+    '<button class="nw-launcher" type="button" aria-label="' + esc(T.openChat) + '">',
     '  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
     '    <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-4-.9L3 21l1.9-4.6A8.4 8.4 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.5 8.5 0 0 1 21 11.5z"/>',
-    '  </svg><span>Ask us</span>',
+    '  </svg><span>' + esc(T.ask) + '</span>',
     '</button>',
-    '<div class="nw-panel" role="dialog" aria-label="Support chat">',
+    '<div class="nw-panel" role="dialog" aria-label="' + esc(T.chat) + '">',
     '  <div class="nw-head">',
     '    <div class="nw-avatar">' + cfg.agent.charAt(0).toUpperCase() + '</div>',
-    '    <div><h3>' + esc(cfg.title) + '</h3><p>Replies instantly</p></div>',
-    '    <button class="nw-close" type="button" aria-label="Close chat">&times;</button>',
+    '    <div><h3>' + esc(cfg.title) + '</h3><p>' + esc(T.instant) + '</p></div>',
+    '    <button class="nw-close" type="button" aria-label="' + esc(T.closeChat) + '">&times;</button>',
     '  </div>',
     '  <div class="nw-log" id="nw-log"></div>',
     '  <div class="nw-quick" id="nw-quick"></div>',
     '  <div id="nw-lead-slot"></div>',
     '  <form class="nw-form" id="nw-form">',
-    '    <textarea id="nw-input" rows="1" placeholder="Ask anything..." aria-label="Message"></textarea>',
-    '    <button class="nw-send" type="submit" aria-label="Send">',
+    '    <textarea id="nw-input" rows="1" placeholder="' + esc(T.placeholder) + '" aria-label="' + esc(T.message) + '"></textarea>',
+    '    <button class="nw-send" type="submit" aria-label="' + esc(T.sendLabel) + '">',
     '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>',
     '    </button>',
     '  </form>',
-    '  <div class="nw-foot">Answers come from the company knowledge base</div>',
+    '  <div class="nw-foot">' + esc(T.foot) + '</div>',
     '</div>'
   ].join("");
 
@@ -164,9 +222,9 @@
     box.innerHTML = [
       "<h4>" + esc(cfg.leadTitle) + "</h4>",
       "<p>" + esc(cfg.leadNote) + "</p>",
-      '<input id="nw-l-name" placeholder="Name" autocomplete="name">',
-      '<input id="nw-l-email" type="email" placeholder="Email" autocomplete="email">',
-      '<button type="button" id="nw-l-send">Send my details</button>'
+      '<input id="nw-l-name" placeholder="' + esc(T.name) + '" autocomplete="name">',
+      '<input id="nw-l-email" type="email" placeholder="' + esc(T.email) + '" autocomplete="email">',
+      '<button type="button" id="nw-l-send">' + esc(T.leadSend) + '</button>'
     ].join("");
     leadSlot.appendChild(box);
 
@@ -175,7 +233,7 @@
       if (!email) { box.querySelector("#nw-l-email").focus(); return; }
       var btn = box.querySelector("#nw-l-send");
       btn.disabled = true;
-      btn.textContent = "Sending...";
+      btn.textContent = T.sending;
       fetch(cfg.api + "/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -188,10 +246,10 @@
           page_url: window.location.href
         })
       }).then(function () {
-        box.innerHTML = '<div class="nw-done">Thanks! Our team has your details.</div>';
+        box.innerHTML = '<div class="nw-done">' + esc(T.leadDone) + '</div>';
       }).catch(function () {
         btn.disabled = false;
-        btn.textContent = "Try again";
+        btn.textContent = T.retry;
       });
     });
   }
@@ -229,12 +287,12 @@
         showSources(data.sources);
         if (data.show_lead_form) showLeadForm();
         if (data.lead) {
-          bubble("Got it - I passed your contact to the team.", "bot");
+          bubble(T.passed, "bot");
         }
       })
       .catch(function () {
         typing(false);
-        bubble("I could not reach the server. Please try again in a moment.", "bot");
+        bubble(T.offline, "bot");
       })
       .finally(function () {
         sendBtn.disabled = false;
@@ -269,6 +327,14 @@
    * Used by the industry picker: one widget, several businesses. Each site
    * keeps its own conversation, so switching back does not lose the thread.
    */
+  /** Re-label the chrome after a language switch. */
+  function retranslate() {
+    root.querySelector(".nw-launcher span").textContent = T.ask;
+    root.querySelector(".nw-head p").textContent = T.instant;
+    input.placeholder = T.placeholder;
+    root.querySelector(".nw-foot").textContent = T.foot;
+  }
+
   function setSite(site, opts) {
     opts = opts || {};
     if (site === cfg.site && !opts.force) return;
@@ -278,9 +344,9 @@
     if (opts.agent) cfg.agent = opts.agent;
     if (opts.greeting) cfg.greeting = opts.greeting;
     if (opts.quick) cfg.quick = opts.quick;
-    cfg.leadTitle = opts.leadTitle || "Want a specialist to follow up?";
-    cfg.leadNote = opts.leadNote ||
-      "Leave your details and we reply within one business day.";
+    if (opts.lang && STR[opts.lang]) { T = STR[opts.lang]; retranslate(); }
+    cfg.leadTitle = opts.leadTitle || T.leadTitle;
+    cfg.leadNote = opts.leadNote || T.leadNote;
     setAccent(opts.accent);
 
     root.querySelector(".nw-head h3").textContent = cfg.title;

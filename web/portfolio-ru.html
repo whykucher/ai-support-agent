@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nikita Denisov — AI agents and n8n automation for small businesses</title>
-<meta name="description" content="I build AI support agents and n8n automations that take repetitive work off small teams: answering customers from your own documents, scoring leads, and moving data between tools.">
+<title>Леонид Денисов — ИИ-ассистенты и автоматизация на n8n для малого бизнеса</title>
+<meta name="description" content="Делаю ИИ-ассистентов и автоматизацию на n8n, которые снимают с команды повторяющуюся работу: отвечают клиентам по вашим документам, оценивают заявки и перекладывают данные между сервисами.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   /* Blueprint, not dashboard. Pale drafting paper, navy ink, and one amber
      signal reserved for the automated path - the same convention a control
@@ -25,10 +25,10 @@
     --soft:    #848994;
     --line:    #262A32;
     --line-2:  #1D2128;
-    --signal:  #FFB020;
-    --signal-d:#FFC55C;
+    --signal:  #4FD1A0;
+    --signal-d:#86E9BE;
 
-    --display: "Bricolage Grotesque", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --display: "Onest", ui-sans-serif, system-ui, -apple-system, sans-serif;
     --prose: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
@@ -404,13 +404,13 @@
 
 <header class="top">
   <div class="wrap top-in">
-    <span class="who">Nikita Denisov</span>
+    <span class="who">Леонид Денисов</span>
     <nav class="topnav">
-      <a href="/lab">Lab</a>
-      <a href="/demo">Client demo</a>
-      <a href="/admin">Ops</a>
+      <a href="/lab">Лаборатория</a>
+      <a href="/demo">Демо-магазин</a>
+      <a href="/admin">Панель</a>
     </nav>
-    <a class="cta" href="#contact">Get in touch</a>
+    <a class="cta" href="#contact">Написать</a>
   </div>
 </header>
 
@@ -419,15 +419,16 @@
   <div class="wrap hero">
     <div class="hero-grid">
       <div>
-        <span class="tag">AI agents · n8n · Python</span>
-        <h1>Somebody on your team is doing this by hand.</h1>
-        <p class="stand">I build AI agents and n8n automations that take repetitive work
-          off people — answering customers from your own documents, scoring the
-          enquiries worth money, and moving data between tools while nobody watches.
-          <strong>Below is one enquiry, twice.</strong></p>
+        <span class="tag">ИИ-ассистенты · n8n · Python</span>
+        <h1>Кто-то в вашей команде делает это руками.</h1>
+        <p class="stand">Делаю ИИ-ассистентов и автоматизацию на n8n, которые снимают с
+          людей повторяющуюся работу: отвечают клиентам по вашим же документам,
+          отбирают заявки, за которыми есть деньги, и перекладывают данные между
+          сервисами, пока никто не смотрит.
+          <strong>Ниже — одна заявка, дважды.</strong></p>
         <div class="hero-cta">
-          <a class="btn" href="#industries">See it running on six businesses</a>
-          <a class="btn line" href="#contact">Get in touch</a>
+          <a class="btn" href="#industries">Посмотреть на трёх бизнесах</a>
+          <a class="btn line" href="#contact">Написать</a>
         </div>
       </div>
 
@@ -435,13 +436,13 @@
            ops dashboard uses, so the card is a status light rather than a claim. -->
       <aside class="status" id="status">
         <div class="status-head">
-          <span class="tag">This server, right now</span>
+          <span class="tag">Этот сервер прямо сейчас</span>
           <span class="pulse" aria-hidden="true"></span>
         </div>
         <dl class="status-rows" id="status-rows">
-          <div><dt>Loading</dt><dd>—</dd></div>
+          <div><dt>Загружаю</dt><dd>—</dd></div>
         </dl>
-        <a class="status-foot" href="/admin">Open the ops dashboard →</a>
+        <a class="status-foot" href="/admin">Открыть панель управления →</a>
       </aside>
     </div>
 
@@ -449,49 +450,49 @@
          empty second lane makes the point before anyone reads a word of it. -->
     <figure class="lanes">
       <figcaption class="lanes-head">
-        <span class="tag">One wholesale enquiry · Tuesday morning</span>
+        <span class="tag">Одна оптовая заявка · утро вторника</span>
         <span class="tag">09:00 — 13:00</span>
       </figcaption>
 
       <svg viewBox="0 0 760 262" role="img"
-           aria-label="Two timelines of the same customer enquiry. Handled by people it takes three hours twenty-six minutes and four handovers; handled by the agent it takes six tenths of a second and nobody touches it.">
+           aria-label="Две линии времени одной и той же заявки. Руками — три часа двадцать шесть минут и четыре передачи между людьми; ассистентом — шесть десятых секунды и без участия человека.">
 
         <!-- Left column is reserved for the totals so nothing ever sits on top
              of a rail. Rails start at x=190 and share one time axis. -->
 
         <!-- by hand -->
-        <text class="lane-name" x="24" y="72">BY HAND</text>
-        <text class="total"     x="24" y="96">3h 26m</text>
-        <text class="lane-sub"  x="24" y="112">4 handovers</text>
+        <text class="lane-name" x="24" y="72">РУКАМИ</text>
+        <text class="total"     x="24" y="96">3 ч 26 мин</text>
+        <text class="lane-sub"  x="24" y="112">4 передачи</text>
 
         <line class="lane-rail" x1="222" y1="90" x2="736" y2="90"/>
 
         <g class="reveal" style="animation-delay:.15s">
           <circle class="stop" cx="222" cy="90" r="5"/>
-          <text class="stop-lbl"  x="222" y="70">Email arrives</text>
+          <text class="stop-lbl"  x="222" y="70">Пришло письмо</text>
           <text class="stop-time" x="222" y="110">09:14</text>
         </g>
         <g class="reveal" style="animation-delay:.55s">
           <circle class="stop" cx="468" cy="90" r="5"/>
-          <text class="stop-lbl"  x="468" y="70" text-anchor="middle">Someone opens it, writes a reply</text>
+          <text class="stop-lbl"  x="468" y="70" text-anchor="middle">Кто-то открыл и написал ответ</text>
           <text class="stop-time" x="468" y="110" text-anchor="middle">11:02</text>
         </g>
         <g class="reveal" style="animation-delay:.95s">
           <circle class="stop" cx="690" cy="90" r="5"/>
-          <text class="stop-lbl"  x="736" y="70" text-anchor="end">Forwarded to sales</text>
+          <text class="stop-lbl"  x="736" y="70" text-anchor="end">Переслали в продажи</text>
           <text class="stop-time" x="736" y="110" text-anchor="end">12:40</text>
         </g>
 
         <!-- by the agent -->
-        <text class="lane-name" x="24" y="182">BY THE AGENT</text>
-        <text class="total-auto" x="24" y="206">0.6s</text>
-        <text class="lane-sub"  x="24" y="222">nobody touched it</text>
+        <text class="lane-name" x="24" y="182">АССИСТЕНТОМ</text>
+        <text class="total-auto" x="24" y="206">0,6 с</text>
+        <text class="lane-sub"  x="24" y="222">никто не трогал</text>
 
         <line class="auto-rail" x1="222" y1="196" x2="736" y2="196"/>
 
         <g class="reveal" style="animation-delay:1.4s">
           <rect class="auto-hit" x="220" y="188" width="5" height="17" rx="1"/>
-          <text class="auto-lbl"  x="236" y="184">Answered from the knowledge base, scored, routed to sales</text>
+          <text class="auto-lbl"  x="236" y="184">Ответил по базе знаний, оценил заявку, отправил в продажи</text>
           <text class="stop-time" x="236" y="216">09:14:00.6</text>
         </g>
 
@@ -507,37 +508,37 @@
            is ever in the DOM's accessibility tree, so nothing is read twice. -->
       <div class="lanes-sm">
         <div class="lane-sm">
-          <div class="lane-sm-head"><span class="tag">By hand</span><b>3h 26m</b></div>
+          <div class="lane-sm-head"><span class="tag">Руками</span><b>3 ч 26 мин</b></div>
           <ol>
-            <li><span>09:14</span> Email arrives</li>
-            <li><span>11:02</span> Someone opens it, writes a reply</li>
-            <li><span>12:40</span> Forwarded to sales</li>
+            <li><span>09:14</span> Пришло письмо</li>
+            <li><span>11:02</span> Кто-то открыл и написал ответ</li>
+            <li><span>12:40</span> Переслали в продажи</li>
           </ol>
-          <p class="lane-sm-foot">4 handovers</p>
+          <p class="lane-sm-foot">4 передачи</p>
         </div>
         <div class="lane-sm auto">
-          <div class="lane-sm-head"><span class="tag">By the agent</span><b>0.6s</b></div>
+          <div class="lane-sm-head"><span class="tag">Ассистентом</span><b>0,6 с</b></div>
           <ol>
-            <li><span>09:14:00.6</span> Answered from the knowledge base, scored, routed to sales</li>
+            <li><span>09:14:00,6</span> Ответил по базе знаний, оценил заявку, отправил в продажи</li>
           </ol>
-          <p class="lane-sm-foot">Nobody touched it</p>
+          <p class="lane-sm-foot">Никто не трогал</p>
         </div>
       </div>
 
       <div class="lanes-foot">
-        0.6 s is measured from the live demo below. The upper lane is a normal
-        Tuesday at a small company, not a client I am naming.
+        0,6 с измерены на живом демо ниже. Верхняя линия — обычный вторник в
+        небольшой компании, а не конкретный клиент, которого я называю.
       </div>
     </figure>
   </div>
 
   <section id="live">
     <div class="wrap">
-      <h2>This page is the demo</h2>
-      <p class="sec-note">The assistant in the corner is not a screenshot and not a
-        script. It answers from a knowledge base about how I work, and every answer
-        it gives lands in the log beside it within a second. Ask it something and
-        watch your own question arrive.</p>
+      <h2>Эта страница и есть демо</h2>
+      <p class="sec-note">Ассистент в углу — не скриншот и не заготовленный сценарий.
+        Он отвечает по базе знаний о том, как я работаю, и каждый его ответ попадает
+        в журнал слева меньше чем за секунду. Спросите что-нибудь и посмотрите, как
+        появится ваш собственный вопрос.</p>
 
       <!-- Feed first, deliberately. The chat widget owns the bottom-right of
            every page it is on, so the thing a visitor is meant to watch has to
@@ -545,31 +546,31 @@
       <div class="live">
         <div class="feed">
           <div class="feed-head">
-            <span class="tag">Live run log</span>
+            <span class="tag">Журнал запусков</span>
             <span class="tag" id="feed-count">—</span>
           </div>
           <ol id="feed-list" class="feed-list">
-            <li class="feed-empty">Connecting…</li>
+            <li class="feed-empty">Подключаюсь…</li>
           </ol>
           <div class="feed-foot">
-            Every automation this app performs writes a row here: answers, lead
-            capture, scrapes, reindexes. Nothing on this page is claimed without
-            being logged.
+            Каждое действие приложения пишет сюда строку: ответы, захват заявок,
+            парсинг, переиндексация. На этой странице нет ни одного утверждения,
+            которое не попадает в журнал.
           </div>
         </div>
 
         <div class="live-ask">
-          <span class="tag">Try one of these</span>
+          <span class="tag">Попробуйте спросить</span>
           <div class="asks">
-            <button type="button" data-ask="What do you charge for a pilot?">What do you charge for a pilot?</button>
-            <button type="button" data-ask="How long does a project take?">How long does a project take?</button>
-            <button type="button" data-ask="When should I not hire you?">When should I not hire you?</button>
-            <button type="button" data-ask="Which AI models do you use?">Which AI models do you use?</button>
-            <button type="button" data-ask="Do you build mobile apps?">Do you build mobile apps?</button>
+            <button type="button" data-ask="Сколько стоит пилот?">Сколько стоит пилот?</button>
+            <button type="button" data-ask="Сколько занимает проект по времени?">Сколько занимает проект по времени?</button>
+            <button type="button" data-ask="Когда меня не надо нанимать?">Когда вас не надо нанимать?</button>
+            <button type="button" data-ask="С какими ИИ-моделями вы работаете?">С какими ИИ-моделями вы работаете?</button>
+            <button type="button" data-ask="Делаете ли вы мобильные приложения?">Делаете ли вы мобильные приложения?</button>
           </div>
-          <p class="live-note">Answers come only from my own documents. Ask it something
-            it does not know and it will say so instead of inventing an answer — that
-            behaviour is the point, not a limitation.</p>
+          <p class="live-note">Ответы берутся только из моих собственных документов.
+            Спросите то, чего он не знает, и он скажет об этом прямо, а не придумает
+            ответ. Это и есть смысл, а не недоработка.</p>
         </div>
       </div>
     </div>
@@ -577,10 +578,10 @@
 
   <section id="industries">
     <div class="wrap">
-      <h2>Pick a business. The assistant becomes theirs.</h2>
-      <p class="sec-note">Six knowledge bases behind one engine. Choose an industry
-        and the chat in the corner switches to that business, answering from its
-        own documents. Nothing is pre-scripted — ask it whatever you like.</p>
+      <h2>Выберите бизнес — ассистент станет его ассистентом.</h2>
+      <p class="sec-note">Три базы знаний на одном движке. Выберите отрасль — и чат в
+        углу переключится на этот бизнес и начнёт отвечать по его документам.
+        Ничего не заготовлено заранее, спрашивайте что угодно.</p>
 
       <div class="ind-tabs" id="ind-tabs" role="tablist"></div>
       <div class="ind-panel" id="ind-panel"></div>
@@ -589,30 +590,30 @@
 
   <section id="lab-teaser">
     <div class="wrap">
-      <h2>Three tools you can run yourself</h2>
-      <p class="sec-note">Not a list of technologies. Working endpoints on this server,
-        open to anyone who visits.</p>
+      <h2>Три инструмента, которые можно запустить самому</h2>
+      <p class="sec-note">Не список технологий, а работающие эндпоинты на этом сервере,
+        открытые любому, кто зашёл.</p>
       <div class="tools">
         <a class="tool" href="/lab#scrape">
-          <span class="tag">Scraping</span>
-          <h3>Pull structure out of any page</h3>
-          <p>Give it a URL. It fetches the page and returns the title, headings,
-            contact details and link graph as JSON.</p>
-          <span class="tool-go">Open the scraper →</span>
+          <span class="tag">Парсинг</span>
+          <h3>Вытащить структуру из любой страницы</h3>
+          <p>Дайте ссылку. Он скачает страницу и вернёт заголовок, подзаголовки,
+            контакты и карту ссылок в JSON.</p>
+          <span class="tool-go">Открыть парсер →</span>
         </a>
         <a class="tool" href="/lab#classify">
-          <span class="tag">Classification</span>
-          <h3>Score a message the way the agent does</h3>
-          <p>Paste a customer message. It returns intent, a lead score, the entities
-            it found and where it would route the message.</p>
-          <span class="tool-go">Open the classifier →</span>
+          <span class="tag">Классификация</span>
+          <h3>Оценить сообщение так же, как это делает ассистент</h3>
+          <p>Вставьте сообщение клиента. Он вернёт намерение, оценку заявки, найденные
+            сущности и то, куда бы он это сообщение отправил.</p>
+          <span class="tool-go">Открыть классификатор →</span>
         </a>
         <a class="tool" href="/lab#clean">
-          <span class="tag">Data</span>
-          <h3>Clean a messy export</h3>
-          <p>Paste a CSV. It normalises the columns, removes duplicates and blanks,
-            flags invalid emails and hands the cleaned file back.</p>
-          <span class="tool-go">Open the cleaner →</span>
+          <span class="tag">Данные</span>
+          <h3>Почистить кривую выгрузку</h3>
+          <p>Вставьте CSV. Он приведёт колонки к единому виду, уберёт дубли и пустые
+            строки, пометит нерабочие адреса и отдаст чистый файл обратно.</p>
+          <span class="tool-go">Открыть чистильщик →</span>
         </a>
       </div>
     </div>
@@ -620,38 +621,37 @@
 
   <section>
     <div class="wrap">
-      <h2>What I build</h2>
-      <p class="sec-note">Four things, mostly. If your problem is not one of these,
-        say so anyway — I will tell you honestly whether it is worth doing.</p>
+      <h2>Что я делаю</h2>
+      <p class="sec-note">В основном четыре вещи. Если ваша задача не из этого списка,
+        всё равно напишите — честно скажу, стоит ли за неё браться.</p>
 
       <div class="builds">
         <article class="build">
-          <span class="tag">Support</span>
-          <h3>Agents that answer from your documents</h3>
-          <p>Your policies, your prices, your delivery times. Not the internet.
-            When the answer is not in your documents the agent says so and hands
-            the question to a person instead of inventing one.</p>
+          <span class="tag">Поддержка</span>
+          <h3>Ассистенты, отвечающие по вашим документам</h3>
+          <p>Ваши условия, ваши цены, ваши сроки доставки, а не интернет. Если
+            ответа в документах нет, ассистент прямо об этом говорит и передаёт
+            вопрос человеку, вместо того чтобы выдумать.</p>
         </article>
         <article class="build">
-          <span class="tag">Sales</span>
-          <h3>Lead qualification and routing</h3>
-          <p>Every conversation gets a score. The ones worth money reach Slack,
-            your CRM or an inbox within seconds, with the full transcript
-            attached so nobody has to ask the customer twice.</p>
+          <span class="tag">Продажи</span>
+          <h3>Квалификация и маршрутизация заявок</h3>
+          <p>Каждый диалог получает оценку. Те, за которыми есть деньги, попадают в
+            Telegram, вашу CRM или на почту за секунды, вместе с полной перепиской,
+            чтобы клиента не переспрашивали дважды.</p>
         </article>
         <article class="build">
-          <span class="tag">Operations</span>
-          <h3>The plumbing between your tools</h3>
-          <p>Orders into spreadsheets, invoices into accounting, form
-            submissions into the CRM, alerts into Slack. Built in n8n so you can
-            see the whole flow on one screen and change it without me.</p>
+          <span class="tag">Процессы</span>
+          <h3>Связки между вашими сервисами</h3>
+          <p>Заказы в таблицы, счета в бухгалтерию, заявки с форм в CRM, уведомления
+            в чат. Собираю в n8n, чтобы вы видели всю схему на одном экране и могли
+            менять её без меня.</p>
         </article>
         <article class="build">
-          <span class="tag">Data</span>
-          <h3>Collection and clean-up</h3>
-          <p>Scraping, enrichment, deduplication, format conversion. Getting
-            data out of wherever it is stuck and into the shape your process
-            actually needs.</p>
+          <span class="tag">Данные</span>
+          <h3>Сбор и чистка данных</h3>
+          <p>Парсинг, обогащение, дедупликация, конвертация форматов. Достать данные
+            оттуда, где они застряли, и привести к виду, который нужен процессу.</p>
         </article>
       </div>
     </div>
@@ -659,43 +659,43 @@
 
   <section>
     <div class="wrap">
-      <h2>A build you can open right now</h2>
-      <p class="sec-note">Not a screenshot. A running system with its source code public.</p>
+      <h2>Работа, которую можно открыть прямо сейчас</h2>
+      <p class="sec-note">Не скриншот. Работающая система с открытым исходным кодом.</p>
 
       <div class="case">
         <div>
-          <p><strong>AI Support &amp; Lead Agent.</strong> A chat agent for an
-            e-commerce brand. It answers questions from the company's own
-            knowledge base, shows which section each answer came from, watches
-            for buying intent, and pushes qualified leads into n8n — which fans
-            them out to Slack, a CRM, a spreadsheet and a follow-up email.</p>
+          <p><strong>ИИ-ассистент поддержки и продаж.</strong> Чат-ассистент для
+            интернет-магазина. Отвечает по базе знаний компании, показывает, из
+            какого раздела взят ответ, замечает намерение купить и отправляет
+            отобранные заявки в n8n, а тот разводит их по Telegram, CRM, таблице
+            и письму.</p>
 
-          <p>The part most people miss: leads are written to the database
-            <em>before</em> the webhook fires. If n8n is down the lead is not
-            lost, and one button replays every undelivered one. That is the
-            difference between a demo and something you can leave running.</p>
+          <p>То, что обычно упускают: заявка пишется в базу <em>до</em> того, как
+            сработает вебхук. Если n8n лежит, заявка не теряется, а одна кнопка
+            заново отправляет все недоставленные. Это и есть разница между демо и
+            тем, что можно оставить работать.</p>
 
-          <p>It runs without any API keys in demo mode, so the link below costs
-            nothing to keep online and will not break on a spend limit the day
-            you open it.</p>
+          <p>В демо-режиме работает вообще без API-ключей, поэтому ссылка ниже
+            ничего не стоит в обслуживании и не сломается из-за исчерпанного лимита
+            ровно в тот день, когда вы её откроете.</p>
 
           <div class="links">
-            <a class="btn" href="https://ai-support-agent-jett.onrender.com" target="_blank" rel="noopener">Open the live demo</a>
-            <a class="btn line" href="https://github.com/whykucher/ai-support-agent" target="_blank" rel="noopener">Read the source</a>
+            <a class="btn" href="https://ai-support-agent-jett.onrender.com" target="_blank" rel="noopener">Открыть живое демо</a>
+            <a class="btn line" href="https://github.com/whykucher/ai-support-agent" target="_blank" rel="noopener">Посмотреть код</a>
           </div>
         </div>
 
         <div>
           <div class="facts">
-            <div class="fact"><b>0.6 s</b><span>Average answer</span></div>
-            <div class="fact"><b>0–100</b><span>Intent score per conversation</span></div>
-            <div class="fact"><b>3</b><span>LLM providers behind one interface</span></div>
-            <div class="fact"><b>4</b><span>Python dependencies, no vector database</span></div>
-            <div class="fact"><b>20</b><span>Automated checks, all passing</span></div>
+            <div class="fact"><b>0,6 с</b><span>Средний ответ</span></div>
+            <div class="fact"><b>0–100</b><span>Оценка намерения за диалог</span></div>
+            <div class="fact"><b>3</b><span>Провайдера моделей за одним интерфейсом</span></div>
+            <div class="fact"><b>4</b><span>Зависимости Python, без векторной базы</span></div>
+            <div class="fact"><b>20</b><span>Автотестов, все проходят</span></div>
           </div>
-          <p class="disclaimer">Northwind Coffee Co., the brand in the demo, is
-            invented — I needed a business with real policies to answer from.
-            The engineering is not invented, and neither are these numbers.</p>
+          <p class="disclaimer">Northwind Coffee Co. из демо — выдуманная компания:
+            мне нужен был бизнес с настоящими правилами, по которым можно отвечать.
+            Инженерная часть не выдумана, и эти цифры тоже.</p>
         </div>
       </div>
     </div>
@@ -703,50 +703,49 @@
 
   <section>
     <div class="wrap">
-      <h2>How it goes</h2>
-      <p class="sec-note">Numbered because it really is a sequence, and because you
-        should know what happens before you pay for anything.</p>
+      <h2>Как это проходит</h2>
+      <p class="sec-note">Пронумеровано, потому что это действительно последовательность
+        и потому что вы должны знать, что будет, до того как за что-то заплатите.</p>
 
       <div class="steps">
         <div class="step">
           <span class="n">01</span>
           <div>
-            <h3>A call</h3>
-            <p>I ask what your five most repeated questions are, where the
-              answers live today, and who currently handles them. If automation
-              is the wrong answer, this is where I say so.</p>
-            <span class="when">20 minutes · free</span>
+            <h3>Созвон</h3>
+            <p>Спрашиваю, какие пять вопросов вам задают чаще всего, где сейчас
+              лежат ответы и кто ими занимается. Если автоматизация — неправильный
+              ответ, я скажу это здесь.</p>
+            <span class="when">20 минут · бесплатно</span>
           </div>
         </div>
         <div class="step">
           <span class="n">02</span>
           <div>
-            <h3>A written plan</h3>
-            <p>What gets automated, what deliberately stays manual, what it
-              costs and how long it takes. In writing, before any code exists,
-              so there is nothing to argue about later.</p>
-            <span class="when">1–2 days</span>
+            <h3>Письменный план</h3>
+            <p>Что автоматизируем, что сознательно оставляем руками, сколько это
+              стоит и сколько занимает. Письменно, до появления кода, чтобы потом
+              не о чем было спорить.</p>
+            <span class="when">1–2 дня</span>
           </div>
         </div>
         <div class="step">
           <span class="n">03</span>
           <div>
-            <h3>Build</h3>
-            <p>You see it working on your own content, not on a demo brand. I
-              send progress as it happens rather than disappearing for a week
-              and returning with a surprise.</p>
-            <span class="when">3–10 days for most builds</span>
+            <h3>Сборка</h3>
+            <p>Вы видите, как это работает на ваших материалах, а не на демо. Я
+              показываю промежуточные результаты, а не пропадаю на неделю и не
+              возвращаюсь с сюрпризом.</p>
+            <span class="when">3–10 дней в большинстве проектов</span>
           </div>
         </div>
         <div class="step">
           <span class="n">04</span>
           <div>
-            <h3>Handover</h3>
-            <p>You get the code, the credentials and a document that explains
-              how to change the parts you will want to change. Everything runs
-              on your accounts. No lock-in, and nothing that stops working if
-              you stop paying me.</p>
-            <span class="when">Yours to keep</span>
+            <h3>Передача</h3>
+            <p>Вы получаете код, доступы и документ о том, как менять то, что вы
+              захотите менять. Всё работает на ваших аккаунтах. Никакой привязки ко
+              мне, и ничего не отключится, если вы перестанете мне платить.</p>
+            <span class="when">Остаётся у вас</span>
           </div>
         </div>
       </div>
@@ -756,27 +755,27 @@
   <section>
     <div class="wrap nope-wrap">
       <div class="nope">
-        <h2>When not to hire me</h2>
+        <h2>Когда меня не надо нанимать</h2>
         <ul>
           <li>
-            <b>Your process is not written down and nobody agrees on how it works.</b>
-            Automation does not fix a broken process, it makes it break faster and
-            more quietly. Write it down first. Then it is a short job.
+            <b>Процесс нигде не описан, и внутри команды нет согласия, как он устроен.</b>
+            Автоматизация не чинит сломанный процесс — она ломает его быстрее и тише.
+            Опишите сначала. Тогда это будет короткая работа.
           </li>
           <li>
-            <b>You want a bot that improvises and sounds human.</b>
-            Mine are built to say “I do not know that, let me get someone who
-            does.” I think that is the right default for a business, but if you
-            want the opposite we will both be unhappy.
+            <b>Нужен бот, который импровизирует и звучит как живой человек.</b>
+            Мои устроены так, чтобы сказать «этого я не знаю, сейчас позову того, кто
+            знает». Для бизнеса это правильное поведение по умолчанию, но если вам
+            нужно обратное — мы оба будем недовольны.
           </li>
           <li>
-            <b>You need a mobile app, a brand identity, or someone to run ads.</b>
-            I do not do those and I do not want to learn them on your budget.
+            <b>Нужно мобильное приложение, фирменный стиль или ведение рекламы.</b>
+            Я этим не занимаюсь и не хочу учиться за ваш счёт.
           </li>
           <li>
-            <b>The whole job is one afternoon of clicking.</b>
-            If Zapier's free tier solves it, use Zapier's free tier. Tell me and
-            I will point you at it.
+            <b>Вся задача решается за вечер кликами.</b>
+            Если её закрывает бесплатный тариф готового сервиса — берите его.
+            Напишите, и я покажу, где именно.
           </li>
         </ul>
       </div>
@@ -786,16 +785,16 @@
   <section id="contact">
     <div class="wrap contact">
       <div>
-        <h2>Tell me what is eating the time.</h2>
-        <p>One paragraph is enough: what the repetitive task is, roughly how
-          often it happens, and which tools it touches. I reply within a
-          business day, and I will tell you if it is not worth automating.</p>
+        <h2>Расскажите, что съедает время.</h2>
+        <p>Хватит одного абзаца: что за повторяющаяся задача, примерно как часто
+          она случается и какие сервисы затрагивает. Отвечу в течение рабочего дня
+          и скажу, если автоматизировать это не стоит.</p>
       </div>
       <div class="channels">
         <a href="mailto:hentajp5@gmail.com">hentajp5@gmail.com</a>
         <a href="https://github.com/whykucher" target="_blank" rel="noopener">github.com/whykucher</a>
-        <!-- Add your Upwork profile when you have the URL:
-             <a href="https://www.upwork.com/freelancers/~YOURID" target="_blank" rel="noopener">Upwork profile →</a> -->
+        <!-- Здесь же можно поставить ссылку на профиль на бирже:
+             <a href="https://www.upwork.com/freelancers/~YOURID" target="_blank" rel="noopener">Профиль →</a> -->
       </div>
     </div>
   </section>
@@ -804,7 +803,7 @@
 
 <footer>
   <div class="wrap">
-    <span class="tag">Nikita Denisov · AI automation · Built with FastAPI, n8n and no templates</span>
+    <span class="tag">Леонид Денисов · ИИ-автоматизация · FastAPI, n8n и ни одного шаблона</span>
   </div>
 </footer>
 
@@ -817,42 +816,53 @@
     const list = document.getElementById("feed-list");
     const count = document.getElementById("feed-count");
     const KINDS = {
-      "chat.answer": "answered",
-      "lead.capture": "lead",
-      "lead.retry": "retry",
-      "knowledge.reindex": "reindex",
-      "lab.scrape": "scrape",
-      "lab.classify": "classify",
-      "lab.clean": "clean",
+      "chat.answer": "ответ",
+      "lead.capture": "заявка",
+      "lead.retry": "повтор",
+      "knowledge.reindex": "переиндексация",
+      "lab.scrape": "парсинг",
+      "lab.classify": "классификация",
+      "lab.clean": "чистка",
     };
     let seen = new Set();
     let first = true;
 
     const ago = (ts) => {
       const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
-      if (s < 60) return s + "s ago";
-      if (s < 3600) return Math.floor(s / 60) + "m ago";
-      if (s < 86400) return Math.floor(s / 3600) + "h ago";
-      return Math.floor(s / 86400) + "d ago";
+      if (s < 60) return s + " с назад";
+      if (s < 3600) return Math.floor(s / 60) + " мин назад";
+      if (s < 86400) return Math.floor(s / 3600) + " ч назад";
+      return Math.floor(s / 86400) + " д назад";
     };
 
     const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    // "1 запуск, 2 запуска, 5 запусков" - an English ternary gets this wrong
+    // for every number ending in 2, 3 or 4.
+    const plural = (n, one, few, many) => {
+      const a = Math.abs(n) % 100;
+      const b = a % 10;
+      if (a > 10 && a < 20) return many;
+      if (b > 1 && b < 5) return few;
+      if (b === 1) return one;
+      return many;
+    };
 
     async function tick() {
       let data;
       try {
         data = await (await fetch("/api/runs?limit=14")).json();
       } catch (e) {
-        list.innerHTML = '<li class="feed-empty">Log unreachable. The page still works.</li>';
+        list.innerHTML = '<li class="feed-empty">Журнал недоступен. Страница работает.</li>';
         return;
       }
       const runs = data.runs || [];
       const total = Object.values(data.counts || {}).reduce((a, b) => a + b, 0);
-      count.textContent = total + (total === 1 ? " run logged" : " runs logged");
+      count.textContent = total + " " + plural(total, "запуск", "запуска", "запусков");
 
       if (!runs.length) {
-        list.innerHTML = '<li class="feed-empty">Nothing yet. Ask the assistant a question.</li>';
+        list.innerHTML = '<li class="feed-empty">Пока пусто. Задайте ассистенту вопрос.</li>';
         return;
       }
 
@@ -886,21 +896,20 @@
         ]);
         const total = Object.values(r.counts || {}).reduce((a, b) => a + b, 0);
         const answers = (r.counts || {})["chat.answer"] || 0;
-        const mine = Object.entries(h.sites).filter(([, s]) => s.lang === "en");
+        const mine = Object.entries(h.sites).filter(([, s]) => s.lang === "ru");
         const pairs = [
-          // This page's own businesses, not every tenant on the server -
-          // the picker below shows these and the hero counts them.
-          ["Businesses live", mine.filter(([, s]) => s.vertical).length],
-          ["Knowledge indexed", mine.reduce((n, [, s]) => n + s.knowledge.n, 0)
-            + " sections"],
-          ["Questions answered", answers],
-          ["Automations logged", total],
-          ["LLM provider", h.provider],
+          // Только бизнесы этой страницы, а не все арендаторы сервера:
+          // ниже их показывает переключатель, и в первом экране их же считают.
+          ["Бизнесов запущено", mine.filter(([, s]) => s.vertical).length],
+          ["Разделов в базе", mine.reduce((n, [, s]) => n + s.knowledge.n, 0)],
+          ["Вопросов отвечено", answers],
+          ["Действий в журнале", total],
+          ["Провайдер модели", h.provider],
         ];
         rows.innerHTML = pairs.map(([k, v]) =>
           `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
       } catch (e) {
-        rows.innerHTML = '<div><dt>Server</dt><dd>unreachable</dd></div>';
+        rows.innerHTML = '<div><dt>Сервер</dt><dd>недоступен</dd></div>';
       }
       setTimeout(status, 15000);
     })();
@@ -909,7 +918,7 @@
     document.querySelectorAll(".asks button").forEach((b) => {
       b.addEventListener("click", () => {
         if (window.NorthwindChat) {
-          window.NorthwindChat.setSite("portfolio", PORTFOLIO_SITE);
+          window.NorthwindChat.setSite("portfolio-ru", PORTFOLIO_SITE);
           window.NorthwindChat.send(b.dataset.ask);
         }
       });
@@ -921,14 +930,15 @@
   // actually running. Adding an industry is a knowledge folder plus a config
   // entry; this page needs no edit at all.
   const PORTFOLIO_SITE = {
-    title: "Ask about working with Nikita",
-    agent: "Ada",
-    accent: "#A96417",
-    accentDark: "#8A5013",
-    greeting: "I answer from Nikita's own notes: scope, pricing, timelines, and what he turns down. What would you like to know?",
-    quick: ["What do you charge?", "How long does it take?", "When should I not hire you?"],
-    leadTitle: "Want Nikita to look at your case?",
-    leadNote: "One line about the task is enough. You get a reply within a business day.",
+    title: "Вопросы о работе с Леонидом",
+    agent: "Ася",
+    lang: "ru",
+    accent: "#2E8F68",
+    accentDark: "#247353",
+    greeting: "Отвечаю по собственным заметкам Леонида: объём работ, цены, сроки и то, за что он не берётся. Что вас интересует?",
+    quick: ["Сколько это стоит?", "Сколько занимает по времени?", "Когда вас не надо нанимать?"],
+    leadTitle: "Хотите, чтобы Леонид посмотрел вашу задачу?",
+    leadNote: "Хватит одной строки о задаче. Ответ в течение рабочего дня.",
   };
 
   (function () {
@@ -969,28 +979,28 @@
       panel.innerHTML = `
         <div class="ind-grid">
           <div class="ind-cell">
-            <h3>What the day looks like now</h3>
+            <h3>Как выглядит день сейчас</h3>
             <p>${esc(s.pain)}</p>
             <p style="margin-top:14px;font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--soft)">
-              ${esc(s.tagline)} · ${s.knowledge.n} sections indexed
+              ${esc(s.tagline)} · ${s.knowledge.n} разделов в базе
             </p>
           </div>
           <div class="ind-cell">
-            <h3>What gets wired</h3>
+            <h3>Что подключаем</h3>
             <ol class="pipe">${s.pipeline.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>
           </div>
         </div>
         <div class="ind-ask">
           <div class="ind-open">
             <div>
-              <span class="tag">The whole site, not a card</span>
-              <p class="ind-note" style="margin:8px 0 0">${esc(s.company)} has its own
-                pages, its own brand and its own assistant. Open it and it behaves
-                like that company's real website.</p>
+              <span class="tag">Целый сайт, а не карточка</span>
+              <p class="ind-note" style="margin:8px 0 0">У компании ${esc(s.company)} свои
+                страницы, свой стиль и свой ассистент. Откройте — и это ведёт себя
+                как настоящий сайт этой компании.</p>
             </div>
-            <a class="ind-go" href="${esc(s.href)}">Open ${esc(s.company)} →</a>
+            <a class="ind-go" href="${esc(s.href)}">Открыть ${esc(s.company)} →</a>
           </div>
-          <span class="tag" style="display:block;margin:20px 0 12px">Or ask it from here</span>
+          <span class="tag" style="display:block;margin:20px 0 12px">Или спросите прямо отсюда</span>
           <div class="ind-qs">
             ${s.questions.map((q) => `<button type="button" data-q="${esc(q)}">${esc(q)}</button>`).join("")}
           </div>
@@ -1012,8 +1022,9 @@
         accentDark: darken(s.accent),
         greeting: s.greeting,
         quick: s.questions,
-        leadTitle: "Want " + s.company + " to get back to you?",
-        leadNote: "Leave your details and the team replies within one business day.",
+        lang: "ru",
+        leadTitle: "Хотите, чтобы " + s.company + " с вами связались?",
+        leadNote: "Оставьте контакты — ответим в течение рабочего дня.",
         open: false,
       });
     }
@@ -1028,29 +1039,30 @@
     fetch("/api/health").then((r) => r.json()).then((h) => {
       sites = Object.fromEntries(
         Object.entries(h.sites)
-          .filter(([, s]) => s.vertical && s.lang === "en")
-          .map(([k, s]) => [k, { ...s, href: k === "demo" ? "/demo" : "/b/" + k }]));
+          .filter(([, s]) => s.vertical && s.lang === "ru")
+          .map(([k, s]) => [k, { ...s, href: "/b/" + k }]));
       const first = Object.keys(sites)[0];
-      if (!first) { panel.innerHTML = '<div class="ind-ask">No industries configured.</div>'; return; }
+      if (!first) { panel.innerHTML = '<div class="ind-ask">Отрасли не настроены.</div>'; return; }
       active = first;
       renderTabs();
       renderPanel();
     }).catch(() => {
-      panel.innerHTML = '<div class="ind-ask">Could not load the industry list.</div>';
+      panel.innerHTML = '<div class="ind-ask">Не удалось загрузить список отраслей.</div>';
     });
   })();
 </script>
 
 <script src="/static/widget.js"
         data-api=""
-        data-site="portfolio"
-        data-title="Ask about working with Nikita"
-        data-agent="Ada"
-        data-accent="#A96417"
-        data-greeting="I answer from Nikita's own notes: scope, pricing, timelines, and what he turns down. What would you like to know?"
-        data-quick="What do you charge?|How long does it take?|When should I not hire you?"
-        data-lead-title="Want Nikita to look at your case?"
-        data-lead-note="One line about the task is enough. You get a reply within a business day."
+        data-lang="ru"
+        data-site="portfolio-ru"
+        data-title="Вопросы о работе с Леонидом"
+        data-agent="Ася"
+        data-accent="#2E8F68"
+        data-greeting="Отвечаю по собственным заметкам Леонида: объём работ, цены, сроки и то, за что он не берётся. Что вас интересует?"
+        data-quick="Сколько это стоит?|Сколько занимает по времени?|Когда вас не надо нанимать?"
+        data-lead-title="Хотите, чтобы Леонид посмотрел вашу задачу?"
+        data-lead-note="Хватит одной строки о задаче. Ответ в течение рабочего дня."
         defer></script>
 </body>
 </html>

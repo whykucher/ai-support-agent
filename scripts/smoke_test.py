@@ -2,17 +2,36 @@
 
     python -m scripts.smoke_test
 
-Exercises every surface: all seven knowledge bases, retrieval quality, tenant
-isolation, every question the industry picker advertises, chat and scoring, lead
+Exercises every surface: all eleven knowledge bases in both languages,
+retrieval quality, tenant isolation, every question the industry picker advertises, chat and scoring, lead
 capture, the run log, all three lab tools, SSRF refusal, admin auth and the four
-pages. Exit code 0 means the whole thing works on this
+pages, English and Russian. Exit code 0 means the whole thing works on this
 machine. Network is only needed for the one live-scrape check, which is skipped
 rather than failed when offline.
 """
+import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+# Windows consoles default to a legacy codepage, and half of what this script
+# prints is now Russian. Without this the run dies on a rouble sign in a passing
+# check rather than on anything being wrong.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):  # already wrapped, or not a real tty
+        pass
+
+# Windows consoles still default to a legacy codepage, and half the checks now
+# print Russian. Without this the suite dies on a rouble sign rather than on a
+# real failure.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):  # already utf-8, or not a real tty
+        pass
 
 from fastapi.testclient import TestClient  # noqa: E402
 
@@ -225,8 +244,64 @@ def main() -> int:
         check("unknown business 404s", client.get("/b/nope").status_code == 404)
         check("unknown site payload 404s", client.get("/api/site/nope").status_code == 404)
 
+        # --- 12c. the Russian side ------------------------------------------
+        # A half-translated site is worse than an English one, so these check
+        # the seams: routing, language scoping, and that the assistant actually
+        # answers in Russian rather than falling back to the English templates.
+        cyrillic = re.compile(r"[а-яё]", re.I)
+        latin = re.compile(r"[a-z]", re.I)
+
+        for key, conf in config.SITES.items():
+            if conf.get("lang") != "ru":
+                continue
+            for q in conf.get("questions", []):
+                a = client.post("/api/chat", json={"message": q, "site": key})
+                ans = a.json().get("answer", "") if a.status_code == 200 else ""
+                # Compared as counts, not presence: a Russian answer may still
+                # contain "SEO" or "n8n" without being an English answer.
+                russian = (len(cyrillic.findall(ans)) >
+                           len(latin.findall(ans)))
+                check(f"{key} answers «{q[:28]}…» in Russian", russian,
+                      ans[:60])
+
+        # The two portfolios must not list each other's demo businesses.
+        en_page = client.get("/").text
+        ru_page = client.get("/ru").text
+        check("/ru serves the Russian portfolio",
+              client.get("/ru").status_code == 200
+              and "Леонид Денисов" in ru_page)
+        check("Russian portfolio does not carry the English name",
+              "Nikita" not in ru_page)
+        check("each portfolio filters the picker by language",
+              's.lang === "en"' in en_page and 's.lang === "ru"' in ru_page)
+
+        # Bricolage Grotesque has no Cyrillic; if it ever comes back the
+        # Russian headings silently fall back to a system font.
+        check("Russian portfolio uses a Cyrillic display face",
+              "Bricolage" not in ru_page and "Onest" in ru_page)
+
+        ru_payload = client.get("/api/site/ru-shop").json()
+        check("Russian business payload points home to /ru",
+              ru_payload["lang"] == "ru" and ru_payload["home"] == "/ru"
+              and ru_payload["owner"] == config.OWNER_NAME_RU)
+        check("English business payload points home to /",
+              client.get("/api/site/saas").json()["home"] == "/")
+
+        # Company names are stored already quoted; anything adding its own
+        # prints ««Лоскут»».
+        unknown = client.post("/api/chat", json={
+            "message": "Продаёте ли вы велосипеды?", "site": "ru-shop"}).json()
+        check("Russian fallback has no doubled guillemets",
+              "««" not in unknown["answer"] and
+              len(cyrillic.findall(unknown["answer"])) > 10,
+              unknown["answer"][:60])
+
+        check("widget carries a Russian string table",
+              "Спросите что угодно" in client.get("/static/widget.js").text)
+
         # --- 13. pages ------------------------------------------------------------
         for path, marker in [("/", "This page is the demo"),
+                             ("/ru", "Эта страница и есть демо"),
                              ("/lab", "Page scraper"),
                              ("/demo", "FIRST CRACK"),
                              ("/admin", "Run log")]:

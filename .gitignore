@@ -5,3 +5,6 @@ __pycache__/
 .venv/
 venv/
 .DS_Store
+
+# Local dev-server config (Windows paths)
+.claude/

@@ -65,12 +65,65 @@ _PRICE_WORDS = ("price", "cost", "how much", "discount", "pricing", "cheap")
 _ANGRY_WORDS = ("refund", "broken", "damaged", "late", "never arrived",
                 "complaint", "wrong item", "cancel")
 
+# Russian equivalents. These are matched as substrings against the lowercased
+# question, so each entry is a stem rather than a word form: "цен" catches
+# цена, цены, цену and ценам without a morphology library.
+_BUY_WORDS_RU = ("опт", "объём", "объем", "парти", "счёт", "счет", "договор",
+                 "юрлиц", "юридическ", "интеграц", "api", "корпоратив",
+                 "сотруднич", "коммерческ предлож", "подключ")
+
+_BUY_WORDS_PORTFOLIO_RU = ("нанят", "наня", "бюджет", "проект", "заказ",
+                           "смет", "срок", "дедлайн", "сколько сто", "стоимост",
+                           "цен", "тариф", "пилот", "сопровожд", "договор",
+                           "счёт", "счет", "свободн", "занят", "начать",
+                           "приступ", "оценит")
+
+_PRICE_WORDS_RU = ("цен", "стоимост", "сколько сто", "сколько буд", "скидк",
+                   "дешев", "дешёв", "тариф", "прайс", "рассрочк")
+
+_ANGRY_WORDS_RU = ("верните", "вернуть деньги", "возврат", "брак", "сломал",
+                   "повредил", "опозда", "задерж", "жалоб", "не пришл",
+                   "не приш", "отмен", "обман")
+
 # What the assistant offers next once it detects commercial interest.
 _FOLLOW_UP = {
     "demo": " Want me to have our wholesale team send you a quote?",
     "portfolio": " If you tell me what the task is, I can pass it to Nikita with"
                  " your details and he will come back within a business day.",
+    "portfolio-ru": " Опишите задачу в двух словах — передам Леониду вместе с"
+                    " вашими контактами, он вернётся в течение рабочего дня.",
+    "ru-agency": " Оставьте контакты — стратег позвонит и разберёт вашу ситуацию"
+                 " за 30 минут, бесплатно.",
+    "ru-shop": " Напишите рост и обхваты — подскажем размер до того, как вы"
+               " оформите заказ.",
+    "ru-school": " Оставьте контакты — запишем вас на бесплатную консультацию.",
 }
+
+# Everything the demo backend says in its own voice, rather than quoting a
+# document. Keyed by the language on the site's config entry.
+_PHRASES = {
+    "en": {
+        "unknown": "I do not have that in {company}'s knowledge base yet. "
+                   "Leave your email and you will get a proper answer today.",
+        "sorry": "Sorry about that - I am handing this to a human agent now. ",
+    },
+    "ru": {
+        # No company name here on purpose: the registry stores it already
+        # quoted, and Russian would need it in the genitive anyway.
+        "unknown": "Этого пока нет в моей базе знаний. Оставьте почту, "
+                   "и вы получите нормальный ответ сегодня.",
+        "sorry": "Извините за это — передаю вопрос живому сотруднику. ",
+    },
+}
+
+
+def _is_portfolio(site: str) -> bool:
+    """The portfolio sells project work; the demo businesses sell products.
+
+    Checked by name in two places, and there are two portfolios now, so it is
+    worth one function rather than two string comparisons that drift apart.
+    """
+    return site in ("portfolio", "portfolio-ru")
 
 
 def _demo_reply(question: str, chunks: list[dict[str, Any]],
@@ -78,14 +131,22 @@ def _demo_reply(question: str, chunks: list[dict[str, Any]],
     """Deterministic, no network. Good enough to demo the whole pipeline."""
     site = site or config.DEFAULT_SITE
     conf = config.site_conf(site)
-    buy_words = _BUY_WORDS_PORTFOLIO if site == "portfolio" else _BUY_WORDS
+    ru = conf.get("lang", "en") == "ru"
+    phrases = _PHRASES["ru" if ru else "en"]
+
+    if _is_portfolio(site):
+        buy_words = _BUY_WORDS_PORTFOLIO_RU if ru else _BUY_WORDS_PORTFOLIO
+    else:
+        buy_words = _BUY_WORDS_RU if ru else _BUY_WORDS
+    angry_words = _ANGRY_WORDS_RU if ru else _ANGRY_WORDS
+    price_words = _PRICE_WORDS_RU if ru else _PRICE_WORDS
     q = question.lower()
 
-    if site != "portfolio" and any(w in q for w in _ANGRY_WORDS):
+    if not _is_portfolio(site) and any(w in q for w in angry_words):
         intent, score, handoff = "complaint", 25, True
     elif any(w in q for w in buy_words):
         intent, score, handoff = "buying", 80, False
-    elif any(w in q for w in _PRICE_WORDS):
+    elif any(w in q for w in price_words):
         intent, score, handoff = "pricing", 50, False
     elif chunks:
         intent, score, handoff = "question", 10, False
@@ -93,10 +154,7 @@ def _demo_reply(question: str, chunks: list[dict[str, Any]],
         intent, score, handoff = "other", 10, True
 
     if not chunks:
-        answer = (
-            f"I do not have that in {conf['company']}'s knowledge base yet. "
-            "Leave your email and you will get a proper answer today."
-        )
+        answer = phrases["unknown"].format(company=conf["company"])
     else:
         body = " ".join(chunks[0]["content"].split())
         if len(body) > 420:
@@ -105,7 +163,7 @@ def _demo_reply(question: str, chunks: list[dict[str, Any]],
         if intent == "buying":
             answer += _FOLLOW_UP.get(site, "")
         elif intent == "complaint":
-            answer = "Sorry about that - I am handing this to a human agent now. " + answer
+            answer = phrases["sorry"] + answer
 
     return {
         "answer": answer,

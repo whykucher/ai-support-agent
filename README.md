@@ -8,10 +8,11 @@ software — the software, running, with the ledger open.
 | | |
 |---|---|
 | [`/`](https://ai-support-agent-jett.onrender.com/) | Portfolio. Its assistant answers from a knowledge base about how I work, and every answer lands in a live run log beside it. |
-| [`/b/<business>`](https://ai-support-agent-jett.onrender.com/b/agency) | Five standalone client sites — an agency, a SaaS, an estate agency, a coaching practice, a recruiter — each with its own brand, layout and working assistant. |
+| [`/ru`](https://ai-support-agent-jett.onrender.com/ru) | The same thing in Russian — its own services, its own prices in roubles, its own three demo businesses. Not a translation layer: a second tenant of the same engine. |
+| [`/b/<business>`](https://ai-support-agent-jett.onrender.com/b/agency) | Eight standalone client sites — five English, three Russian — each with its own brand, layout and working assistant. |
 | [`/lab`](https://ai-support-agent-jett.onrender.com/lab) | Three tools you can run: a page scraper, a message classifier, a CSV cleaner. |
 | [`/demo`](https://ai-support-agent-jett.onrender.com/demo) | The client-facing storefront the agent was built for. |
-| [`/admin`](https://ai-support-agent-jett.onrender.com/admin) | Operations: leads, transcripts, run log and knowledge base across both sites. |
+| [`/admin`](https://ai-support-agent-jett.onrender.com/admin) | Operations: leads, transcripts, run log and knowledge base across every site. |
 
 **Runs with zero API keys.** `demo` mode uses hybrid keyword retrieval and
 templated answers, so the whole thing works — and costs nothing — before you add
@@ -38,7 +39,13 @@ five seconds. Nothing on the page is claimed without being logged.*
 ![Industries](docs/screenshots/01b-industries.png)
 
 *Six businesses, six knowledge bases, one engine. Pick one and the chat in the
-corner becomes that company's assistant — or open the company's own site.*
+corner becomes that company's assistant — or open the company's own site.
+[`/ru`](https://ai-support-agent-jett.onrender.com/ru) does the same with three Russian ones.*
+
+|  |  |
+|---|---|
+| ![Russian portfolio](docs/screenshots/09-portfolio-ru.png) | ![Russian shop](docs/screenshots/12-lead-capture-ru.png) |
+| `/ru` — same engine, different market: roubles, Onest, a green signal | `/b/ru-shop` — the widget in Russian, detecting wholesale intent |
 
 |  |  |
 |---|---|
@@ -120,6 +127,24 @@ recruiters — rather than whichever verticals were easiest to invent.
 | `realty` | Kestrel Property, estate agency | lead qualification is the whole job |
 | `coaching` | Northlight Coaching, leadership coaching | high enquiry volume, two people to answer it |
 | `recruiting` | Havenridge Talent, tech recruitment | two audiences in one inbox |
+| `portfolio-ru` | how I work, in Russian and in roubles | the Russian front page's assistant |
+| `ru-agency` | «Полдень», перформанс-маркетинг | Яндекс.Директ and VK, not Google Ads |
+| `ru-shop` | «Лоскут», linen clothing from Ivanovo | СДЭК, ЮKassa, 14-day returns |
+| `ru-school` | «Ступень», online school for new managers | Тинькофф instalments, tax deduction |
+
+The Russian entries are written for the Russian market rather than translated
+from the English ones: a Russian agency page quoting Google Ads and prices in
+pounds would read as a machine translation of somebody else's business. The
+industry picker is scoped by language, so `/` never lists a Russian demo and
+`/ru` never lists an English one.
+
+Russian retrieval needed real work, not a `lang` column. The tokeniser folds
+`ё` into `е`, and a small ordered suffix stripper reduces `доставка`,
+`доставки` and `доставку` to one stem — without it every inflected form is a
+different word and a customer asking about delivery matches nothing. Where a
+verb form cannot reach its noun (`отчитываетесь` → `отчётность`), the fix is in
+the document, not the ranker: the section carries the question a customer
+actually types.
 
 Entries marked `vertical` also render the industry picker on the front page,
 including each one's pipeline and sample questions. The smoke test asserts that
@@ -227,7 +252,7 @@ app/
   db.py         SQLite schema, migrations, run log
   config.py     env-driven settings and the site registry
 web/            portfolio · lab · storefront · ops · embeddable widget
-knowledge/      portfolio/ and demo/ — one folder per site
+knowledge/      one folder per site — 11 of them, English and Russian
 n8n/            importable lead-routing workflow
 scripts/        ingest · seed_demo · smoke_test · fake_n8n · screenshots
 ```

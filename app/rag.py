@@ -15,21 +15,72 @@ from . import config, db
 
 HEADING_BOOST = 3  # how many times a heading token is counted vs a body token
 
-_WORD = re.compile(r"[a-z0-9]+")
-_STOP = {
+# Cyrillic has to be in the character class or Russian input tokenises to
+# nothing at all and the assistant silently answers every question with "I do
+# not know" - which looks like a content problem and is not.
+_WORD = re.compile(r"[a-zа-яё0-9]+")
+
+_STOP_EN = {
     "the", "a", "an", "and", "or", "is", "are", "do", "does", "to", "of", "in",
     "for", "on", "it", "i", "you", "we", "my", "your", "can", "how", "what",
     "with", "at", "be", "have", "has", "will", "if", "this", "that", "from",
 }
 
+_STOP_RU = {
+    "и", "в", "во", "не", "что", "он", "на", "я", "с", "со", "как", "а", "то",
+    "все", "она", "так", "его", "но", "да", "ты", "к", "у", "же", "вы", "за",
+    "бы", "по", "только", "её", "ее", "мне", "было", "вот", "от", "меня", "ещё",
+    "еще", "нет", "о", "из", "ему", "когда", "ли", "если", "уже", "или", "ни",
+    "быть", "был", "до", "вас", "вам", "там", "себя", "ей", "они", "тут", "где",
+    "есть", "для", "мы", "тебя", "их", "чем", "была", "без", "чего", "раз",
+    "тоже", "себе", "под", "будет", "тогда", "кто", "этот", "того", "потому",
+    "этого", "какой", "ним", "здесь", "этом", "мой", "тем", "чтобы", "были",
+    "куда", "зачем", "всех", "можно", "при", "об", "другой", "после", "над",
+    "тот", "через", "эти", "нас", "про", "всего", "них", "какая", "эту", "моя",
+    "этой", "перед", "том", "такой", "им", "более", "всю", "между", "надо",
+    "сколько", "нужно", "ваш", "ваша", "ваши", "нам", "мною",
+}
 
-def _stem(word: str) -> str:
+_STOP = _STOP_EN | _STOP_RU
+
+# Longest first. Russian is heavily inflected: without this, "доставка",
+# "доставки" and "доставку" are three unrelated words and a customer asking
+# about delivery matches nothing.
+_RU_ENDINGS = (
+    "иями", "ями", "ами", "ого", "его", "ому", "ему", "ыми", "ими", "ться",
+    "тся", "ых", "их", "ой", "ей", "ий", "ый", "ая", "яя", "ое", "ее", "ые",
+    "ие", "ах", "ях", "ам", "ям", "ом", "ем", "ов", "ев", "ью", "ия", "ии",
+    "а", "я", "ы", "и", "о", "е", "у", "ю", "ь", "й",
+)
+
+_CYRILLIC = re.compile(r"[а-яё]")
+
+
+def _stem_ru(word: str) -> str:
+    """Strip one inflectional ending, keeping at least four characters.
+
+    The floor matters: without it "цена" collapses to "ц" and every short word
+    in the corpus collides with every other.
+    """
+    for end in _RU_ENDINGS:
+        # Three characters is enough after a short ending, so "цена"/"цены"
+        # both reach "цен" and "оптом" reaches "опт" - without the second case
+        # a customer asking to buy "оптом" never finds the wholesale section.
+        # Endings of three or more need a longer stem left, or short words
+        # collide with everything.
+        floor = 3 if len(end) <= 2 else 4
+        if word.endswith(end) and len(word) - len(end) >= floor:
+            return word[: -len(end)]
+    return word
+
+
+def _stem_en(word: str) -> str:
     """Crude suffix stripping, applied identically to documents and queries.
 
     A stemmer only has to be *consistent*, not linguistically correct: both
     sides of the comparison go through it. Without this, "how much does it
-    cost" misses a section that says "running costs" - which is the single
-    most common question a prospect asks, so it is worth thirty lines.
+    cost" misses a section that says "running costs" - the single most common
+    question a prospect asks.
     """
     # Plurals first, so "cancellations" reaches the same place as "cancellation".
     if len(word) > 4 and word.endswith("ies"):
@@ -44,27 +95,33 @@ def _stem(word: str) -> str:
             word = word[: -len(suffix)]
             break
 
-    # Nominalisations. "can I cancel" has to reach a section headed
-    # "cancellation", and "who manages it" a line about "management". The
-    # four-character floor stops "station" collapsing to "st".
+    # Nominalisations: "can I cancel" has to reach a section headed
+    # "cancellation". The four-character floor stops "station" -> "st".
     for suffix in ("ation", "ment", "ance", "ence"):
         if word.endswith(suffix) and len(word) - len(suffix) >= 4:
             word = word[: -len(suffix)]
             break
 
-    # "cancell" -> "cancel", after the suffix above exposed the doubling.
-    if len(word) > 4 and word[-1] == word[-2] and word[-1] not in "s":
+    if len(word) > 4 and word[-1] == word[-2] and word[-1] != "s":
         word = word[:-1]
-
-    # Collapse the silent e so "price" and "pricing" land on the same stem.
     if len(word) > 4 and word.endswith("e"):
         word = word[:-1]
     return word
 
 
 def tokenize(text: str) -> list[str]:
-    return [_stem(w) for w in _WORD.findall(text.lower())
-            if w not in _STOP and len(w) > 1]
+    """Lowercase, fold e-diaeresis, drop stopwords, stem by script.
+
+    Russian writers use e for e-diaeresis about as often as not, so "sch-e-t"
+    and "sch-yo-t" are the same word to a reader and two different words to an
+    index. Folding one into the other on both sides costs one replace.
+    """
+    out: list[str] = []
+    for w in _WORD.findall(text.lower().replace("ё", "е")):
+        if w in _STOP or len(w) < 2:
+            continue
+        out.append(_stem_ru(w) if _CYRILLIC.search(w) else _stem_en(w))
+    return out
 
 
 # --- ingestion --------------------------------------------------------------

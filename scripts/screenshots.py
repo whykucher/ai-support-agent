@@ -80,6 +80,53 @@ def main() -> int:
             shot(page, f"01c-site-{key}.png",
                  f"A whole site, not a card: {label}")
 
+        # --- 2d. the Russian side ---------------------------------------------
+        # Its own context: the run log prints relative times and the pages are
+        # laid out for Cyrillic, so capturing them under en-US would show a
+        # visitor something no Russian visitor would ever see.
+        ru = browser.new_context(
+            viewport={"width": WIDTH, "height": HEIGHT},
+            device_scale_factor=2, locale="ru-RU",
+            timezone_id="Europe/Moscow",
+        )
+        rupage = ru.new_page()
+
+        rupage.goto(f"{base}/ru", wait_until="networkidle")
+        rupage.evaluate("localStorage.clear()")
+        rupage.reload(wait_until="networkidle")
+        rupage.wait_for_timeout(2600)
+        shot(rupage, "09-portfolio-ru.png",
+             "Русская версия: та же заявка руками и ассистентом")
+
+        rupage.click(".asks button")
+        rupage.wait_for_selector(".nw-msg.bot", state="visible", timeout=30_000)
+        rupage.wait_for_timeout(6_500)
+        rupage.locator("#live").scroll_into_view_if_needed()
+        rupage.wait_for_timeout(600)
+        shot(rupage, "10-live-agent-ru.png",
+             "Вопрос ассистенту попадает в журнал запусков за секунду")
+
+        for key, label in [("ru-agency", "«Полдень», перформанс-маркетинг"),
+                           ("ru-shop", "«Лоскут», магазин одежды из льна"),
+                           ("ru-school", "«Ступень», онлайн-школа")]:
+            rupage.goto(f"{base}/b/{key}", wait_until="networkidle")
+            rupage.wait_for_timeout(2200)
+            shot(rupage, f"11-site-{key}.png", f"Отдельный сайт: {label}")
+
+        # The lead form on a Russian business, in Russian.
+        rupage.goto(f"{base}/b/ru-shop", wait_until="networkidle")
+        rupage.wait_for_timeout(1500)
+        rupage.click(".nw-launcher")
+        rupage.fill("#nw-input",
+                    "Хочу закупить оптом партию рубашек, работаете с юрлицами?")
+        rupage.press("#nw-input", "Enter")
+        rupage.wait_for_selector(".nw-lead", timeout=30_000)
+        rupage.wait_for_timeout(600)
+        shot(rupage, "12-lead-capture-ru.png",
+             "Замечено намерение купить: бот переходит к сбору контактов")
+
+        ru.close()
+
         # --- 3. the lab, mid-result ------------------------------------------
         page.goto(f"{base}/lab", wait_until="networkidle")
         page.click("#cl-go")
