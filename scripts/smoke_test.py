@@ -194,6 +194,37 @@ def main() -> int:
               f"{len(kb['sections'])} sections across {len(kb['sites'])} sites")
         check("leads listing", bool(client.get("/api/leads", headers=admin).json()["leads"]))
 
+        # --- 12b. the standalone business sites ------------------------------
+        from app import sites as _sites
+        for key, page in _sites.PAGES.items():
+            resp = client.get(f"/b/{key}")
+            check(f"business page /b/{key}", resp.status_code == 200)
+
+            payload = client.get(f"/api/site/{key}")
+            d = payload.json() if payload.status_code == 200 else {}
+            shape = (payload.status_code == 200
+                     and d["page"]["brand"] == page["brand"]
+                     and len(d["page"]["sections"]) >= 2
+                     and len(d["page"]["stats"]) == 4
+                     and d["assistant"]["questions"]
+                     and d["knowledge"]["n"] > 0)
+            check(f"site payload {key}", shape,
+                  f"{page['brand']} · {d.get('knowledge', {}).get('n', 0)} sections")
+
+        # Every business must look like a different company, not a recoloured
+        # template: distinct palette, typeface and hero layout.
+        themes = [p["theme"] for p in _sites.PAGES.values()]
+        check("each business has its own palette",
+              len({t["bg"] for t in themes}) == len(themes))
+        check("each business has its own typeface",
+              len({t["display"] for t in themes}) == len(themes))
+        check("hero layouts vary",
+              len({p["layout"] for p in _sites.PAGES.values()}) >= 3,
+              ", ".join(sorted({p["layout"] for p in _sites.PAGES.values()})))
+
+        check("unknown business 404s", client.get("/b/nope").status_code == 404)
+        check("unknown site payload 404s", client.get("/api/site/nope").status_code == 404)
+
         # --- 13. pages ------------------------------------------------------------
         for path, marker in [("/", "This page is the demo"),
                              ("/lab", "Page scraper"),

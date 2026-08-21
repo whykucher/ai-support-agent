@@ -7,7 +7,8 @@ software — the software, running, with the ledger open.
 
 | | |
 |---|---|
-| [`/`](https://ai-support-agent-jett.onrender.com/) | Portfolio. Its assistant answers from a knowledge base about how I work, every answer lands in a live run log beside it, and an industry picker retargets the same widget at six different businesses. |
+| [`/`](https://ai-support-agent-jett.onrender.com/) | Portfolio. Its assistant answers from a knowledge base about how I work, and every answer lands in a live run log beside it. |
+| [`/b/<business>`](https://ai-support-agent-jett.onrender.com/b/agency) | Five standalone client sites — an agency, a SaaS, an estate agency, a coaching practice, a recruiter — each with its own brand, layout and working assistant. |
 | [`/lab`](https://ai-support-agent-jett.onrender.com/lab) | Three tools you can run: a page scraper, a message classifier, a CSV cleaner. |
 | [`/demo`](https://ai-support-agent-jett.onrender.com/demo) | The client-facing storefront the agent was built for. |
 | [`/admin`](https://ai-support-agent-jett.onrender.com/admin) | Operations: leads, transcripts, run log and knowledge base across both sites. |
@@ -36,10 +37,15 @@ five seconds. Nothing on the page is claimed without being logged.*
 
 ![Industries](docs/screenshots/01b-industries.png)
 
-*Six businesses, six knowledge bases, one engine. Pick an industry and the chat
-in the corner becomes that company's assistant, answering from its own documents.
-The picker is rendered from the server's site registry, so adding an industry is
-a folder and a config entry — the page needs no edit.*
+*Six businesses, six knowledge bases, one engine. Pick one and the chat in the
+corner becomes that company's assistant — or open the company's own site.*
+
+|  |  |
+|---|---|
+| ![Agency](docs/screenshots/01c-site-agency.png) | ![Estate agency](docs/screenshots/01c-site-realty.png) |
+| `/b/agency` — poster layout, condensed display face, acid on near-black | `/b/realty` — editorial layout, high-contrast serif, stone and forest green |
+
+*Both pages come out of the same template and the same 300 lines of Python. They have to look like different companies or the demonstration fails, so the differences are structural — four hero layouts, five typeface pairings, light and dark — not a swapped accent colour. The smoke test asserts no two share a palette or a typeface.*
 
 |  |  |
 |---|---|
@@ -232,7 +238,7 @@ scripts/        ingest · seed_demo · smoke_test · fake_n8n · screenshots
 python -m scripts.smoke_test
 ```
 
-68 checks, no server and no API keys: all seven knowledge bases, retrieval
+83 checks, no server and no API keys: all seven knowledge bases, retrieval
 quality, tenant isolation by provenance, every question the industry picker
 advertises, chat and scoring, lead capture, the run log, all three lab tools,
 SSRF refusal on four hostile URLs, admin auth and every page. The one live-network check skips rather than fails

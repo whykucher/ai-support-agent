@@ -22,7 +22,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import config, db, lab, leads, llm, rag
+from . import config, db, lab, leads, llm, rag, sites
 
 
 @asynccontextmanager
@@ -218,6 +218,32 @@ def submit_lead(payload: LeadIn) -> dict[str, Any]:
     )
 
 
+@app.get("/api/site/{site}")
+def site_payload(site: str) -> dict[str, Any]:
+    """Brand, theme and copy for one demo business, plus its assistant config.
+
+    The business pages are rendered from this rather than hand-written, so a new
+    demo is a knowledge folder, a config entry and a content dict - never a new
+    HTML file to keep in sync with five others."""
+    page = sites.page(site)
+    if page is None or site not in config.SITES:
+        raise HTTPException(404, "No such business")
+    conf = config.SITES[site]
+    return {
+        "site": site,
+        "page": page,
+        "fonts": sites.FONTS,
+        "assistant": {
+            "label": conf["label"],
+            "agent": conf["agent"],
+            "greeting": conf["greeting"],
+            "questions": conf.get("questions", []),
+            "company": conf["company"],
+        },
+        "knowledge": db.chunk_stats(site),
+    }
+
+
 @app.get("/api/runs")
 def runs(limit: int = 20, site: str | None = None) -> dict[str, Any]:
     """Public: the activity feed on the portfolio reads this. It is a ledger of
@@ -318,6 +344,14 @@ def lab_page() -> FileResponse:
 @app.get("/demo")
 def storefront() -> FileResponse:
     return _page("index.html")
+
+
+@app.get("/b/{site}")
+def business(site: str) -> FileResponse:
+    """One template, themed per business at runtime."""
+    if not sites.has_page(site):
+        raise HTTPException(404, "No such business")
+    return _page("business.html")
 
 
 @app.get("/admin")

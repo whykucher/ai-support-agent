@@ -40,10 +40,32 @@
   var conversationId = null;
   try { conversationId = localStorage.getItem(storeKey()); } catch (e) { /* private mode */ }
 
+  /**
+   * Pick black or white to sit on the host's accent colour.
+   * Hosts hand us anything from acid lime to deep green; assuming white text
+   * makes the user's own messages unreadable on half of them.
+   */
+  function onAccent(hex) {
+    var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(String(hex).trim());
+    if (!m) return "#FFFFFF";
+    var lin = [1, 2, 3].map(function (i) {
+      var c = parseInt(m[i], 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    var L = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+    return L > 0.42 ? "#14161A" : "#FFFFFF";
+  }
+
+  function setAccent(hex) {
+    if (!hex) return;
+    root.style.setProperty("--nw-accent", hex);
+    root.style.setProperty("--nw-on-accent", onAccent(hex));
+  }
+
   var root = document.createElement("div");
   root.className = "nw-widget";
   root.setAttribute("data-open", "false");
-  if (cfg.accent) root.style.setProperty("--nw-accent", cfg.accent);
+  setAccent(cfg.accent);
 
   root.innerHTML = [
     '<button class="nw-launcher" type="button" aria-label="Open chat">',
@@ -259,8 +281,7 @@
     cfg.leadTitle = opts.leadTitle || "Want a specialist to follow up?";
     cfg.leadNote = opts.leadNote ||
       "Leave your details and we reply within one business day.";
-    if (opts.accent) root.style.setProperty("--nw-accent", opts.accent);
-    if (opts.accentDark) root.style.setProperty("--nw-accent-d", opts.accentDark);
+    setAccent(opts.accent);
 
     root.querySelector(".nw-head h3").textContent = cfg.title;
     root.querySelector(".nw-avatar").textContent = cfg.agent.charAt(0).toUpperCase();

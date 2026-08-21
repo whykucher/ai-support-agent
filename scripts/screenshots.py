@@ -71,6 +71,15 @@ def main() -> int:
         page.screenshot(path=OUT / '01b-industries.png')
         shots.append(('01b-industries.png', 'Pick an industry and the assistant becomes that business'))
 
+        # --- 2c. the standalone business sites --------------------------------
+        for key, label in [("agency", "Halyard Digital, performance marketing"),
+                           ("realty", "Kestrel Property, estate agency"),
+                           ("saas", "Latchkey, field-service SaaS")]:
+            page.goto(f"{base}/b/{key}", wait_until="networkidle")
+            page.wait_for_timeout(2200)
+            shot(page, f"01c-site-{key}.png",
+                 f"A whole site, not a card: {label}")
+
         # --- 3. the lab, mid-result ------------------------------------------
         page.goto(f"{base}/lab", wait_until="networkidle")
         page.click("#cl-go")

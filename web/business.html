@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loading…</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+  /* Everything chromatic and typographic comes from /api/site/<key> at runtime.
+     Nothing below hard-codes a colour or a family, which is why five very
+     different-looking businesses share one file. */
+  :root {
+    --bg:#fff; --surface:#fff; --ink:#111; --muted:#666; --line:#ddd;
+    --accent:#333; --accent-ink:#fff; --radius:4px;
+    --display:system-ui; --display-w:700; --display-tr:-.02em; --display-tt:none;
+    --body:system-ui;
+    --mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --gut: clamp(20px, 4vw, 48px);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--body), system-ui, sans-serif;
+    font-size: 17px; line-height: 1.6; font-variant-numeric: tabular-nums;
+    opacity: 0; transition: opacity .25s ease;
+  }
+  body.ready { opacity: 1; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 var(--gut); }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  h1, h2, h3, .display {
+    font-family: var(--display), Georgia, serif;
+    font-weight: var(--display-w);
+    letter-spacing: var(--display-tr);
+    text-transform: var(--display-tt);
+    line-height: 1.02;
+    margin: 0;
+  }
+  .kicker {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+  }
+
+  /* ---------- portfolio strip: these are demos, say so ---------- */
+  .strip {
+    background: var(--ink); color: var(--bg);
+    font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+  }
+  .strip-in {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    min-height: 38px; padding: 7px 0;
+  }
+  .strip b { font-weight: 500; }
+  .strip a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+  .strip .sep { opacity: .4; }
+  .strip .right { margin-left: auto; opacity: .75; }
+
+  /* ---------- nav ---------- */
+  header.nav { border-bottom: 1px solid var(--line); background: var(--bg); }
+  .nav-in { display: flex; align-items: center; gap: 26px; height: 70px; }
+  .mark {
+    font-family: var(--display), sans-serif; font-weight: var(--display-w);
+    letter-spacing: var(--display-tr); text-transform: var(--display-tt);
+    font-size: 21px; text-decoration: none;
+  }
+  .nav-links { display: flex; gap: 22px; margin-left: auto; }
+  .nav-links a { font-size: 14.5px; text-decoration: none; color: var(--muted); }
+  .nav-links a:hover { color: var(--ink); }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 13px 22px; border-radius: var(--radius); cursor: pointer;
+    font-family: var(--body), sans-serif; font-size: 15px; font-weight: 600;
+    text-decoration: none; border: 1px solid var(--accent);
+    background: var(--accent); color: var(--accent-ink);
+    transition: transform .12s ease, opacity .12s ease;
+  }
+  .btn:hover { transform: translateY(-1px); opacity: .92; }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn.ghost:hover { border-color: var(--ink); }
+  .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  /* ---------- hero variants ---------- */
+  .hero { padding: clamp(48px, 8vw, 104px) 0 clamp(36px, 5vw, 64px); }
+  .hero h1 { white-space: pre-line; margin: 18px 0 22px; }
+  .hero .lead { color: var(--muted); max-width: 52ch; margin: 0 0 30px; font-size: 18px; }
+
+  /* stacked: poster. one huge column, type does the work. */
+  .l-stacked .hero h1 { font-size: clamp(46px, 11vw, 128px); line-height: .92; }
+  .l-stacked .hero .lead { font-size: 20px; max-width: 46ch; }
+
+  /* split: product site. copy left, a panel of proof right. */
+  .l-split .hero-grid { display: grid; grid-template-columns: 1.08fr .92fr; gap: clamp(28px, 5vw, 64px); align-items: center; }
+  .l-split .hero h1 { font-size: clamp(38px, 5.2vw, 62px); }
+  .panel-card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .panel-card .pc-head {
+    padding: 13px 18px; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; gap: 12px;
+  }
+  .pc-row { display: flex; justify-content: space-between; gap: 16px; padding: 15px 18px; border-bottom: 1px solid var(--line); }
+  .pc-row:last-child { border-bottom: 0; }
+  .pc-row b { font-family: var(--mono); font-weight: 500; }
+  .pc-row span { color: var(--muted); font-size: 14.5px; text-align: right; }
+
+  /* panel: editorial. big colour field beside the words. */
+  .l-panel .hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(28px, 5vw, 60px); align-items: end; }
+  .l-panel .hero h1 { font-size: clamp(36px, 4.6vw, 56px); line-height: 1.05; }
+  .field {
+    aspect-ratio: 4/5; border-radius: var(--radius);
+    background:
+      radial-gradient(120% 90% at 18% 12%, color-mix(in srgb, var(--accent) 55%, transparent) 0%, transparent 60%),
+      linear-gradient(160deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #000));
+    display: grid; place-items: end start; padding: 26px;
+    color: var(--accent-ink);
+  }
+  .field .fq { font-family: var(--display), serif; font-size: clamp(20px, 2.4vw, 30px); line-height: 1.15; max-width: 18ch; }
+
+  /* centred: calm. narrow measure, everything on the midline. */
+  .l-centred .hero { text-align: center; padding-top: clamp(56px, 9vw, 120px); }
+  .l-centred .hero h1 { font-size: clamp(38px, 5.6vw, 68px); line-height: 1.06; margin-inline: auto; max-width: 20ch; }
+  .l-centred .hero .lead { margin-inline: auto; text-align: center; }
+  .l-centred .cta-row { justify-content: center; }
+  .l-centred .sec-head { text-align: center; }
+  .l-centred .sec-head .intro { margin-inline: auto; }
+
+  /* ---------- stats ---------- */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border-block: 1px solid var(--line); }
+  .stat { background: var(--bg); padding: 22px var(--gut); }
+  .stats.inset { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .stats.inset .stat { padding: 20px 22px; }
+  .stat b { display: block; font-family: var(--display), sans-serif; font-weight: var(--display-w); font-size: clamp(24px, 3vw, 34px); letter-spacing: var(--display-tr); }
+  .stat span { font-size: 13.5px; color: var(--muted); }
+
+  /* ---------- sections ---------- */
+  section.block { padding: clamp(48px, 7vw, 88px) 0; border-bottom: 1px solid var(--line); }
+  .sec-head { margin-bottom: clamp(26px, 4vw, 44px); }
+  .sec-head h2 { font-size: clamp(26px, 3.4vw, 40px); margin: 12px 0 0; max-width: 22ch; }
+  .l-centred .sec-head h2 { margin-inline: auto; }
+  .sec-head .intro { margin: 14px 0 0; color: var(--muted); max-width: 56ch; }
+
+  .items { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .items.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .items.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .item { background: var(--surface); padding: 26px; display: flex; flex-direction: column; gap: 9px; }
+  .item h3 { font-size: 18.5px; }
+  .item .meta { font-family: var(--mono); font-size: 12px; color: var(--accent); letter-spacing: .02em; }
+  .item p { margin: 0; color: var(--muted); font-size: 15.5px; }
+
+  /* ---------- band ---------- */
+  .band { padding: clamp(44px, 6vw, 76px) 0; }
+  .band-in {
+    background: var(--accent); color: var(--accent-ink);
+    border-radius: var(--radius); padding: clamp(28px, 4vw, 48px);
+    display: grid; grid-template-columns: 1.4fr auto; gap: 28px; align-items: center;
+  }
+  .band h2 { font-size: clamp(24px, 3vw, 34px); }
+  .band p { margin: 12px 0 0; opacity: .88; max-width: 54ch; }
+  .band .btn { background: var(--accent-ink); color: var(--accent); border-color: var(--accent-ink); }
+
+  /* ---------- ask strip ---------- */
+  .ask { padding: 0 0 clamp(44px, 6vw, 72px); }
+  .ask-in { border: 1px dashed var(--line); border-radius: var(--radius); padding: 24px; }
+  .ask-in .kicker { display: block; margin-bottom: 14px; }
+  .qs { display: flex; gap: 10px; flex-wrap: wrap; }
+  .qs button {
+    font-family: var(--body), sans-serif; font-size: 15px; cursor: pointer;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 11px 15px; text-align: left;
+  }
+  .qs button:hover { border-color: var(--accent); color: var(--accent); }
+
+  footer.foot { padding: 30px 0 70px; color: var(--muted); font-size: 14px; }
+
+  @media (max-width: 900px) {
+    .l-split .hero-grid, .l-panel .hero-grid { grid-template-columns: 1fr; }
+    .l-panel .field { aspect-ratio: 16/10; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .items.cols-3, .items.cols-4 { grid-template-columns: 1fr; }
+    .band-in { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+const key = location.pathname.split("/").filter(Boolean).pop();
+
+function applyTheme(t) {
+  const r = document.documentElement.style;
+  r.setProperty("--bg", t.bg);
+  r.setProperty("--surface", t.surface);
+  r.setProperty("--ink", t.ink);
+  r.setProperty("--muted", t.muted);
+  r.setProperty("--line", t.line);
+  r.setProperty("--accent", t.accent);
+  r.setProperty("--accent-ink", t.accent_ink);
+  r.setProperty("--radius", t.radius);
+  r.setProperty("--display", `"${t.display}"`);
+  r.setProperty("--display-w", t.display_weight);
+  r.setProperty("--display-tr", t.display_tracking);
+  r.setProperty("--display-tt", t.display_transform);
+  r.setProperty("--body", `"${t.body}"`);
+  document.documentElement.style.colorScheme = t.mode;
+}
+
+function loadFonts(families) {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "https://fonts.googleapis.com/css2?" +
+    families.map((f) => "family=" + f).join("&") + "&display=swap";
+  document.head.appendChild(link);
+}
+
+const statsHtml = (stats, inset) =>
+  `<div class="stats${inset ? " inset" : ""}">${stats.map(([v, l]) =>
+    `<div class="stat"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("")}</div>`;
+
+const itemsHtml = (items) =>
+  `<div class="items cols-${items.length >= 4 ? 4 : 3}">${items.map(([title, meta, body]) =>
+    `<article class="item">
+       <span class="meta">${esc(meta)}</span>
+       <h3>${esc(title)}</h3>
+       <p>${esc(body)}</p>
+     </article>`).join("")}</div>`;
+
+function heroHtml(p) {
+  const h = p.hero;
+  const head = `
+    <span class="kicker">${esc(h.eyebrow)}</span>
+    <h1>${esc(h.title)}</h1>
+    <p class="lead">${esc(h.lead)}</p>
+    <div class="cta-row">
+      <button class="btn" data-ask="${esc(p.questions[0] || "")}">${esc(h.cta)}</button>
+      <a class="btn ghost" href="#offer">${esc(h.cta2)}</a>
+    </div>`;
+
+  if (p.layout === "split") {
+    return `<div class="hero-grid"><div>${head}</div>
+      <div class="panel-card">
+        <div class="pc-head"><span class="kicker">At a glance</span><span class="kicker">${esc(p.url_label)}</span></div>
+        ${p.stats.map(([v, l]) =>
+          `<div class="pc-row"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("")}
+      </div></div>`;
+  }
+  if (p.layout === "panel") {
+    return `<div class="hero-grid"><div>${head}</div>
+      <div class="field"><div class="fq">${esc(p.band.title)}</div></div></div>`;
+  }
+  return head;   // stacked and centred
+}
+
+function render(d) {
+  const p = { ...d.page, questions: d.assistant.questions };
+  document.title = `${p.brand} — ${p.hero.eyebrow}`;
+  applyTheme(p.theme);
+  loadFonts(d.fonts);
+  document.body.className = "l-" + p.layout;
+
+  const showStatsBand = p.layout !== "split";
+
+  document.getElementById("root").innerHTML = `
+    <div class="strip"><div class="wrap strip-in">
+      <b>Demo build</b><span class="sep">·</span>
+      <span>${esc(p.brand)} is invented; the assistant answering is real and reads
+        ${d.knowledge.n} sections of this company's documents</span>
+      <a class="right" href="/#industries">← back to Nikita's portfolio</a>
+    </div></div>
+
+    <header class="nav"><div class="wrap nav-in">
+      <a class="mark" href="#">${esc(p.mark)}</a>
+      <nav class="nav-links">${p.nav.map((n) =>
+        `<a href="#offer">${esc(n)}</a>`).join("")}</nav>
+      <button class="btn" data-ask="${esc(p.questions[0] || "")}">${esc(p.hero.cta)}</button>
+    </div></header>
+
+    <main>
+      <div class="hero"><div class="wrap">${heroHtml(p)}</div></div>
+      ${showStatsBand ? statsHtml(p.stats, false) : ""}
+
+      ${p.sections.map((s, i) => `
+        <section class="block" ${i === 0 ? 'id="offer"' : ""}><div class="wrap">
+          <div class="sec-head">
+            <span class="kicker">${esc(s.kicker)}</span>
+            <h2>${esc(s.title)}</h2>
+            ${s.intro ? `<p class="intro">${esc(s.intro)}</p>` : ""}
+          </div>
+          ${itemsHtml(s.items)}
+        </div></section>`).join("")}
+
+      <div class="band"><div class="wrap"><div class="band-in">
+        <div>
+          <h2>${esc(p.band.title)}</h2>
+          <p>${esc(p.band.body)}</p>
+        </div>
+        <button class="btn" data-ask="${esc(p.questions[0] || "")}">${esc(p.band.cta)}</button>
+      </div></div></div>
+
+      <div class="ask"><div class="wrap"><div class="ask-in">
+        <span class="kicker">Ask ${esc(p.brand)} anything — the assistant is live</span>
+        <div class="qs">${p.questions.map((q) =>
+          `<button data-ask="${esc(q)}">${esc(q)}</button>`).join("")}</div>
+      </div></div></div>
+    </main>
+
+    <footer class="foot"><div class="wrap">${esc(p.footer)}</div></footer>`;
+
+  document.querySelectorAll("[data-ask]").forEach((b) =>
+    b.addEventListener("click", () => {
+      const q = b.dataset.ask;
+      if (!window.NorthwindChat) return;
+      if (q) window.NorthwindChat.send(q); else window.NorthwindChat.open();
+    }));
+
+  mountWidget(d);
+  document.body.classList.add("ready");
+}
+
+function mountWidget(d) {
+  const t = d.page.theme;
+  const s = document.createElement("script");
+  s.src = "/static/widget.js";
+  s.defer = true;
+  Object.assign(s.dataset, {
+    api: "",
+    site: d.site,
+    title: d.assistant.label,
+    agent: d.assistant.agent,
+    accent: t.accent,
+    greeting: d.assistant.greeting,
+    quick: d.assistant.questions.join("|"),
+    leadTitle: `Want ${d.assistant.company} to get back to you?`,
+    leadNote: "Leave your details and the team replies within one business day.",
+  });
+  document.body.appendChild(s);
+}
+
+fetch(`/api/site/${encodeURIComponent(key)}`)
+  .then((r) => { if (!r.ok) throw new Error("not found"); return r.json(); })
+  .then(render)
+  .catch(() => {
+    document.getElementById("root").innerHTML =
+      '<div class="wrap" style="padding:80px 0"><h1>Not found</h1>' +
+      '<p><a href="/">Back to the portfolio</a></p></div>';
+    document.body.classList.add("ready");
+  });
+</script>
+</body>
+</html>
