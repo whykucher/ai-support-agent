@@ -111,12 +111,6 @@
   .topnav { margin-left: auto; display: flex; gap: 22px; align-items: center; }
   .topnav a { font-size: 14.5px; color: var(--ink-2); text-decoration: none; }
   .topnav a:hover { color: var(--ink); }
-  .top .lang {
-    font-family: var(--mono); font-size: 12px; letter-spacing: .06em;
-    padding: 5px 9px; border: 1px solid var(--rule); border-radius: 5px;
-    text-decoration: none; color: var(--ink-2);
-  }
-  .top .lang:hover { border-color: var(--ink-3); color: var(--ink); }
   @media (max-width: 720px) { .topnav .hide-sm { display: none; } }
 
   /* ---------- the canvas ---------- */
@@ -447,7 +441,6 @@
       <a class="hide-sm" href="/lab">Lab</a>
       <a class="hide-sm" href="/admin">Ops</a>
       <a href="#contact">Contact</a>
-      <a class="lang" href="/ru" hreflang="ru" lang="ru">RU</a>
     </nav>
   </div>
 </header>
@@ -874,7 +867,7 @@
     indexed = h.knowledge && h.knowledge.n;
 
     var mine = Object.entries(h.sites).filter(function (e) {
-      return e[1].vertical && e[1].lang === "en";
+      return e[1].vertical;
     });
     document.getElementById("inst-n").textContent = mine.length;
     document.getElementById("inst").innerHTML = mine.map(function (e) {

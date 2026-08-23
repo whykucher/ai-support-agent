@@ -2,10 +2,10 @@
 
     python -m scripts.smoke_test
 
-Exercises every surface: all eleven knowledge bases in both languages,
-retrieval quality, tenant isolation, every question the industry picker advertises, chat and scoring, lead
+Exercises every surface: all seven knowledge bases, retrieval quality,
+tenant isolation, every question the industry picker advertises, chat and scoring, lead
 capture, the run log, all three lab tools, SSRF refusal, admin auth and the four
-pages, English and Russian. Exit code 0 means the whole thing works on this
+pages. Exit code 0 means the whole thing works on this
 machine. Network is only needed for the one live-scrape check, which is skipped
 rather than failed when offline.
 """
@@ -15,9 +15,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-# Windows consoles default to a legacy codepage, and half of what this script
-# prints is now Russian. Without this the run dies on a rouble sign in a passing
-# check rather than on anything being wrong.
+# Windows consoles default to a legacy codepage and this script prints curly
+# quotes and arrows. Without this the run can die on formatting rather than on
+# anything being wrong.
 for _stream in (sys.stdout, sys.stderr):
     try:
         _stream.reconfigure(encoding="utf-8", errors="replace")
@@ -244,87 +244,29 @@ def main() -> int:
         check("unknown business 404s", client.get("/b/nope").status_code == 404)
         check("unknown site payload 404s", client.get("/api/site/nope").status_code == 404)
 
-        # --- 12c. the Russian side ------------------------------------------
-        # A half-translated site is worse than an English one, so these check
-        # the seams: routing, language scoping, and that the assistant actually
-        # answers in Russian rather than falling back to the English templates.
-        cyrillic = re.compile(r"[а-яё]", re.I)
-        latin = re.compile(r"[a-z]", re.I)
-
-        for key, conf in config.SITES.items():
-            if conf.get("lang") != "ru":
-                continue
-            for q in conf.get("questions", []):
-                a = client.post("/api/chat", json={"message": q, "site": key})
-                ans = a.json().get("answer", "") if a.status_code == 200 else ""
-                # Compared as counts, not presence: a Russian answer may still
-                # contain "SEO" or "n8n" without being an English answer.
-                russian = (len(cyrillic.findall(ans)) >
-                           len(latin.findall(ans)))
-                check(f"{key} answers «{q[:28]}…» in Russian", russian,
-                      ans[:60])
-
-        # The two portfolios must not list each other's demo businesses.
-        en_page = client.get("/").text
-        ru_page = client.get("/ru").text
-        check("/ru serves the Russian portfolio",
-              client.get("/ru").status_code == 200
-              and "Леонид Денисов" in ru_page)
-        check("Russian portfolio does not carry the English name",
-              "Nikita" not in ru_page)
-        # Matched loosely: the two pages render their pickers differently, and
-        # the invariant is the language filter, not the variable it is on.
-        check("each portfolio filters the picker by language",
-              'lang === "en"' in en_page and 'lang === "ru"' in ru_page)
-
-        # These faces ship no Cyrillic. If one is ever set on the Russian page
-        # the headings silently fall back to a system font, which is the kind of
-        # breakage that looks like a browser problem rather than a bug.
-        latin_only = ("Bricolage", "Anton", "Fraunces", "Instrument+Serif")
-        check("Russian portfolio uses a Cyrillic display face",
-              not any(f in ru_page for f in latin_only) and "Geologica" in ru_page)
-
-        ru_payload = client.get("/api/site/ru-shop").json()
-        check("Russian business payload points home to /ru",
-              ru_payload["lang"] == "ru" and ru_payload["home"] == "/ru"
-              and ru_payload["owner"] == config.OWNER_NAME_RU)
-        check("English business payload points home to /",
-              client.get("/api/site/saas").json()["home"] == "/")
-
-        # Company names are stored already quoted; anything adding its own
-        # prints ««Лоскут»».
-        unknown = client.post("/api/chat", json={
-            "message": "Продаёте ли вы велосипеды?", "site": "ru-shop"}).json()
-        check("Russian fallback has no doubled guillemets",
-              "««" not in unknown["answer"] and
-              len(cyrillic.findall(unknown["answer"])) > 10,
-              unknown["answer"][:60])
-
         # A buying word inside a negated question is not buying intent. This
         # shipped scoring "when should I NOT hire you" at 80/100 and pitching a
         # sales call in reply, which the execution chain on the front page
         # displays in full.
-        for site, q in (("portfolio", "When should I not hire you?"),
-                        ("portfolio-ru", "Когда вас не надо нанимать?")):
-            d = client.post("/api/chat", json={"message": q, "site": site}).json()
-            check(f"{site} does not read a negated question as buying",
-                  d["intent"] != "buying" and not d["show_lead_form"],
-                  f"{d['intent']} {d['lead_score']}/100")
-        for site, q in (("portfolio", "I want to hire you for a project"),
-                        ("portfolio-ru", "Хочу нанять вас на проект")):
-            d = client.post("/api/chat", json={"message": q, "site": site}).json()
-            check(f"{site} still reads real buying intent", d["intent"] == "buying",
-                  f"{d['intent']} {d['lead_score']}/100")
+        d = client.post("/api/chat", json={
+            "message": "When should I not hire you?", "site": "portfolio"}).json()
+        check("a negated question is not read as buying",
+              d["intent"] != "buying" and not d["show_lead_form"],
+              f"{d['intent']} {d['lead_score']}/100")
+        d = client.post("/api/chat", json={
+            "message": "I want to hire you for a project", "site": "portfolio"}).json()
+        check("real buying intent still scores", d["intent"] == "buying",
+              f"{d['intent']} {d['lead_score']}/100")
 
-        check("Russian portfolio asks its own tenant",
-              'site: "portfolio-ru"' in ru_page and 'site: "portfolio"' in en_page)
-
-        check("widget carries a Russian string table",
-              "Спросите что угодно" in client.get("/static/widget.js").text)
+        # Nothing Russian should remain reachable.
+        check("/ru is gone", client.get("/ru").status_code == 404)
+        for key in ("ru-agency", "ru-shop", "ru-school", "portfolio-ru"):
+            check(f"{key} is gone", client.get(f"/api/site/{key}").status_code == 404)
+        check("the front page has no language switch",
+              'href="/ru"' not in client.get("/").text)
 
         # --- 13. pages ------------------------------------------------------------
         for path, marker in [("/", "Execution chain"),
-                             ("/ru", "Цепочка выполнения"),
                              ("/lab", "Page scraper"),
                              ("/demo", "FIRST CRACK"),
                              ("/admin", "Run log")]:

@@ -240,37 +240,19 @@ const itemsHtml = (items) =>
        <p>${esc(body)}</p>
      </article>`).join("")}</div>`;
 
-/* The business copy itself arrives from the API in whatever language that
-   business speaks. These are the bits this template adds around it, which
-   would otherwise strand a Russian shop inside an English frame. */
-const STR = {
-  en: {
-    demo: "Demo build",
-    invented: (b, n) => `${b} is invented; the assistant answering is real ` +
-      `and reads ${n} sections of this company's documents`,
-    back: (o) => `\u2190 back to ${o}'s portfolio`,
-    glance: "At a glance",
-    askAny: (b) => `Ask ${b} anything \u2014 the assistant is live`,
-    leadTitle: (c) => `Want ${c} to get back to you?`,
-    leadNote: "Leave your details and the team replies within one business day.",
-    notFound: "Not found",
-    backPlain: "Back to the portfolio",
-  },
-  ru: {
-    demo: "Демо",
-    invented: (b, n) => `${b} — вымышленная компания, но ассистент настоящий ` +
-      `и читает ${n} разделов её документов`,
-    back: () => "\u2190 назад в портфолио",
-    glance: "Коротко",
-    askAny: (b) => `Спросите ${b} о чём угодно \u2014 ассистент работает`,
-    leadTitle: (c) => `Хотите, чтобы ${c} с вами связались?`,
-    leadNote: "Оставьте контакты — ответим в течение рабочего дня.",
-    notFound: "Страница не найдена",
-    backPlain: "Назад в портфолио",
-  },
+/* The bits this template adds around the copy the API supplies. */
+const T = {
+  demo: "Demo build",
+  invented: (b, n) => `${b} is invented; the assistant answering is real ` +
+    `and reads ${n} sections of this company's documents`,
+  back: (o) => `\u2190 back to ${o}'s portfolio`,
+  glance: "At a glance",
+  askAny: (b) => `Ask ${b} anything \u2014 the assistant is live`,
+  leadTitle: (c) => `Want ${c} to get back to you?`,
+  leadNote: "Leave your details and the team replies within one business day.",
+  notFound: "Not found",
+  backPlain: "Back to the portfolio",
 };
-
-let T = STR.en;
 
 function heroHtml(p) {
   const h = p.hero;
@@ -299,8 +281,6 @@ function heroHtml(p) {
 }
 
 function render(d) {
-  T = STR[d.lang] || STR.en;
-  document.documentElement.lang = d.lang || "en";
   const p = { ...d.page, questions: d.assistant.questions };
   document.title = `${p.brand} — ${p.hero.eyebrow}`;
   applyTheme(p.theme);
@@ -373,7 +353,6 @@ function mountWidget(d) {
   Object.assign(s.dataset, {
     api: "",
     site: d.site,
-    lang: d.lang || "en",
     title: d.assistant.label,
     agent: d.assistant.agent,
     accent: t.accent,
@@ -389,11 +368,9 @@ fetch(`/api/site/${encodeURIComponent(key)}`)
   .then((r) => { if (!r.ok) throw new Error("not found"); return r.json(); })
   .then(render)
   .catch(() => {
-    T = key.startsWith("ru-") ? STR.ru : STR.en;
-    const home = key.startsWith("ru-") ? "/ru" : "/";
     document.getElementById("root").innerHTML =
       `<div class="wrap" style="padding:80px 0"><h1>${esc(T.notFound)}</h1>` +
-      `<p><a href="${home}">${esc(T.backPlain)}</a></p></div>`;
+      `<p><a href="/">${esc(T.backPlain)}</a></p></div>`;
     document.body.classList.add("ready");
   });
 </script>

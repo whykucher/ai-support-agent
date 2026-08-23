@@ -49,7 +49,6 @@ DEFAULT_SITE = os.getenv("DEFAULT_SITE", "portfolio")
 OWNER_NAME = os.getenv("OWNER_NAME", "Nikita Denisov")
 OWNER_EMAIL = os.getenv("OWNER_EMAIL", "hentajp5@gmail.com")
 # The Russian site runs under its own name, not a transliteration.
-OWNER_NAME_RU = os.getenv("OWNER_NAME_RU", "Леонид Денисов")
 
 # Entries marked `vertical` also appear in the industry picker on the portfolio,
 # which is rendered from this dict rather than from hand-written HTML.
@@ -67,7 +66,6 @@ SITES: dict[str, dict[str, Any]] = {
         "greeting": "I answer from Nikita's own notes: scope, pricing, timelines, "
                     "and what he turns down. What would you like to know?",
         "vertical": False,
-        "lang": "en",
     },
     "demo": {
         "company": os.getenv("COMPANY_NAME", "Northwind Coffee Co."),
@@ -77,7 +75,6 @@ SITES: dict[str, dict[str, Any]] = {
         "greeting": "Hi! I can help with orders, shipping, subscriptions and "
                     "wholesale. What do you need?",
         "vertical": True,
-        "lang": "en",
         "industry": "E-commerce",
         "tagline": "Specialty coffee roaster, ships direct",
         "pain": "Forty shipping and returns questions a day, and the one wholesale "
@@ -102,7 +99,6 @@ SITES: dict[str, dict[str, Any]] = {
         "greeting": "I can cover retainers, pricing, onboarding, reporting and "
                     "who we are a bad fit for. What are you looking at?",
         "vertical": True,
-        "lang": "en",
         "industry": "Marketing agency",
         "tagline": "Eleven people, roster capped at eighteen clients",
         "pain": "Inbound enquiries arrive from four channels and half of them are "
@@ -128,7 +124,6 @@ SITES: dict[str, dict[str, Any]] = {
         "greeting": "I can help with plans, the trial, integrations, security and "
                     "migration. What do you need to know?",
         "vertical": True,
-        "lang": "en",
         "industry": "B2B SaaS",
         "tagline": "Field service scheduling, 1,400 companies",
         "pain": "Support answers the same twelve pricing and integration questions "
@@ -154,7 +149,6 @@ SITES: dict[str, dict[str, Any]] = {
         "greeting": "I can help with fees, valuations, viewings and lettings. "
                     "Buying, selling or renting?",
         "vertical": True,
-        "lang": "en",
         "industry": "Real estate",
         "tagline": "Four negotiators, about 25 sales a month",
         "pain": "Portal enquiries arrive at all hours and go cold overnight. "
@@ -180,7 +174,6 @@ SITES: dict[str, dict[str, Any]] = {
         "greeting": "I can explain the programmes, prices, payment plans and "
                     "whether this is the right fit. What are you weighing up?",
         "vertical": True,
-        "lang": "en",
         "industry": "Coaching and courses",
         "tagline": "Two coaches, about 40 clients a year",
         "pain": "Most enquiries are people deciding whether the programme is for "
@@ -206,7 +199,6 @@ SITES: dict[str, dict[str, Any]] = {
         "greeting": "I can cover fees, the replacement guarantee, how the process "
                     "runs, and what happens if you are applying. Hiring or looking?",
         "vertical": True,
-        "lang": "en",
         "industry": "Recruiting agency",
         "tagline": "Seven consultants, 143 placements last year",
         "pain": "Two audiences in one inbox. Hiring managers want fees and "
@@ -225,115 +217,12 @@ SITES: dict[str, dict[str, Any]] = {
         ],
     },
 
-    # --- Russian side ------------------------------------------------------
-    # A separate site under a separate name, not a translation layer. Its demo
-    # businesses are Russian ones with roubles, СДЭК and Яндекс.Директ, because
-    # a Russian page quoting pounds and Google Ads reads as a translated
-    # brochure rather than as somebody who works in that market.
-    "portfolio-ru": {
-        "company": OWNER_NAME_RU,
-        "agent": "Ася",
-        "label": "Ассистент Леонида",
-        "accent": "#E0663C",
-        "greeting": "Отвечаю по заметкам Леонида: что делает, сколько стоит, "
-                    "сроки и за что не берётся. Что интересует?",
-        "vertical": False,
-        "lang": "ru",
-    },
-    "ru-agency": {
-        "company": "«Полдень»",
-        "agent": "Вера",
-        "label": "Агентство «Полдень»",
-        "accent": "#C7562F",
-        "greeting": "Расскажу про бюджеты, сроки, отчётность и кому мы не "
-                    "подходим. Что вас интересует?",
-        "vertical": True,
-        "lang": "ru",
-        "industry": "Digital-агентство",
-        "tagline": "Девять человек, не больше пятнадцати клиентов",
-        "pain": "Заявки приходят из четырёх каналов, и половина — компании, для "
-                "которых наш минимум слишком велик. Разбираться в этом "
-                "приходится на созвоне, уже потратив полчаса.",
-        "pipeline": [
-            "Отвечает про бюджеты, минимум и сроки до того, как назначен созвон",
-            "Квалифицирует по бюджету, каналам и срокам и честно отсеивает мелких",
-            "Ставит встречу сразу в календарь стратега",
-            "Кладёт бриф и ответы в CRM вместе с перепиской",
-        ],
-        "questions": [
-            "Сколько стоит вести Яндекс.Директ?",
-            "Есть ли минимальный срок договора?",
-            "Гарантируете ли конкретный ДРР?",
-        ],
-    },
-    "ru-shop": {
-        "company": "«Лоскут»",
-        "agent": "Нина",
-        "label": "Поддержка «Лоскут»",
-        "accent": "#7E6A4F",
-        "greeting": "Помогу с доставкой, оплатой, возвратом и размерами. Что "
-                    "подсказать?",
-        "vertical": True,
-        "lang": "ru",
-        "industry": "Интернет-магазин",
-        "tagline": "Одежда из льна, около 900 заказов в месяц",
-        "pain": "Девяносто процентов сообщений — «где заказ», «какой размер» и "
-                "«как вернуть». Поддержка отвечает на них весь день, а оптовый "
-                "запрос лежит в той же очереди.",
-        "pipeline": [
-            "Отвечает про доставку, оплату, возврат и уход по регламенту магазина",
-            "Подбирает размер по замерам, а не по абстрактным S–M–L",
-            "Ловит оптовые запросы и передаёт менеджеру с перепиской",
-            "Остальное пишет в лог, чтобы видеть, о чём спрашивают чаще всего",
-        ],
-        "questions": [
-            "Сколько стоит доставка СДЭК?",
-            "Как вернуть вещь, если не подошёл размер?",
-            "Работаете ли вы с оптовиками?",
-        ],
-    },
-    "ru-school": {
-        "company": "«Ступень»",
-        "agent": "Марк",
-        "label": "Онлайн-школа «Ступень»",
-        "accent": "#5D6BAF",
-        "greeting": "Расскажу про программы, цены, рассрочку и кому курс не "
-                    "подойдёт. С чем помочь?",
-        "vertical": True,
-        "lang": "ru",
-        "industry": "Онлайн-школа",
-        "tagline": "Три преподавателя, около 160 выпускников в год",
-        "pain": "Большая часть обращений — человек решает, подходит ли ему курс "
-                "вообще. Ответить на это хорошо можно только разговором, а "
-                "преподавателей трое.",
-        "pipeline": [
-            "Отвечает про программы, цены, рассрочку и налоговый вычет",
-            "Помогает человеку самому понять, подходит ему курс или нет",
-            "Записывает на бесплатную консультацию и шлёт вопросы до неё",
-            "Держит тех, кто ждёт следующий поток, и пишет им при наборе",
-        ],
-        "questions": [
-            "Сколько стоит курс «Основа»?",
-            "Есть ли рассрочка?",
-            "Подойдёт ли курс, если меня повысили месяц назад?",
-        ],
-    },
 }
 
 
-def verticals(lang: str | None = None) -> dict[str, dict[str, Any]]:
-    """Sites that appear in an industry picker, in declared order.
-
-    Scoped by language: the Russian portfolio must not offer a British estate
-    agency, and the English one must not offer a shop that quotes roubles.
-    """
-    return {k: v for k, v in SITES.items()
-            if v.get("vertical") and (lang is None or v.get("lang", "en") == lang)}
-
-
-def portfolio_for(lang: str) -> str:
-    """The portfolio site key for a language."""
-    return "portfolio-ru" if lang == "ru" else "portfolio"
+def verticals() -> dict[str, dict[str, Any]]:
+    """Sites that appear in the industry picker, in declared order."""
+    return {k: v for k, v in SITES.items() if v.get("vertical")}
 
 
 def site_conf(site: str | None) -> dict[str, Any]:

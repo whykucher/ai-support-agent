@@ -14,65 +14,33 @@
   var script = document.currentScript ||
     document.querySelector('script[src*="widget.js"]');
 
-  /**
-   * Interface strings. Everything the visitor reads that is not supplied by
-   * the host page lives here - without it a Russian business ends up with a
-   * Russian assistant answering under an English "Ask anything..." box, which
-   * looks broken rather than bilingual.
-   */
-  var STR = {
-    en: {
-      ask: "Ask us",
-      instant: "Replies instantly",
-      openChat: "Open chat",
-      chat: "Support chat",
-      closeChat: "Close chat",
-      message: "Message",
-      sendLabel: "Send",
-      placeholder: "Ask anything...",
-      foot: "Answers come from the company knowledge base",
-      name: "Name",
-      email: "Email",
-      leadSend: "Send my details",
-      sending: "Sending...",
-      leadDone: "Thanks! Our team has your details.",
-      retry: "Try again",
-      leadTitle: "Want a specialist to follow up?",
-      leadNote: "Leave your details and we reply within one business day.",
-      passed: "Got it - I passed your contact to the team.",
-      offline: "I could not reach the server. Please try again in a moment.",
-      greeting: "Hi! I can help with orders, shipping, subscriptions and " +
-        "wholesale. What do you need?",
-      quick: "How fast is shipping?|What is your return policy?|" +
-        "I need wholesale pricing"
-    },
-    ru: {
-      ask: "Спросить",
-      instant: "Отвечает сразу",
-      openChat: "Открыть чат",
-      chat: "Чат поддержки",
-      closeChat: "Закрыть чат",
-      message: "Сообщение",
-      sendLabel: "Отправить",
-      placeholder: "Спросите что угодно...",
-      foot: "Ответы берутся из базы знаний компании",
-      name: "Имя",
-      email: "Почта",
-      leadSend: "Отправить контакты",
-      sending: "Отправляю...",
-      leadDone: "Спасибо! Контакты у нас, скоро вернёмся.",
-      retry: "Попробовать ещё раз",
-      leadTitle: "Хотите, чтобы с вами связались?",
-      leadNote: "Оставьте контакты — ответим в течение рабочего дня.",
-      passed: "Записал — передал ваши контакты команде.",
-      offline: "Не получилось достучаться до сервера. Попробуйте ещё раз.",
-      greeting: "Здравствуйте! Отвечу по услугам, ценам и срокам. " +
-        "Что вас интересует?",
-      quick: "Сколько это стоит?|Какие сроки?|Как с вами связаться?"
-    }
+  /** Interface strings: everything the visitor reads that the host page does
+   *  not supply. */
+  var T = {
+    ask: "Ask us",
+    instant: "Replies instantly",
+    openChat: "Open chat",
+    chat: "Support chat",
+    closeChat: "Close chat",
+    message: "Message",
+    sendLabel: "Send",
+    placeholder: "Ask anything...",
+    foot: "Answers come from the company knowledge base",
+    name: "Name",
+    email: "Email",
+    leadSend: "Send my details",
+    sending: "Sending...",
+    leadDone: "Thanks! Our team has your details.",
+    retry: "Try again",
+    leadTitle: "Want a specialist to follow up?",
+    leadNote: "Leave your details and we reply within one business day.",
+    passed: "Got it - I passed your contact to the team.",
+    offline: "I could not reach the server. Please try again in a moment.",
+    greeting: "Hi! I can help with orders, shipping, subscriptions and " +
+      "wholesale. What do you need?",
+    quick: "How fast is shipping?|What is your return policy?|" +
+      "I need wholesale pricing"
   };
-
-  var T = STR[(script && script.dataset.lang) || "en"] || STR.en;
 
   var cfg = {
     api: (script && script.dataset.api) || window.location.origin,
@@ -327,14 +295,6 @@
    * Used by the industry picker: one widget, several businesses. Each site
    * keeps its own conversation, so switching back does not lose the thread.
    */
-  /** Re-label the chrome after a language switch. */
-  function retranslate() {
-    root.querySelector(".nw-launcher span").textContent = T.ask;
-    root.querySelector(".nw-head p").textContent = T.instant;
-    input.placeholder = T.placeholder;
-    root.querySelector(".nw-foot").textContent = T.foot;
-  }
-
   function setSite(site, opts) {
     opts = opts || {};
     if (site === cfg.site && !opts.force) return;
@@ -344,7 +304,6 @@
     if (opts.agent) cfg.agent = opts.agent;
     if (opts.greeting) cfg.greeting = opts.greeting;
     if (opts.quick) cfg.quick = opts.quick;
-    if (opts.lang && STR[opts.lang]) { T = STR[opts.lang]; retranslate(); }
     cfg.leadTitle = opts.leadTitle || T.leadTitle;
     cfg.leadNote = opts.leadNote || T.leadNote;
     setAccent(opts.accent);
