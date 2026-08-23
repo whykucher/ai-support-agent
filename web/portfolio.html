@@ -3,34 +3,49 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nikita Denisov — AI agents and n8n automation for small businesses</title>
-<meta name="description" content="I build AI support agents and n8n automations that take repetitive work off small teams: answering customers from your own documents, scoring leads, and moving data between tools.">
+<title>Nikita Denisov — AI assistants and n8n automation for small teams</title>
+<meta name="description" content="I build AI assistants that answer from your own documents and n8n automations that move the work between your tools. Ask the one on this page a question and watch the whole chain run.">
+<meta name="theme-color" content="#EDECE8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* Blueprint, not dashboard. Pale drafting paper, navy ink, and one amber
-     signal reserved for the automated path - the same convention a control
-     panel uses for "this is running". Amber never appears anywhere a human
-     still has to do the work. */
-  /* Dark canvas, one warm signal. The pale grey-blue this replaced read as
-     unfinished next to the client demos, and a portfolio that looks weaker
-     than the work it is showing argues against itself. */
-  :root {
-    --paper:   #0B0C0F;
-    --card:    #14161B;
-    --card-2:  #1B1E25;
-    --ink:     #F4F3F0;
-    --ink-2:   #BCC0C7;
-    --soft:    #848994;
-    --line:    #262A32;
-    --line-2:  #1D2128;
-    --signal:  #FFB020;
-    --signal-d:#FFC55C;
+  /* ------------------------------------------------------------------
+     A workflow canvas, not a landing page.
 
-    --display: "Bricolage Grotesque", ui-sans-serif, system-ui, -apple-system, sans-serif;
-    --prose: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+     The subject is n8n automation, and the artifact of that world is the
+     node graph: a light canvas, a dot grid, rounded nodes joined by wires
+     that light up when something runs. So the page is one. The hero is not
+     a claim about speed - it is the actual chain, and the visitor's own
+     question is what runs through it.
+
+     Two signal colours rather than one accent, because the graph genuinely
+     has two states worth distinguishing: indigo for in-flight, moss for
+     settled. A single accent could not say that.
+     ------------------------------------------------------------------ */
+  :root {
+    color-scheme: light;
+
+    --canvas:    #EDECE8;
+    --grid:      #D7D5CD;
+    --panel:     #FFFFFF;
+    --panel-2:   #F6F5F2;
+    --ink:       #16161D;
+    --ink-2:     #55565F;
+    --ink-3:     #8A8B93;
+    --rule:      #D9D7D1;
+    --rule-2:    #E6E4DE;
+
+    --flow:      #3A2FE0;
+    --flow-soft: #E9E7FD;
+    --done:      #146B4F;
+    --done-soft: #DBEDE5;
+
+    --display: "Geologica", ui-sans-serif, system-ui, sans-serif;
+    --prose: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --sp: clamp(18px, 4vw, 40px);
   }
 
   * { box-sizing: border-box; }
@@ -38,764 +53,638 @@
 
   body {
     margin: 0;
-    background: var(--paper);
+    background: var(--canvas);
     color: var(--ink);
     font-family: var(--prose);
-    font-size: 18px;
+    font-size: 17px;
     line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding-inline: var(--sp); }
+
+  a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  a:hover { text-decoration-color: var(--flow); }
+
+  :focus-visible { outline: 2px solid var(--flow); outline-offset: 3px; border-radius: 2px; }
+
+  h1, h2, h3 {
+    font-family: var(--display);
+    font-weight: 600;
+    letter-spacing: -.02em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .skip {
+    position: absolute; left: -9999px;
+    background: var(--ink); color: var(--panel);
+    padding: 10px 16px; border-radius: 6px; z-index: 100;
+  }
+  .skip:focus { left: 16px; top: 16px; }
+
+  /* Machine-printed things: labels, counts, durations, identifiers. */
+  .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
     font-variant-numeric: tabular-nums;
   }
 
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
-  /* Constrain the box, not the container: re-centring it would break the
-     left edge every other section shares. */
-  .nope-wrap { max-width: 720px; }
-
-  a { color: var(--ink); text-decoration-color: var(--line); text-underline-offset: 3px; }
-  a:hover { text-decoration-color: var(--signal); }
-
-  :focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
-
-  /* Field labels, run stamps, durations - anything a machine would print. */
-  .tag {
-    font-family: var(--mono); font-size: 11px; font-weight: 500;
-    letter-spacing: .13em; text-transform: uppercase; color: var(--soft);
-  }
-
-  h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.025em; }
-
   /* ---------- header ---------- */
+  .top {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--canvas) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--rule-2);
+  }
+  .top-in {
+    display: flex; align-items: center; gap: 20px;
+    height: 60px;
+  }
+  .who {
+    font-family: var(--display); font-weight: 600; font-size: 15.5px;
+    letter-spacing: -.01em;
+  }
+  .topnav { margin-left: auto; display: flex; gap: 22px; align-items: center; }
+  .topnav a { font-size: 14.5px; color: var(--ink-2); text-decoration: none; }
+  .topnav a:hover { color: var(--ink); }
+  .top .lang {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .06em;
+    padding: 5px 9px; border: 1px solid var(--rule); border-radius: 5px;
+    text-decoration: none; color: var(--ink-2);
+  }
+  .top .lang:hover { border-color: var(--ink-3); color: var(--ink); }
+  @media (max-width: 720px) { .topnav .hide-sm { display: none; } }
 
-  .top { border-bottom: 1px solid var(--line); }
-  .top-in { display: flex; align-items: center; gap: 20px; height: 62px; }
-  .who { font-family: var(--display); font-weight: 700; font-size: 16px; letter-spacing: -.02em; }
-  .topnav { margin-left: auto; display: flex; gap: 20px; }
-  .topnav a {
-    font-family: var(--mono); font-size: 11.5px; letter-spacing: .09em;
-    text-transform: uppercase; text-decoration: none; color: var(--soft);
-    padding: 3px 0; border-bottom: 1px solid transparent;
-  }
-  .topnav a:hover { color: var(--ink); border-bottom-color: var(--signal); }
-  .top a.cta {
-    font-family: var(--mono); font-size: 11.5px; letter-spacing: .09em;
-    text-transform: uppercase; text-decoration: none;
-    border: 1px solid var(--ink); padding: 8px 14px;
-  }
-  .top a.cta:hover { background: var(--ink); color: var(--paper); }
-
-  /* ---------- hero ---------- */
-
-  .hero { padding: 64px 0 20px; }
-  .hero-grid { display: grid; grid-template-columns: 1.35fr .65fr; gap: 52px; align-items: start; }
-  .hero .tag { display: block; margin-bottom: 18px; }
-  .hero-cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 28px; }
-
-  .status { border: 1px solid var(--line); background: var(--card); }
-  .status-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 13px 16px; border-bottom: 1px solid var(--line-2);
-  }
-  .pulse {
-    width: 8px; height: 8px; border-radius: 50%; background: var(--signal);
-    box-shadow: 0 0 0 0 var(--signal);
-    animation: beat 2.6s ease-out infinite;
-  }
-  @keyframes beat {
-    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--signal) 70%, transparent); }
-    70% { box-shadow: 0 0 0 10px transparent; }
-    100% { box-shadow: 0 0 0 0 transparent; }
-  }
-  .status-rows { margin: 0; padding: 0; }
-  .status-rows > div {
-    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
-    padding: 13px 16px; border-bottom: 1px solid var(--line-2);
-  }
-  .status-rows dt { font-size: 14px; color: var(--soft); }
-  .status-rows dd {
-    margin: 0; font-family: var(--mono); font-size: 16px; font-weight: 500; color: var(--ink);
-  }
-  .status-foot {
-    display: block; padding: 13px 16px; font-family: var(--mono);
-    font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
-    color: var(--signal-d); text-decoration: none;
-  }
-  .status-foot:hover { text-decoration: underline; }
-
-
-  h1 {
-    font-size: clamp(34px, 5.4vw, 58px);
-    line-height: 1.02;
-    margin: 0 0 24px;
-    max-width: 17ch;
+  /* ---------- the canvas ---------- */
+  .canvas {
+    position: relative;
+    padding: clamp(26px, 4vw, 44px) 0 clamp(26px, 4vw, 44px);
+    /* The dot grid is the n8n editor's own ground. It is why the nodes below
+       read as a workflow rather than as a row of feature cards. */
+    background-image: radial-gradient(var(--grid) 1.15px, transparent 1.15px);
+    background-size: 22px 22px;
+    background-position: -1px -1px;
+    border-bottom: 1px solid var(--rule);
   }
 
-  .stand {
-    font-size: 20px; line-height: 1.55; color: var(--ink-2);
-    max-width: 56ch; margin: 0;
+  .lede { max-width: 40rem; }
+  .lede h1 {
+    font-size: clamp(28px, 4vw, 43px);
+    line-height: 1.08;
+    letter-spacing: -.032em;
+    margin: 11px 0 0;
   }
-  .stand strong { font-weight: 500; color: var(--ink); }
-
-  /* ---------- the two lanes: the whole argument ---------- */
-
-  .lanes {
-    margin: 44px 0 0;
-    border: 1px solid var(--line);
-    background: var(--card);
+  .lede h1 em {
+    font-style: normal;
+    color: var(--flow);
   }
-  .lanes-head {
-    display: flex; justify-content: space-between; gap: 16px;
-    padding: 13px 18px; border-bottom: 1px solid var(--line-2); flex-wrap: wrap;
-  }
-  .lanes svg { display: block; width: 100%; height: auto; }
-  .lanes-foot {
-    padding: 12px 18px; border-top: 1px solid var(--line-2);
-    font-family: var(--mono); font-size: 11px; color: var(--soft); letter-spacing: .02em;
+  .lede p {
+    margin: 13px 0 0;
+    font-size: clamp(15.5px, 1.4vw, 17px);
+    color: var(--ink-2);
+    max-width: 33rem;
   }
 
-  .ax        { stroke: var(--line-2); stroke-width: 1; }
-  .ax-t      { font-family: var(--mono); font-size: 10px; fill: var(--soft); letter-spacing: .06em; }
-  .lane-rail { stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 2 4; }
-  .stop      { fill: var(--paper); stroke: var(--ink-2); stroke-width: 1.5; }
-  .stop-lbl  { font-family: var(--mono); font-size: 10.5px; fill: var(--ink-2); }
-  .stop-time { font-family: var(--mono); font-size: 10px; fill: var(--soft); }
-  .lane-name { font-family: var(--mono); font-size: 10px; fill: var(--soft); letter-spacing: .13em; }
-  .lane-sub  { font-family: var(--mono); font-size: 10px; fill: var(--soft); }
-  .total     { font-family: var(--mono); font-size: 18px; font-weight: 500; fill: var(--ink); }
-
-  .auto-rail { stroke: var(--signal); stroke-width: 1.5; opacity: .45; }
-  .auto-hit  { fill: var(--signal); }
-  .auto-lbl  { font-family: var(--mono); font-size: 10.5px; fill: var(--signal-d); }
-  .total-auto{ font-family: var(--mono); font-size: 18px; font-weight: 500; fill: var(--signal-d); }
-
-  .lanes-sm { display: none; }
-  .lane-sm { padding: 18px; border-bottom: 1px solid var(--line-2); }
-  .lane-sm:last-child { border-bottom: 0; }
-  .lane-sm-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-  .lane-sm-head b { font-family: var(--mono); font-size: 22px; font-weight: 500; }
-  .lane-sm ol { margin: 0; padding: 0; list-style: none; }
-  .lane-sm li {
-    font-size: 15px; color: var(--ink-2); padding: 7px 0 7px 14px;
-    border-left: 2px solid var(--line);
+  /* ---------- the ask bar: the entry point of the graph ---------- */
+  .ask { margin-top: 20px; max-width: 40rem; }
+  .ask-row { display: flex; gap: 8px; }
+  .ask-row input {
+    flex: 1; min-width: 0;
+    height: 50px; padding: 0 15px;
+    font: 400 16px/1 var(--prose);
+    color: var(--ink);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
   }
-  .lane-sm li span {
-    display: block; font-family: var(--mono); font-size: 11px; color: var(--soft);
+  .ask-row input::placeholder { color: var(--ink-3); }
+  .ask-row input:focus-visible { border-color: var(--flow); }
+  .run {
+    height: 50px; padding: 0 20px;
+    font: 500 15px/1 var(--prose);
+    color: #fff; background: var(--flow);
+    border: 0; border-radius: 8px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: background .15s ease, transform .15s ease;
   }
-  .lane-sm-foot { margin: 12px 0 0; font-family: var(--mono); font-size: 11px; color: var(--soft); }
-  .lane-sm.auto .lane-sm-head b { color: var(--signal-d); }
-  .lane-sm.auto li { border-left-color: var(--signal); }
+  .run:hover { background: #2E24C2; }
+  .run:active { transform: translateY(1px); }
+  .run[disabled] { background: var(--ink-3); cursor: progress; }
+  .run svg { width: 15px; height: 15px; }
 
-  /* The manual lane draws itself first, then the automated one lands in one
-     tick. Order matters more than duration: it replays the comparison. */
-  .reveal { opacity: 0; animation: appear .45s ease forwards; }
-  @keyframes appear { to { opacity: 1; } }
+  .seeds { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+  .seeds button {
+    font: 400 13.5px/1 var(--prose);
+    color: var(--ink-2);
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 7px 13px;
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease, background .15s ease;
+  }
+  .seeds button:hover { border-color: var(--flow); color: var(--flow); background: var(--flow-soft); }
+
+  /* ---------- the chain ---------- */
+  .chain-head {
+    display: flex; align-items: baseline; gap: 6px 12px;
+    flex-wrap: wrap;
+    margin: clamp(22px, 3vw, 32px) 0 12px;
+  }
+  /* Both labels stay whole and drop to their own line on a phone rather than
+     each breaking mid-phrase. */
+  .chain-head .tag { white-space: nowrap; }
+  .chain-head .tag:last-child { margin-left: auto; }
+
+  .chain {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    align-items: stretch;
+  }
+
+  .node {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 12px 14px 13px;
+    min-height: 118px;
+    display: flex; flex-direction: column;
+    transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+  }
+  /* The wire, drawn from the node so it can never drift out of alignment.
+     ::before is the dormant rail, ::after the signal that fills it. */
+  .node + .node { margin-left: 30px; }
+  .node + .node::before {
+    content: "";
+    position: absolute; top: 50%; left: -31px; width: 31px; height: 2px;
+    background: repeating-linear-gradient(to right,
+      var(--rule) 0 5px, transparent 5px 9px);
+    transform: translateY(-50%);
+  }
+  .node + .node::after {
+    content: "";
+    position: absolute; top: 50%; left: -31px; width: 31px; height: 2px;
+    background: var(--flow);
+    transform: translateY(-50%) scaleX(0);
+    transform-origin: left center;
+    opacity: 0;
+  }
+
+  /* Ports. n8n draws them on every node edge, and they are what stops five
+     cards in a row from reading as a feature grid. */
+  .port {
+    position: absolute; top: 50%; width: 9px; height: 9px;
+    border-radius: 50%; background: var(--canvas);
+    border: 2px solid var(--rule);
+    transform: translateY(-50%);
+    transition: border-color .2s ease, background .2s ease;
+  }
+  .p-in { left: -5.5px; }
+  .p-out { right: -5.5px; }
+  .node.lit .port { border-color: var(--flow); }
+  .node.lit .p-out { background: var(--flow); }
+  .node.done .port { border-color: var(--done); }
+  .node.done .p-out { background: var(--done); }
+  .node.done.noop .port { border-color: var(--rule); background: var(--canvas); }
+  .node.lit { border-color: var(--flow); box-shadow: 0 0 0 3px var(--flow-soft); }
+  .node.lit + .node::after,
+  .node.done + .node::after { transform: translateY(-50%) scaleX(1); opacity: 1; transition: transform .28s ease, opacity .1s ease; }
+  .node.done { border-color: var(--done); box-shadow: 0 0 0 3px var(--done-soft); }
+  .node.done.noop { border-color: var(--rule); box-shadow: none; }
+  /* Once a stage has settled its outgoing wire is no longer in flight. */
+  .node.done + .node::after { background: var(--done); }
+  /* A stage that did not fire. Muted rather than faded: half-opacity on a
+     white card over this canvas erased the node. Named "noop" and not "skip"
+     because .skip belongs to the skip-to-content link, which parks its element
+     at left:-9999px - a node given that class silently left the page. */
+  .node.noop { background: var(--panel-2); border-style: dashed; }
+  .node.noop .n-name, .node.noop .n-what { color: var(--ink-3); }
+
+  .n-top { display: flex; align-items: center; gap: 7px; }
+  .n-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--rule); flex: none;
+  }
+  .node.lit .n-dot { background: var(--flow); }
+  .node.done .n-dot { background: var(--done); }
+  .node.noop .n-dot { background: var(--rule); }
+  .n-name {
+    font-family: var(--display); font-weight: 600; font-size: 14px;
+    letter-spacing: -.01em;
+  }
+  .n-num { margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+  .n-what { font-size: 13px; color: var(--ink-3); margin: 7px 0 0; line-height: 1.45; }
+  .n-out {
+    margin-top: auto; padding-top: 10px;
+    font-family: var(--mono); font-size: 12px; line-height: 1.4;
+    color: var(--ink); font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+  .n-out:empty { padding-top: 0; }
+  .node.done .n-out { color: var(--done); }
+  .node.noop .n-out { color: var(--ink-3); }
+
+  @media (max-width: 900px) {
+    .chain { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .node + .node { margin-left: 0; }
+    .node + .node::before, .node + .node::after, .port { display: none; }
+    .node { min-height: 0; }
+  }
+  @media (max-width: 480px) { .chain { grid-template-columns: 1fr; } }
+
+  /* ---------- the answer the chain produced ---------- */
+  .result {
+    margin-top: 14px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 0;
+    overflow: hidden;
+  }
+  .result[hidden] { display: none; }
+  .r-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--rule-2);
+    background: var(--panel-2);
+  }
+  .r-body { padding: 15px 16px 17px; }
+  .r-q {
+    font-size: 14px; color: var(--ink-3); margin: 0 0 9px;
+  }
+  .r-a { margin: 0; font-size: 16.5px; line-height: 1.62; }
+  .r-src { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 13px; }
+  .chip {
+    font-family: var(--mono); font-size: 11.5px;
+    background: var(--panel-2); border: 1px solid var(--rule);
+    border-radius: 5px; padding: 4px 8px; color: var(--ink-2);
+  }
+  .r-note {
+    margin: 13px 0 0; font-size: 13.5px; color: var(--ink-3);
+    border-top: 1px solid var(--rule-2); padding-top: 12px;
+  }
 
   /* ---------- sections ---------- */
+  section { padding: clamp(48px, 7vw, 88px) 0; border-bottom: 1px solid var(--rule); }
+  .s-head { max-width: 40rem; margin-bottom: clamp(26px, 4vw, 40px); }
+  .s-head h2 {
+    font-size: clamp(24px, 3.2vw, 34px); line-height: 1.14; margin: 11px 0 0;
+  }
+  .s-head p { margin: 12px 0 0; color: var(--ink-2); font-size: 16.5px; }
 
-  section { padding: 64px 0; border-top: 1px solid var(--line); }
-  h2 { font-size: clamp(24px, 3vw, 32px); margin: 0 0 10px; }
-  .sec-note { color: var(--soft); margin: 0 0 34px; font-size: 17px; max-width: 54ch; }
+  /* ---------- deployed instances ---------- */
+  .inst { display: grid; grid-template-columns: repeat(auto-fill, minmax(258px, 1fr)); gap: 12px; }
+  .card {
+    display: flex; flex-direction: column;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 16px 17px 15px;
+    text-decoration: none;
+    transition: border-color .16s ease, transform .16s ease, box-shadow .16s ease;
+  }
+  .card:hover {
+    border-color: var(--flow);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px -12px rgba(22, 22, 29, .35);
+  }
+  .card h3 { font-size: 17px; margin: 9px 0 0; }
+  .card .co { font-size: 14px; color: var(--ink-2); margin: 4px 0 0; }
+  .card .kb {
+    margin-top: 13px; padding-top: 11px; border-top: 1px solid var(--rule-2);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .card .go { margin-left: auto; color: var(--flow); font-size: 14px; }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; flex: none; }
 
   /* ---------- what I build ---------- */
+  .builds { display: grid; grid-template-columns: repeat(auto-fit, minmax(252px, 1fr)); gap: 26px 32px; }
+  .build h3 { font-size: 17.5px; margin: 9px 0 0; }
+  .build p { margin: 8px 0 0; color: var(--ink-2); font-size: 15.5px; }
 
-  .builds { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
-  .build { background: var(--card); padding: 26px; }
-  .build h3 { font-size: 18px; margin: 10px 0 8px; }
-  .build p { margin: 0; font-size: 16.5px; color: var(--ink-2); }
-  .build .tag { color: var(--signal-d); }
-
-  /* ---------- live section ---------- */
-
-  .live { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; }
-
-  .live-ask, .feed { border: 1px solid var(--line); background: var(--card); display: flex; flex-direction: column; }
-  .live-ask { padding: 22px; }
-  .asks { display: flex; flex-direction: column; gap: 8px; margin: 14px 0 auto; }
-  .asks button {
-    text-align: left; font-family: var(--prose); font-size: 16px;
-    background: var(--paper); color: var(--ink);
-    border: 1px solid var(--line); border-left: 2px solid var(--signal);
-    padding: 11px 14px; cursor: pointer;
+  /* ---------- process ---------- */
+  .steps { display: grid; gap: 0; }
+  .step {
+    display: grid; grid-template-columns: 52px 1fr auto; gap: 20px;
+    padding: 20px 0; border-top: 1px solid var(--rule-2);
+    align-items: baseline;
   }
-  .asks button:hover { background: var(--card-2); border-left-color: var(--signal-d); }
-  .live-note { margin: 18px 0 0; font-size: 14.5px; color: var(--soft); }
-
-  .feed-head, .feed-foot { padding: 13px 18px; }
-  .feed-head { display: flex; justify-content: space-between; border-bottom: 1px solid var(--line-2); }
-  .feed-foot { border-top: 1px solid var(--line-2); font-size: 13.5px; color: var(--soft); }
-  .feed-list { list-style: none; margin: 0; padding: 0; flex: 1; overflow-y: auto; max-height: 340px; }
-  .feed-list li { padding: 11px 18px; border-bottom: 1px solid var(--line-2); font-size: 14.5px; }
-  .feed-list li:last-child { border-bottom: 0; }
-  .feed-empty { color: var(--soft); }
-  .feed-row { display: flex; gap: 10px; align-items: baseline; }
-  .feed-kind {
-    font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
-    text-transform: uppercase; color: var(--signal-d); white-space: nowrap;
+  .step:first-child { border-top: 0; }
+  .step .n {
+    font-family: var(--mono); font-size: 13px; color: var(--flow);
+    font-variant-numeric: tabular-nums;
   }
-  .feed-when { font-family: var(--mono); font-size: 10.5px; color: var(--soft); margin-left: auto; white-space: nowrap; }
-  .feed-sum { color: var(--ink-2); overflow-wrap: anywhere; }
-  /* A row that just arrived gets one pulse, so a visitor sees their own
-     question land rather than having to hunt for it. */
-  .feed-new { animation: land 1.4s ease; }
-  @keyframes land {
-    0% { background: color-mix(in srgb, var(--signal) 22%, var(--card)); }
-    100% { background: transparent; }
+  .step h3 { font-size: 17px; }
+  .step p { margin: 6px 0 0; color: var(--ink-2); font-size: 15.5px; max-width: 44rem; }
+  .step .when { font-family: var(--mono); font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+  @media (max-width: 680px) {
+    .step { grid-template-columns: 34px 1fr; }
+    .step .when { grid-column: 2; margin-top: 6px; }
   }
 
-  /* ---------- industry picker ---------- */
-
-  .ind-tabs { display: flex; gap: 1px; background: var(--line); border: 1px solid var(--line); flex-wrap: wrap; }
-  .ind-tabs button {
-    flex: 1 1 150px; background: var(--card); border: 0; cursor: pointer;
-    padding: 15px 16px; text-align: left; font-family: var(--display);
-    border-bottom: 2px solid transparent;
-    /* Without this a <button> inherits the UA's black buttontext, and the
-       industry name disappears against the dark card. */
-    color: var(--ink);
+  /* ---------- price ---------- */
+  .price { display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: 12px; }
+  .tier {
+    background: var(--panel); border: 1px solid var(--rule);
+    border-radius: 10px; padding: 18px 18px 20px;
   }
-  .ind-tabs button:hover { background: var(--card-2); }
-  .ind-tabs button[aria-selected="true"] { background: var(--card-2); border-bottom-color: var(--pick, var(--signal)); }
-  .ind-tabs .i-name { display: block; font-weight: 700; font-size: 15.5px; letter-spacing: -.015em; }
-  .ind-tabs .i-co {
-    display: block; font-family: var(--mono); font-size: 10px;
-    letter-spacing: .09em; text-transform: uppercase; color: var(--soft); margin-top: 4px;
+  .tier.pick { border-color: var(--ink); }
+  .tier b {
+    display: block; font-family: var(--display); font-weight: 600;
+    font-size: 25px; letter-spacing: -.02em; margin: 9px 0 0;
+    font-variant-numeric: tabular-nums;
   }
+  .tier p { margin: 9px 0 0; font-size: 14.5px; color: var(--ink-2); }
+  .price-note { margin: 16px 0 0; font-size: 14.5px; color: var(--ink-3); max-width: 44rem; }
 
-  .ind-panel { border: 1px solid var(--line); border-top: 0; background: var(--card); }
-  .ind-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); }
-  .ind-cell { background: var(--card); padding: 24px; }
-  .ind-cell h3 { font-size: 17px; margin: 0 0 10px; }
-  .ind-cell p { margin: 0; font-size: 16px; color: var(--ink-2); }
-
-  /* The pipeline is a real sequence, so it is numbered; the numbers carry the
-     order in which the automation actually fires. */
-  .pipe { margin: 0; padding: 0; list-style: none; counter-reset: step; }
-  .pipe li {
-    counter-increment: step; position: relative; padding: 9px 0 9px 34px;
-    font-size: 15.5px; color: var(--ink-2); border-bottom: 1px solid var(--line-2);
-  }
-  .pipe li:last-child { border-bottom: 0; }
-  .pipe li::before {
-    content: "0" counter(step); position: absolute; left: 0; top: 11px;
-    font-family: var(--mono); font-size: 10.5px; color: var(--pick, var(--signal-d));
-  }
-
-  .ind-ask { padding: 22px 24px; border-top: 1px solid var(--line); }
-  .ind-ask .tag { display: block; margin-bottom: 12px; }
-  .ind-qs { display: flex; gap: 8px; flex-wrap: wrap; }
-  .ind-qs button {
-    font-family: var(--prose); font-size: 15.5px; text-align: left;
-    background: var(--paper); color: var(--ink); cursor: pointer;
-    border: 1px solid var(--line); border-left: 2px solid var(--pick, var(--signal));
-    padding: 10px 14px;
-  }
-  .ind-qs button:hover { background: var(--card-2); }
-  .ind-note { margin: 14px 0 0; font-size: 14px; color: var(--soft); }
-
-  .ind-open {
-    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
-    padding: 18px; border: 1px solid var(--pick, var(--signal));
-    background: color-mix(in srgb, var(--pick, var(--signal)) 7%, var(--card));
-  }
-  .ind-open > div { flex: 1; min-width: 260px; }
-  .ind-go {
-    font-family: var(--mono); font-size: 12px; letter-spacing: .08em;
-    text-transform: uppercase; text-decoration: none; white-space: nowrap;
-    background: var(--ink); color: var(--paper); padding: 13px 20px;
-  }
-  .ind-go:hover { background: var(--pick, var(--signal-d)); }
-
-  /* ---------- lab teaser ---------- */
-
-  .tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
-  .tool { background: var(--card); padding: 24px; text-decoration: none; display: flex; flex-direction: column; gap: 9px; }
-  .tool:hover { background: var(--card-2); }
-  .tool h3 { font-size: 18px; margin: 4px 0 0; }
-  .tool p { margin: 0; font-size: 15.5px; color: var(--ink-2); flex: 1; }
-  .tool-go { font-family: var(--mono); font-size: 11.5px; letter-spacing: .06em; color: var(--signal-d); }
-
-  /* ---------- case study ---------- */
-
-  .case { display: grid; grid-template-columns: 1.15fr .85fr; gap: 44px; align-items: start; }
-  .case p { font-size: 17px; }
-  .case p:first-of-type { margin-top: 0; }
-  .case .links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
-  .btn {
-    font-family: var(--mono); font-size: 11.5px; letter-spacing: .09em;
-    text-transform: uppercase; text-decoration: none;
-    border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
-    padding: 11px 16px; display: inline-block;
-  }
-  .btn:hover { background: var(--signal); border-color: var(--signal); color: var(--paper); }
-  .btn.line { background: transparent; color: var(--ink); }
-  .btn.line:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-
-  .facts { border: 1px solid var(--line); background: var(--card); }
-  .fact { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--line-2); }
-  .fact:last-child { border-bottom: 0; }
-  .fact b { font-family: var(--mono); font-size: 17px; font-weight: 500; }
-  .fact span { font-size: 15px; color: var(--soft); font-family: var(--display); }
-  .disclaimer {
-    margin-top: 22px; font-size: 14.5px; color: var(--soft);
-    border-left: 2px solid var(--line); padding-left: 14px;
-  }
-
-  /* ---------- process: a real sequence, so it gets numbers ---------- */
-
-  .steps { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); }
-  .step { background: var(--card); padding: 22px 26px; display: grid; grid-template-columns: 60px 1fr; gap: 20px; align-items: baseline; }
-  .step .n { font-family: var(--mono); font-size: 12px; color: var(--signal-d); letter-spacing: .1em; }
-  .step h3 { font-size: 18px; margin: 0 0 5px; }
-  .step p { margin: 0; font-size: 16.5px; color: var(--ink-2); }
-  .step .when { font-family: var(--mono); font-size: 11px; color: var(--soft); margin-top: 7px; display: block; }
-
-  /* ---------- honesty ---------- */
-
-  .nope { border: 1px solid var(--ink); background: var(--card); padding: 30px 32px; }
-  .nope h2 { margin-bottom: 18px; }
-  .nope ul { margin: 0; padding: 0; list-style: none; }
-  .nope li { padding: 14px 0; border-top: 1px solid var(--line-2); font-size: 17px; color: var(--ink-2); }
-  .nope li:first-child { border-top: 0; padding-top: 0; }
-  .nope li b { font-family: var(--display); font-weight: 600; color: var(--ink); display: block; margin-bottom: 3px; font-size: 16.5px; }
+  /* ---------- nope ---------- */
+  .nope { max-width: 46rem; }
+  .nope li { margin: 0 0 15px; padding-left: 0; }
+  .nope ul { list-style: none; margin: 0; padding: 0; }
+  .nope b { font-weight: 600; }
+  .nope span { color: var(--ink-2); }
 
   /* ---------- contact ---------- */
-
-  .contact { display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: end; }
-  .contact h2 { max-width: 16ch; }
-  .contact p { margin: 0; max-width: 46ch; color: var(--ink-2); }
-  .channels { display: grid; gap: 10px; justify-items: end; }
-  .channels a { font-family: var(--mono); font-size: 14px; text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
-  .channels a:hover { border-bottom-color: var(--signal); }
-
-  footer { border-top: 1px solid var(--line); padding: 26px 0 60px; }
-  footer .tag { display: block; }
-
-  /* ---------- responsive ---------- */
-
-  @media (max-width: 860px) {
-    body { font-size: 17px; }
-    .live, .tools, .ind-grid, .hero-grid { grid-template-columns: 1fr; }
-    .ind-tabs button { flex-basis: 100%; }
-    .topnav { gap: 14px; }
-    .hero { padding: 52px 0 16px; }
-    .builds, .case, .contact { grid-template-columns: 1fr; }
-    .contact { gap: 26px; align-items: start; }
-    .channels { justify-items: start; }
-    .top .tag { display: none; }
+  .contact { display: grid; grid-template-columns: 1.2fr .8fr; gap: clamp(24px, 5vw, 60px); align-items: start; }
+  @media (max-width: 780px) { .contact { grid-template-columns: 1fr; } }
+  .channels { display: grid; gap: 9px; }
+  .channels a {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--panel); border: 1px solid var(--rule); border-radius: 9px;
+    padding: 13px 15px; text-decoration: none; font-size: 15.5px;
+    transition: border-color .16s ease;
   }
-  @media (max-width: 700px) {
-    .lanes svg { display: none; }
-    .lanes-sm { display: block; }
-    .lanes-head .tag { font-size: 10px; }
-  }
+  .channels a:hover { border-color: var(--flow); }
+  .channels .arw { margin-left: auto; color: var(--ink-3); }
 
-  @media (max-width: 600px) {
-    .wrap { padding: 0 18px; }
-    .step { grid-template-columns: 1fr; gap: 6px; }
-    .hide-sm { display: none; }
-  }
+  footer { padding: 26px 0 40px; }
+  .foot-in { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; }
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    .reveal { animation: none; opacity: 1; }
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      transition-duration: .01ms !important;
+    }
   }
 </style>
 </head>
 <body>
 
+<a class="skip" href="#main">Skip to content</a>
+
 <header class="top">
   <div class="wrap top-in">
     <span class="who">Nikita Denisov</span>
-    <nav class="topnav">
-      <a href="/lab">Lab</a>
-      <a href="/demo">Client demo</a>
-      <a href="/admin">Ops</a>
+    <nav class="topnav" aria-label="Main">
+      <a class="hide-sm" href="#work">Work</a>
+      <a class="hide-sm" href="/lab">Lab</a>
+      <a class="hide-sm" href="/admin">Ops</a>
+      <a href="#contact">Contact</a>
+      <a class="lang" href="/ru" hreflang="ru" lang="ru">RU</a>
     </nav>
-    <a class="cta" href="#contact">Get in touch</a>
   </div>
 </header>
 
-<main>
+<main id="main">
 
-  <div class="wrap hero">
-    <div class="hero-grid">
-      <div>
-        <span class="tag">AI agents · n8n · Python</span>
-        <h1>Somebody on your team is doing this by hand.</h1>
-        <p class="stand">I build AI agents and n8n automations that take repetitive work
-          off people — answering customers from your own documents, scoring the
-          enquiries worth money, and moving data between tools while nobody watches.
-          <strong>Below is one enquiry, twice.</strong></p>
-        <div class="hero-cta">
-          <a class="btn" href="#industries">See it running on six businesses</a>
-          <a class="btn line" href="#contact">Get in touch</a>
-        </div>
+  <!-- The hero is the graph. The visitor's own question is what runs through
+       it, and every value the nodes fill in comes back from the real request -
+       no invented per-node timings. -->
+  <div class="canvas">
+    <div class="wrap">
+      <div class="lede">
+        <span class="tag">AI assistants · n8n · Python</span>
+        <h1>Ask this page a question. <em>Watch the whole chain run.</em></h1>
+        <p>I build assistants that answer from a company's own documents, and the
+          automation that scores the enquiry and moves it to whoever should see
+          it. The chain below is this server — your question runs through it.</p>
       </div>
 
-      <!-- Not decoration: these numbers are read from the same endpoints the
-           ops dashboard uses, so the card is a status light rather than a claim. -->
-      <aside class="status" id="status">
-        <div class="status-head">
-          <span class="tag">This server, right now</span>
-          <span class="pulse" aria-hidden="true"></span>
+      <form class="ask" id="ask">
+        <div class="ask-row">
+          <label class="skip" for="q">Your question</label>
+          <input id="q" name="q" type="text" autocomplete="off" spellcheck="false"
+                 placeholder="What do you charge for a pilot?…">
+          <button class="run" type="submit" id="run">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 3l14 9-14 9V3z"/>
+            </svg>
+            <span id="run-label">Run it</span>
+          </button>
         </div>
-        <dl class="status-rows" id="status-rows">
-          <div><dt>Loading</dt><dd>—</dd></div>
-        </dl>
-        <a class="status-foot" href="/admin">Open the ops dashboard →</a>
-      </aside>
+        <div class="seeds" id="seeds"></div>
+      </form>
+
+      <div class="chain-head">
+        <span class="tag">Execution chain</span>
+        <span class="tag" id="chain-state">idle</span>
+      </div>
+
+      <div class="chain" id="chain" role="list" aria-live="polite"></div>
+
+      <article class="result" id="result" hidden>
+        <div class="r-head">
+          <span class="tag" id="r-model">—</span>
+          <span class="tag" id="r-intent">—</span>
+          <span class="tag" id="r-ms">—</span>
+        </div>
+        <div class="r-body">
+          <p class="r-q" id="r-q"></p>
+          <p class="r-a" id="r-a"></p>
+          <div class="r-src" id="r-src"></div>
+          <p class="r-note" id="r-note"></p>
+        </div>
+      </article>
     </div>
-
-    <!-- The comparison is the argument. Same time axis for both lanes, so the
-         empty second lane makes the point before anyone reads a word of it. -->
-    <figure class="lanes">
-      <figcaption class="lanes-head">
-        <span class="tag">One wholesale enquiry · Tuesday morning</span>
-        <span class="tag">09:00 — 13:00</span>
-      </figcaption>
-
-      <svg viewBox="0 0 760 262" role="img"
-           aria-label="Two timelines of the same customer enquiry. Handled by people it takes three hours twenty-six minutes and four handovers; handled by the agent it takes six tenths of a second and nobody touches it.">
-
-        <!-- Left column is reserved for the totals so nothing ever sits on top
-             of a rail. Rails start at x=190 and share one time axis. -->
-
-        <!-- by hand -->
-        <text class="lane-name" x="24" y="72">BY HAND</text>
-        <text class="total"     x="24" y="96">3h 26m</text>
-        <text class="lane-sub"  x="24" y="112">4 handovers</text>
-
-        <line class="lane-rail" x1="222" y1="90" x2="736" y2="90"/>
-
-        <g class="reveal" style="animation-delay:.15s">
-          <circle class="stop" cx="222" cy="90" r="5"/>
-          <text class="stop-lbl"  x="222" y="70">Email arrives</text>
-          <text class="stop-time" x="222" y="110">09:14</text>
-        </g>
-        <g class="reveal" style="animation-delay:.55s">
-          <circle class="stop" cx="468" cy="90" r="5"/>
-          <text class="stop-lbl"  x="468" y="70" text-anchor="middle">Someone opens it, writes a reply</text>
-          <text class="stop-time" x="468" y="110" text-anchor="middle">11:02</text>
-        </g>
-        <g class="reveal" style="animation-delay:.95s">
-          <circle class="stop" cx="690" cy="90" r="5"/>
-          <text class="stop-lbl"  x="736" y="70" text-anchor="end">Forwarded to sales</text>
-          <text class="stop-time" x="736" y="110" text-anchor="end">12:40</text>
-        </g>
-
-        <!-- by the agent -->
-        <text class="lane-name" x="24" y="182">BY THE AGENT</text>
-        <text class="total-auto" x="24" y="206">0.6s</text>
-        <text class="lane-sub"  x="24" y="222">nobody touched it</text>
-
-        <line class="auto-rail" x1="222" y1="196" x2="736" y2="196"/>
-
-        <g class="reveal" style="animation-delay:1.4s">
-          <rect class="auto-hit" x="220" y="188" width="5" height="17" rx="1"/>
-          <text class="auto-lbl"  x="236" y="184">Answered from the knowledge base, scored, routed to sales</text>
-          <text class="stop-time" x="236" y="216">09:14:00.6</text>
-        </g>
-
-        <!-- shared axis -->
-        <line class="ax" x1="190" y1="244" x2="736" y2="244"/>
-        <text class="ax-t" x="190" y="258">09:00</text>
-        <text class="ax-t" x="463" y="258" text-anchor="middle">11:00</text>
-        <text class="ax-t" x="736" y="258" text-anchor="end">13:00</text>
-      </svg>
-
-      <!-- Below 700px the SVG would scale its labels down to four pixels. The
-           same comparison, rebuilt as two stacked blocks. Only one of the two
-           is ever in the DOM's accessibility tree, so nothing is read twice. -->
-      <div class="lanes-sm">
-        <div class="lane-sm">
-          <div class="lane-sm-head"><span class="tag">By hand</span><b>3h 26m</b></div>
-          <ol>
-            <li><span>09:14</span> Email arrives</li>
-            <li><span>11:02</span> Someone opens it, writes a reply</li>
-            <li><span>12:40</span> Forwarded to sales</li>
-          </ol>
-          <p class="lane-sm-foot">4 handovers</p>
-        </div>
-        <div class="lane-sm auto">
-          <div class="lane-sm-head"><span class="tag">By the agent</span><b>0.6s</b></div>
-          <ol>
-            <li><span>09:14:00.6</span> Answered from the knowledge base, scored, routed to sales</li>
-          </ol>
-          <p class="lane-sm-foot">Nobody touched it</p>
-        </div>
-      </div>
-
-      <div class="lanes-foot">
-        0.6 s is measured from the live demo below. The upper lane is a normal
-        Tuesday at a small company, not a client I am naming.
-      </div>
-    </figure>
   </div>
 
-  <section id="live">
+  <section id="work">
     <div class="wrap">
-      <h2>This page is the demo</h2>
-      <p class="sec-note">The assistant in the corner is not a screenshot and not a
-        script. It answers from a knowledge base about how I work, and every answer
-        it gives lands in the log beside it within a second. Ask it something and
-        watch your own question arrive.</p>
-
-      <!-- Feed first, deliberately. The chat widget owns the bottom-right of
-           every page it is on, so the thing a visitor is meant to watch has to
-           live on the left or it gets covered by the very thing being demoed. -->
-      <div class="live">
-        <div class="feed">
-          <div class="feed-head">
-            <span class="tag">Live run log</span>
-            <span class="tag" id="feed-count">—</span>
-          </div>
-          <ol id="feed-list" class="feed-list">
-            <li class="feed-empty">Connecting…</li>
-          </ol>
-          <div class="feed-foot">
-            Every automation this app performs writes a row here: answers, lead
-            capture, scrapes, reindexes. Nothing on this page is claimed without
-            being logged.
-          </div>
-        </div>
-
-        <div class="live-ask">
-          <span class="tag">Try one of these</span>
-          <div class="asks">
-            <button type="button" data-ask="What do you charge for a pilot?">What do you charge for a pilot?</button>
-            <button type="button" data-ask="How long does a project take?">How long does a project take?</button>
-            <button type="button" data-ask="When should I not hire you?">When should I not hire you?</button>
-            <button type="button" data-ask="Which AI models do you use?">Which AI models do you use?</button>
-            <button type="button" data-ask="Do you build mobile apps?">Do you build mobile apps?</button>
-          </div>
-          <p class="live-note">Answers come only from my own documents. Ask it something
-            it does not know and it will say so instead of inventing an answer — that
-            behaviour is the point, not a limitation.</p>
-        </div>
+      <div class="s-head">
+        <span class="tag">Deployed instances</span>
+        <h2><span id="inst-n">6</span> companies run on this one engine.</h2>
+        <p>Each has its own documents, its own brand and its own assistant. Open
+          any of them and it behaves like that company's real website — because
+          apart from the company being invented, it is one.</p>
       </div>
-    </div>
-  </section>
-
-  <section id="industries">
-    <div class="wrap">
-      <h2>Pick a business. The assistant becomes theirs.</h2>
-      <p class="sec-note">Six knowledge bases behind one engine. Choose an industry
-        and the chat in the corner switches to that business, answering from its
-        own documents. Nothing is pre-scripted — ask it whatever you like.</p>
-
-      <div class="ind-tabs" id="ind-tabs" role="tablist"></div>
-      <div class="ind-panel" id="ind-panel"></div>
-    </div>
-  </section>
-
-  <section id="lab-teaser">
-    <div class="wrap">
-      <h2>Three tools you can run yourself</h2>
-      <p class="sec-note">Not a list of technologies. Working endpoints on this server,
-        open to anyone who visits.</p>
-      <div class="tools">
-        <a class="tool" href="/lab#scrape">
-          <span class="tag">Scraping</span>
-          <h3>Pull structure out of any page</h3>
-          <p>Give it a URL. It fetches the page and returns the title, headings,
-            contact details and link graph as JSON.</p>
-          <span class="tool-go">Open the scraper →</span>
-        </a>
-        <a class="tool" href="/lab#classify">
-          <span class="tag">Classification</span>
-          <h3>Score a message the way the agent does</h3>
-          <p>Paste a customer message. It returns intent, a lead score, the entities
-            it found and where it would route the message.</p>
-          <span class="tool-go">Open the classifier →</span>
-        </a>
-        <a class="tool" href="/lab#clean">
-          <span class="tag">Data</span>
-          <h3>Clean a messy export</h3>
-          <p>Paste a CSV. It normalises the columns, removes duplicates and blanks,
-            flags invalid emails and hands the cleaned file back.</p>
-          <span class="tool-go">Open the cleaner →</span>
-        </a>
-      </div>
+      <div class="inst" id="inst"></div>
     </div>
   </section>
 
   <section>
     <div class="wrap">
-      <h2>What I build</h2>
-      <p class="sec-note">Four things, mostly. If your problem is not one of these,
-        say so anyway — I will tell you honestly whether it is worth doing.</p>
-
+      <div class="s-head">
+        <span class="tag">What I build</span>
+        <h2>Four things, mostly.</h2>
+        <p>If your problem is not one of these, say so anyway. I will tell you
+          honestly whether it is worth automating.</p>
+      </div>
       <div class="builds">
         <article class="build">
           <span class="tag">Support</span>
-          <h3>Agents that answer from your documents</h3>
-          <p>Your policies, your prices, your delivery times. Not the internet.
-            When the answer is not in your documents the agent says so and hands
-            the question to a person instead of inventing one.</p>
+          <h3>Answers from your documents</h3>
+          <p>Your policies, your prices, your delivery times. When the answer is
+            not in your documents the assistant says so and hands the question to
+            a person, instead of inventing one.</p>
         </article>
         <article class="build">
           <span class="tag">Sales</span>
-          <h3>Lead qualification and routing</h3>
-          <p>Every conversation gets a score. The ones worth money reach Slack,
-            your CRM or an inbox within seconds, with the full transcript
-            attached so nobody has to ask the customer twice.</p>
+          <h3>Qualification and routing</h3>
+          <p>Every conversation gets a score. The ones worth money reach your CRM,
+            Slack or an inbox within seconds, with the full transcript attached so
+            nobody asks the customer twice.</p>
         </article>
         <article class="build">
           <span class="tag">Operations</span>
-          <h3>The plumbing between your tools</h3>
-          <p>Orders into spreadsheets, invoices into accounting, form
-            submissions into the CRM, alerts into Slack. Built in n8n so you can
-            see the whole flow on one screen and change it without me.</p>
+          <h3>The plumbing between tools</h3>
+          <p>Orders into spreadsheets, invoices into accounting, forms into the
+            CRM. Built in n8n so you can see the whole flow on one screen and
+            change it without me.</p>
         </article>
         <article class="build">
           <span class="tag">Data</span>
           <h3>Collection and clean-up</h3>
-          <p>Scraping, enrichment, deduplication, format conversion. Getting
-            data out of wherever it is stuck and into the shape your process
-            actually needs.</p>
+          <p>Scraping, enrichment, deduplication, format conversion. Getting data
+            out of wherever it is stuck and into the shape your process needs.
+            Three of these tools are <a href="/lab">open on this server</a>.</p>
         </article>
       </div>
     </div>
   </section>
 
+  <!-- Numbered because it is a real sequence with real dependencies, and
+       because you should know what happens before you pay for anything. -->
   <section>
     <div class="wrap">
-      <h2>A build you can open right now</h2>
-      <p class="sec-note">Not a screenshot. A running system with its source code public.</p>
-
-      <div class="case">
-        <div>
-          <p><strong>AI Support &amp; Lead Agent.</strong> A chat agent for an
-            e-commerce brand. It answers questions from the company's own
-            knowledge base, shows which section each answer came from, watches
-            for buying intent, and pushes qualified leads into n8n — which fans
-            them out to Slack, a CRM, a spreadsheet and a follow-up email.</p>
-
-          <p>The part most people miss: leads are written to the database
-            <em>before</em> the webhook fires. If n8n is down the lead is not
-            lost, and one button replays every undelivered one. That is the
-            difference between a demo and something you can leave running.</p>
-
-          <p>It runs without any API keys in demo mode, so the link below costs
-            nothing to keep online and will not break on a spend limit the day
-            you open it.</p>
-
-          <div class="links">
-            <a class="btn" href="https://ai-support-agent-jett.onrender.com" target="_blank" rel="noopener">Open the live demo</a>
-            <a class="btn line" href="https://github.com/whykucher/ai-support-agent" target="_blank" rel="noopener">Read the source</a>
-          </div>
-        </div>
-
-        <div>
-          <div class="facts">
-            <div class="fact"><b>0.6 s</b><span>Average answer</span></div>
-            <div class="fact"><b>0–100</b><span>Intent score per conversation</span></div>
-            <div class="fact"><b>3</b><span>LLM providers behind one interface</span></div>
-            <div class="fact"><b>4</b><span>Python dependencies, no vector database</span></div>
-            <div class="fact"><b>20</b><span>Automated checks, all passing</span></div>
-          </div>
-          <p class="disclaimer">Northwind Coffee Co., the brand in the demo, is
-            invented — I needed a business with real policies to answer from.
-            The engineering is not invented, and neither are these numbers.</p>
-        </div>
+      <div class="s-head">
+        <span class="tag">How it goes</span>
+        <h2>Four steps, and you can stop after the second.</h2>
       </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <h2>How it goes</h2>
-      <p class="sec-note">Numbered because it really is a sequence, and because you
-        should know what happens before you pay for anything.</p>
-
       <div class="steps">
         <div class="step">
           <span class="n">01</span>
           <div>
             <h3>A call</h3>
-            <p>I ask what your five most repeated questions are, where the
-              answers live today, and who currently handles them. If automation
-              is the wrong answer, this is where I say so.</p>
-            <span class="when">20 minutes · free</span>
+            <p>I ask what your five most repeated questions are, where the answers
+              live today, and who handles them. If automation is the wrong answer,
+              this is where I say so.</p>
           </div>
+          <span class="when">20 min · free</span>
         </div>
         <div class="step">
           <span class="n">02</span>
           <div>
             <h3>A written plan</h3>
-            <p>What gets automated, what deliberately stays manual, what it
-              costs and how long it takes. In writing, before any code exists,
-              so there is nothing to argue about later.</p>
-            <span class="when">1–2 days</span>
+            <p>What gets automated, what deliberately stays manual, what it costs
+              and how long it takes. In writing, before any code exists. Walk away
+              here and you keep the plan.</p>
           </div>
+          <span class="when">1–2 days</span>
         </div>
         <div class="step">
           <span class="n">03</span>
           <div>
             <h3>Build</h3>
-            <p>You see it working on your own content, not on a demo brand. I
-              send progress as it happens rather than disappearing for a week
-              and returning with a surprise.</p>
-            <span class="when">3–10 days for most builds</span>
+            <p>You see it working on your own content, not on a demo brand. I send
+              progress as it happens rather than disappearing for a week and
+              returning with a surprise.</p>
           </div>
+          <span class="when">3–10 days</span>
         </div>
         <div class="step">
           <span class="n">04</span>
           <div>
             <h3>Handover</h3>
-            <p>You get the code, the credentials and a document that explains
-              how to change the parts you will want to change. Everything runs
-              on your accounts. No lock-in, and nothing that stops working if
-              you stop paying me.</p>
-            <span class="when">Yours to keep</span>
+            <p>Code, credentials, and a document explaining how to change the parts
+              you will want to change. Everything runs on your accounts. Nothing
+              stops working if you stop paying me.</p>
           </div>
+          <span class="when">yours to keep</span>
         </div>
       </div>
     </div>
   </section>
 
   <section>
-    <div class="wrap nope-wrap">
-      <div class="nope">
-        <h2>When not to hire me</h2>
-        <ul>
-          <li>
-            <b>Your process is not written down and nobody agrees on how it works.</b>
-            Automation does not fix a broken process, it makes it break faster and
-            more quietly. Write it down first. Then it is a short job.
-          </li>
-          <li>
-            <b>You want a bot that improvises and sounds human.</b>
-            Mine are built to say “I do not know that, let me get someone who
-            does.” I think that is the right default for a business, but if you
-            want the opposite we will both be unhappy.
-          </li>
-          <li>
-            <b>You need a mobile app, a brand identity, or someone to run ads.</b>
-            I do not do those and I do not want to learn them on your budget.
-          </li>
-          <li>
-            <b>The whole job is one afternoon of clicking.</b>
-            If Zapier's free tier solves it, use Zapier's free tier. Tell me and
-            I will point you at it.
-          </li>
-        </ul>
+    <div class="wrap">
+      <div class="s-head">
+        <span class="tag">What it costs</span>
+        <h2>Priced by the result, not by the hour.</h2>
       </div>
+      <div class="price">
+        <div class="tier">
+          <span class="tag">Pilot</span>
+          <b>from $350</b>
+          <p>Your documents indexed, an assistant answering from them, and the
+            widget installed on your site. One week.</p>
+        </div>
+        <div class="tier pick">
+          <span class="tag">Standard build</span>
+          <b>$900 – $1,600</b>
+          <p>Adds lead scoring, routing into your CRM or Slack through n8n, and an
+            operations dashboard. Two to three weeks.</p>
+        </div>
+        <div class="tier">
+          <span class="tag">Support</span>
+          <b>$220 – $450 / mo</b>
+          <p>Knowledge base updates, monitoring, and a monthly report of what
+            customers actually asked. Optional, no minimum term.</p>
+        </div>
+      </div>
+      <p class="price-note">Running costs are yours and they are small: a few
+        dollars a month in model calls for a few hundred conversations, and
+        nothing at all if you run it in the keyless mode this page is running in
+        right now. If the job is smaller than a pilot, I will say so and quote
+        less.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap nope">
+      <div class="s-head">
+        <span class="tag">Honestly</span>
+        <h2>When not to hire me.</h2>
+      </div>
+      <ul>
+        <li><b>Your process is not written down and nobody agrees on how it
+          works.</b> <span>Automation does not fix a broken process — it makes it
+          break faster and more quietly. Write it down first. Then this is a short
+          job.</span></li>
+        <li><b>You want a bot that improvises and sounds human.</b>
+          <span>Mine are built to say “I do not know that, let me get someone who
+          does.” I think that is the right default for a business, but if you want
+          the opposite we will both be unhappy.</span></li>
+        <li><b>You need a mobile app, a brand identity, or someone to run ads.</b>
+          <span>I do not do those and I will not learn them on your budget.</span></li>
+        <li><b>The whole job is one afternoon of clicking.</b> <span>If a free tier
+          solves it, use the free tier. Tell me and I will point you at it.</span></li>
+      </ul>
     </div>
   </section>
 
   <section id="contact">
     <div class="wrap contact">
       <div>
-        <h2>Tell me what is eating the time.</h2>
-        <p>One paragraph is enough: what the repetitive task is, roughly how
-          often it happens, and which tools it touches. I reply within a
-          business day, and I will tell you if it is not worth automating.</p>
+        <span class="tag">Get in touch</span>
+        <h2 style="font-size:clamp(24px,3.2vw,34px);line-height:1.14;margin:11px 0 0">
+          Tell me what is eating the time.</h2>
+        <p style="margin:14px 0 0;color:var(--ink-2)">One paragraph is enough: what
+          the repetitive task is, roughly how often it happens, and which tools it
+          touches. I reply within a business day, and I will tell you if it is not
+          worth automating.</p>
       </div>
       <div class="channels">
-        <a href="mailto:hentajp5@gmail.com">hentajp5@gmail.com</a>
-        <a href="https://github.com/whykucher" target="_blank" rel="noopener">github.com/whykucher</a>
-        <!-- Add your Upwork profile when you have the URL:
-             <a href="https://www.upwork.com/freelancers/~YOURID" target="_blank" rel="noopener">Upwork profile →</a> -->
+        <a href="mailto:hentajp5@gmail.com">hentajp5@gmail.com<span class="arw" aria-hidden="true">→</span></a>
+        <a href="https://github.com/whykucher" target="_blank" rel="noopener">github.com/whykucher<span class="arw" aria-hidden="true">↗</span></a>
+        <a href="https://github.com/whykucher/ai-support-agent" target="_blank" rel="noopener">Read this site's source<span class="arw" aria-hidden="true">↗</span></a>
       </div>
     </div>
   </section>
@@ -803,254 +692,213 @@
 </main>
 
 <footer>
-  <div class="wrap">
-    <span class="tag">Nikita Denisov · AI automation · Built with FastAPI, n8n and no templates</span>
+  <div class="wrap foot-in">
+    <span class="tag">Nikita Denisov · FastAPI, n8n, and no templates</span>
+    <span class="tag" style="margin-left:auto" id="foot-runs">—</span>
   </div>
 </footer>
 
 <script>
-  // --- live run log --------------------------------------------------------
-  // Polls the same ledger the admin dashboard reads. Rows that were not in the
-  // previous response get one highlight pulse, which is how a visitor sees the
-  // question they just asked arrive.
-  (function () {
-    const list = document.getElementById("feed-list");
-    const count = document.getElementById("feed-count");
-    const KINDS = {
-      "chat.answer": "answered",
-      "lead.capture": "lead",
-      "lead.retry": "retry",
-      "knowledge.reindex": "reindex",
-      "lab.scrape": "scrape",
-      "lab.classify": "classify",
-      "lab.clean": "clean",
-    };
-    let seen = new Set();
-    let first = true;
+(function () {
+  "use strict";
 
-    const ago = (ts) => {
-      const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
-      if (s < 60) return s + "s ago";
-      if (s < 3600) return Math.floor(s / 60) + "m ago";
-      if (s < 86400) return Math.floor(s / 3600) + "h ago";
-      return Math.floor(s / 86400) + "d ago";
-    };
-
-    const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-
-    async function tick() {
-      let data;
-      try {
-        data = await (await fetch("/api/runs?limit=14")).json();
-      } catch (e) {
-        list.innerHTML = '<li class="feed-empty">Log unreachable. The page still works.</li>';
-        return;
-      }
-      const runs = data.runs || [];
-      const total = Object.values(data.counts || {}).reduce((a, b) => a + b, 0);
-      count.textContent = total + (total === 1 ? " run logged" : " runs logged");
-
-      if (!runs.length) {
-        list.innerHTML = '<li class="feed-empty">Nothing yet. Ask the assistant a question.</li>';
-        return;
-      }
-
-      list.innerHTML = runs.map((r) => {
-        const isNew = !first && !seen.has(r.id);
-        const ms = r.duration_ms ? r.duration_ms + " ms" : "";
-        return `<li class="${isNew ? "feed-new" : ""}">
-            <div class="feed-row">
-              <span class="feed-kind">${esc(KINDS[r.kind] || r.kind)}</span>
-              <span class="feed-when">${ago(r.created_at)}${ms ? " · " + ms : ""}</span>
-            </div>
-            <div class="feed-sum">${esc(r.summary || r.kind)}</div>
-          </li>`;
-      }).join("");
-
-      seen = new Set(runs.map((r) => r.id));
-      first = false;
-    }
-
-    tick();
-    setInterval(tick, 5000);
-
-    // --- hero status card -------------------------------------------------
-    (async function status() {
-      const rows = document.getElementById("status-rows");
-      if (!rows) return;
-      try {
-        const [h, r] = await Promise.all([
-          fetch("/api/health").then((x) => x.json()),
-          fetch("/api/runs?limit=1").then((x) => x.json()),
-        ]);
-        const total = Object.values(r.counts || {}).reduce((a, b) => a + b, 0);
-        const answers = (r.counts || {})["chat.answer"] || 0;
-        const mine = Object.entries(h.sites).filter(([, s]) => s.lang === "en");
-        const pairs = [
-          // This page's own businesses, not every tenant on the server -
-          // the picker below shows these and the hero counts them.
-          ["Businesses live", mine.filter(([, s]) => s.vertical).length],
-          ["Knowledge indexed", mine.reduce((n, [, s]) => n + s.knowledge.n, 0)
-            + " sections"],
-          ["Questions answered", answers],
-          ["Automations logged", total],
-          ["LLM provider", h.provider],
-        ];
-        rows.innerHTML = pairs.map(([k, v]) =>
-          `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
-      } catch (e) {
-        rows.innerHTML = '<div><dt>Server</dt><dd>unreachable</dd></div>';
-      }
-      setTimeout(status, 15000);
-    })();
-
-    // --- suggested questions open the widget and send for you --------------
-    document.querySelectorAll(".asks button").forEach((b) => {
-      b.addEventListener("click", () => {
-        if (window.NorthwindChat) {
-          window.NorthwindChat.setSite("portfolio", PORTFOLIO_SITE);
-          window.NorthwindChat.send(b.dataset.ask);
-        }
-      });
+  var esc = function (s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
-  })();
-
-  // --- industry picker -----------------------------------------------------
-  // Rendered from /api/health, which reports the site registry the server is
-  // actually running. Adding an industry is a knowledge folder plus a config
-  // entry; this page needs no edit at all.
-  const PORTFOLIO_SITE = {
-    title: "Ask about working with Nikita",
-    agent: "Ada",
-    accent: "#A96417",
-    accentDark: "#8A5013",
-    greeting: "I answer from Nikita's own notes: scope, pricing, timelines, and what he turns down. What would you like to know?",
-    quick: ["What do you charge?", "How long does it take?", "When should I not hire you?"],
-    leadTitle: "Want Nikita to look at your case?",
-    leadNote: "One line about the task is enough. You get a reply within a business day.",
   };
 
-  (function () {
-    const tabs = document.getElementById("ind-tabs");
-    const panel = document.getElementById("ind-panel");
-    if (!tabs || !panel) return;
+  // The five stages a question actually passes through on this server. "out" is
+  // filled from the response - never invented, which is why no stage claims a
+  // per-node duration the API does not measure.
+  var STAGES = [
+    { key: "webhook",  name: "Webhook",  what: "POST /api/chat arrives" },
+    { key: "retrieve", name: "Retrieve", what: "BM25 over the knowledge base" },
+    { key: "answer",   name: "Answer",   what: "Grounded in what was retrieved" },
+    { key: "score",    name: "Score",    what: "Intent and lead value, 0–100" },
+    { key: "route",    name: "Route",    what: "n8n → CRM, chat, inbox" }
+  ];
 
-    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  var chain = document.getElementById("chain");
+  var nodes = {};
 
-    // Nudge a hex a little darker for hover and rules, so each industry gets a
-    // coherent pair from the single colour the config declares.
-    const darken = (hex, amount = -0.34) => {
-      const n = parseInt(hex.slice(1), 16);
-      const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255]
-        .map((v) => Math.min(255, Math.max(0, Math.round(v * (1 - amount)))));
-      return "#" + ch.map((v) => v.toString(16).padStart(2, "0")).join("");
+  chain.innerHTML = STAGES.map(function (s, i) {
+    return '<div class="node" id="node-' + s.key + '" role="listitem">' +
+      '<i class="port p-in" aria-hidden="true"></i>' +
+      '<i class="port p-out" aria-hidden="true"></i>' +
+      '<div class="n-top"><span class="n-dot" aria-hidden="true"></span>' +
+      '<span class="n-name">' + esc(s.name) + '</span>' +
+      '<span class="n-num">' + String(i + 1).padStart(2, "0") + '</span></div>' +
+      '<p class="n-what">' + esc(s.what) + '</p>' +
+      '<div class="n-out" id="out-' + s.key + '"></div></div>';
+  }).join("");
+
+  STAGES.forEach(function (s) {
+    nodes[s.key] = {
+      el: document.getElementById("node-" + s.key),
+      out: document.getElementById("out-" + s.key)
     };
+  });
 
-    let sites = {};
-    let active = null;
-
-    function renderTabs() {
-      tabs.innerHTML = Object.entries(sites).map(([key, s]) =>
-        `<button role="tab" data-site="${esc(key)}" aria-selected="${key === active}">
-           <span class="i-name">${esc(s.industry)}</span>
-           <span class="i-co">${esc(s.company)}</span>
-         </button>`).join("");
-      tabs.querySelectorAll("button").forEach((b) =>
-        b.onclick = () => select(b.dataset.site));
-    }
-
-    function renderPanel() {
-      const s = sites[active];
-      const dark = darken(s.accent);
-      panel.style.setProperty("--pick", dark);
-      tabs.style.setProperty("--pick", dark);
-      panel.innerHTML = `
-        <div class="ind-grid">
-          <div class="ind-cell">
-            <h3>What the day looks like now</h3>
-            <p>${esc(s.pain)}</p>
-            <p style="margin-top:14px;font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--soft)">
-              ${esc(s.tagline)} · ${s.knowledge.n} sections indexed
-            </p>
-          </div>
-          <div class="ind-cell">
-            <h3>What gets wired</h3>
-            <ol class="pipe">${s.pipeline.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>
-          </div>
-        </div>
-        <div class="ind-ask">
-          <div class="ind-open">
-            <div>
-              <span class="tag">The whole site, not a card</span>
-              <p class="ind-note" style="margin:8px 0 0">${esc(s.company)} has its own
-                pages, its own brand and its own assistant. Open it and it behaves
-                like that company's real website.</p>
-            </div>
-            <a class="ind-go" href="${esc(s.href)}">Open ${esc(s.company)} →</a>
-          </div>
-          <span class="tag" style="display:block;margin:20px 0 12px">Or ask it from here</span>
-          <div class="ind-qs">
-            ${s.questions.map((q) => `<button type="button" data-q="${esc(q)}">${esc(q)}</button>`).join("")}
-          </div>
-        </div>`;
-
-      panel.querySelectorAll(".ind-qs button").forEach((b) =>
-        b.onclick = () => {
-          switchWidget(s);
-          window.NorthwindChat.send(b.dataset.q);
-        });
-    }
-
-    function switchWidget(s) {
-      if (!window.NorthwindChat) return;
-      window.NorthwindChat.setSite(active, {
-        title: s.label,
-        agent: s.agent,
-        accent: s.accent,
-        accentDark: darken(s.accent),
-        greeting: s.greeting,
-        quick: s.questions,
-        leadTitle: "Want " + s.company + " to get back to you?",
-        leadNote: "Leave your details and the team replies within one business day.",
-        open: false,
-      });
-    }
-
-    function select(key) {
-      active = key;
-      renderTabs();
-      renderPanel();
-      switchWidget(sites[key]);
-    }
-
-    fetch("/api/health").then((r) => r.json()).then((h) => {
-      sites = Object.fromEntries(
-        Object.entries(h.sites)
-          .filter(([, s]) => s.vertical && s.lang === "en")
-          .map(([k, s]) => [k, { ...s, href: k === "demo" ? "/demo" : "/b/" + k }]));
-      const first = Object.keys(sites)[0];
-      if (!first) { panel.innerHTML = '<div class="ind-ask">No industries configured.</div>'; return; }
-      active = first;
-      renderTabs();
-      renderPanel();
-    }).catch(() => {
-      panel.innerHTML = '<div class="ind-ask">Could not load the industry list.</div>';
+  function reset() {
+    STAGES.forEach(function (s) {
+      nodes[s.key].el.className = "node";
+      nodes[s.key].out.textContent = "";
     });
-  })();
-</script>
+  }
 
-<script src="/static/widget.js"
-        data-api=""
-        data-site="portfolio"
-        data-title="Ask about working with Nikita"
-        data-agent="Ada"
-        data-accent="#A96417"
-        data-greeting="I answer from Nikita's own notes: scope, pricing, timelines, and what he turns down. What would you like to know?"
-        data-quick="What do you charge?|How long does it take?|When should I not hire you?"
-        data-lead-title="Want Nikita to look at your case?"
-        data-lead-note="One line about the task is enough. You get a reply within a business day."
-        defer></script>
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var wait = function (ms) {
+    return new Promise(function (r) { setTimeout(r, reduced ? 0 : ms); });
+  };
+
+  function light(key) { nodes[key].el.className = "node lit"; }
+  function settle(key, text, skipped) {
+    nodes[key].el.className = "node " + (skipped ? "done noop" : "done");
+    nodes[key].out.textContent = text;
+  }
+
+  var state = document.getElementById("chain-state");
+  var result = document.getElementById("result");
+  var runBtn = document.getElementById("run");
+  var runLabel = document.getElementById("run-label");
+  var input = document.getElementById("q");
+  var indexed = null;
+
+  var running = false;
+
+  async function run(question) {
+    if (running) return;
+    question = (question || input.value).trim();
+    if (!question) { input.focus(); return; }
+
+    running = true;
+    runBtn.disabled = true;
+    runLabel.textContent = "Running…";
+    state.textContent = "running";
+    result.hidden = true;
+    reset();
+
+    light("webhook");
+    await wait(180);
+
+    var t0 = performance.now();
+    var data;
+    try {
+      var resp = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: question, site: "portfolio",
+                               page_url: window.location.href })
+      });
+      data = await resp.json();
+      if (data.error || !data.answer) throw new Error("no answer");
+    } catch (e) {
+      settle("webhook", "server unreachable", true);
+      state.textContent = "failed";
+      runBtn.disabled = false;
+      runLabel.textContent = "Run it";
+      running = false;
+      return;
+    }
+    var wall = Math.round(performance.now() - t0);
+
+    settle("webhook", "question received");
+    light("retrieve");
+    await wait(150);
+    var nsrc = (data.sources || []).length;
+    settle("retrieve", indexed
+      ? nsrc + " of " + indexed + " sections"
+      : nsrc + " sections matched");
+
+    light("answer");
+    await wait(150);
+    settle("answer", data.model || "demo-retrieval");
+
+    light("score");
+    await wait(150);
+    settle("score", data.intent + " · " + data.lead_score + "/100");
+
+    light("route");
+    await wait(150);
+    if (data.show_lead_form || data.handoff) {
+      settle("route", "queued → n8n");
+    } else {
+      settle("route", "below threshold", true);
+    }
+
+    state.textContent = data.latency_ms + " ms server · " + wall + " ms round trip";
+
+    document.getElementById("r-model").textContent = data.model || "demo";
+    document.getElementById("r-intent").textContent = data.intent;
+    document.getElementById("r-ms").textContent = data.latency_ms + " ms";
+    document.getElementById("r-q").textContent = "You asked: " + question;
+    document.getElementById("r-a").textContent = data.answer;
+    document.getElementById("r-src").innerHTML = (data.sources || [])
+      .slice(0, 4).map(function (s) { return '<span class="chip">' + esc(s) + "</span>"; })
+      .join("");
+    document.getElementById("r-note").textContent = (data.show_lead_form || data.handoff)
+      ? "That scored high enough to be worth a person. On a client build this is the "
+        + "point where the lead reaches their CRM, with the transcript attached."
+      : "Answered from my own notes only. Ask it something outside them and it will "
+        + "say it does not know rather than invent an answer — that is the design.";
+    result.hidden = false;
+
+    runBtn.disabled = false;
+    runLabel.textContent = "Run it";
+    running = false;
+  }
+
+  document.getElementById("ask").addEventListener("submit", function (e) {
+    e.preventDefault();
+    run();
+  });
+
+  var SEEDS = [
+    "What do you charge?",
+    "How long does it take?",
+    "When should I not hire you?"
+  ];
+  document.getElementById("seeds").innerHTML = SEEDS.map(function (q) {
+    return '<button type="button" data-q="' + esc(q) + '">' + esc(q) + "</button>";
+  }).join("");
+  document.querySelectorAll("#seeds button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      input.value = b.dataset.q;
+      run(b.dataset.q);
+    });
+  });
+
+  // --- deployed instances, read from the registry the server is running -----
+  fetch("/api/health").then(function (r) { return r.json(); }).then(function (h) {
+    indexed = h.knowledge && h.knowledge.n;
+
+    var mine = Object.entries(h.sites).filter(function (e) {
+      return e[1].vertical && e[1].lang === "en";
+    });
+    document.getElementById("inst-n").textContent = mine.length;
+    document.getElementById("inst").innerHTML = mine.map(function (e) {
+      var k = e[0], s = e[1];
+      var href = k === "demo" ? "/demo" : "/b/" + k;
+      return '<a class="card" href="' + esc(href) + '">' +
+        '<span class="tag">' + esc(s.industry) + "</span>" +
+        "<h3>" + esc(s.company) + "</h3>" +
+        '<p class="co">' + esc(s.tagline) + "</p>" +
+        '<div class="kb"><span class="swatch" style="background:' + esc(s.accent) + '"></span>' +
+        '<span class="tag">' + s.knowledge.n + " sections</span>" +
+        '<span class="go" aria-hidden="true">Open →</span></div></a>';
+    }).join("");
+  }).catch(function () {
+    document.getElementById("inst").innerHTML =
+      '<p style="color:var(--ink-3)">Could not reach the server to list the instances.</p>';
+  });
+
+  fetch("/api/runs?limit=1").then(function (r) { return r.json(); }).then(function (d) {
+    var total = Object.values(d.counts || {}).reduce(function (a, b) { return a + b; }, 0);
+    document.getElementById("foot-runs").textContent =
+      total.toLocaleString() + (total === 1 ? " automation logged" : " automations logged");
+  }).catch(function () { /* the footer stat is not worth an error state */ });
+})();
+</script>
 </body>
 </html>

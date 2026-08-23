@@ -272,13 +272,17 @@ def main() -> int:
               and "Леонид Денисов" in ru_page)
         check("Russian portfolio does not carry the English name",
               "Nikita" not in ru_page)
+        # Matched loosely: the two pages render their pickers differently, and
+        # the invariant is the language filter, not the variable it is on.
         check("each portfolio filters the picker by language",
-              's.lang === "en"' in en_page and 's.lang === "ru"' in ru_page)
+              'lang === "en"' in en_page and 'lang === "ru"' in ru_page)
 
-        # Bricolage Grotesque has no Cyrillic; if it ever comes back the
-        # Russian headings silently fall back to a system font.
+        # These faces ship no Cyrillic. If one is ever set on the Russian page
+        # the headings silently fall back to a system font, which is the kind of
+        # breakage that looks like a browser problem rather than a bug.
+        latin_only = ("Bricolage", "Anton", "Fraunces", "Instrument+Serif")
         check("Russian portfolio uses a Cyrillic display face",
-              "Bricolage" not in ru_page and "Onest" in ru_page)
+              not any(f in ru_page for f in latin_only) and "Geologica" in ru_page)
 
         ru_payload = client.get("/api/site/ru-shop").json()
         check("Russian business payload points home to /ru",
@@ -296,12 +300,31 @@ def main() -> int:
               len(cyrillic.findall(unknown["answer"])) > 10,
               unknown["answer"][:60])
 
+        # A buying word inside a negated question is not buying intent. This
+        # shipped scoring "when should I NOT hire you" at 80/100 and pitching a
+        # sales call in reply, which the execution chain on the front page
+        # displays in full.
+        for site, q in (("portfolio", "When should I not hire you?"),
+                        ("portfolio-ru", "Когда вас не надо нанимать?")):
+            d = client.post("/api/chat", json={"message": q, "site": site}).json()
+            check(f"{site} does not read a negated question as buying",
+                  d["intent"] != "buying" and not d["show_lead_form"],
+                  f"{d['intent']} {d['lead_score']}/100")
+        for site, q in (("portfolio", "I want to hire you for a project"),
+                        ("portfolio-ru", "Хочу нанять вас на проект")):
+            d = client.post("/api/chat", json={"message": q, "site": site}).json()
+            check(f"{site} still reads real buying intent", d["intent"] == "buying",
+                  f"{d['intent']} {d['lead_score']}/100")
+
+        check("Russian portfolio asks its own tenant",
+              'site: "portfolio-ru"' in ru_page and 'site: "portfolio"' in en_page)
+
         check("widget carries a Russian string table",
               "Спросите что угодно" in client.get("/static/widget.js").text)
 
         # --- 13. pages ------------------------------------------------------------
-        for path, marker in [("/", "This page is the demo"),
-                             ("/ru", "Эта страница и есть демо"),
+        for path, marker in [("/", "Execution chain"),
+                             ("/ru", "Цепочка выполнения"),
                              ("/lab", "Page scraper"),
                              ("/demo", "FIRST CRACK"),
                              ("/admin", "Run log")]:

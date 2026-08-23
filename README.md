@@ -7,7 +7,7 @@ software — the software, running, with the ledger open.
 
 | | |
 |---|---|
-| [`/`](https://ai-support-agent-jett.onrender.com/) | Portfolio. Its assistant answers from a knowledge base about how I work, and every answer lands in a live run log beside it. |
+| [`/`](https://ai-support-agent-jett.onrender.com/) | Portfolio. The hero is a live execution chain: ask it a question and watch the request cross all five stages, filled in with the real retrieval, scoring and routing results. |
 | [`/ru`](https://ai-support-agent-jett.onrender.com/ru) | The same thing in Russian — its own services, its own prices in roubles, its own three demo businesses. Not a translation layer: a second tenant of the same engine. |
 | [`/b/<business>`](https://ai-support-agent-jett.onrender.com/b/agency) | Eight standalone client sites — five English, three Russian — each with its own brand, layout and working assistant. |
 | [`/lab`](https://ai-support-agent-jett.onrender.com/lab) | Three tools you can run: a page scraper, a message classifier, a CSV cleaner. |
@@ -25,27 +25,23 @@ git clone <this-repo> && cd ai-support-agent
 
 > Пошаговая инструкция на русском, с нуля: **[docs/SETUP-RU.md](docs/SETUP-RU.md)**
 
-![Portfolio](docs/screenshots/00-portfolio.png)
+![Portfolio](docs/screenshots/01-live-agent.png)
 
-*The hero is the argument, not a claim: one enquiry drawn twice on a shared time
-axis. Three hours and four handovers by hand; six tenths of a second and nobody
-by the agent.*
+*The hero is not a claim about the work — it is the work. Type a question and it
+runs through the five stages this server actually uses, and every value the
+nodes fill in comes back from that request: how many sections were searched,
+what the intent scored, whether the router fired. No stage prints a duration the
+API does not measure.*
 
-![Live agent](docs/screenshots/01-live-agent.png)
+![Router declines](docs/screenshots/01b-not-routed.png)
 
-*Ask the assistant something and your own question appears in the run log within
-five seconds. Nothing on the page is claimed without being logged.*
-
-![Industries](docs/screenshots/01b-industries.png)
-
-*Six businesses, six knowledge bases, one engine. Pick one and the chat in the
-corner becomes that company's assistant — or open the company's own site.
-[`/ru`](https://ai-support-agent-jett.onrender.com/ru) does the same with three Russian ones.*
+*Below the handoff threshold the router says so instead of firing. A demo that
+only ever shows the happy path is a video, not a demo.*
 
 |  |  |
 |---|---|
 | ![Russian portfolio](docs/screenshots/09-portfolio-ru.png) | ![Russian shop](docs/screenshots/12-lead-capture-ru.png) |
-| `/ru` — same engine, different market: roubles, Onest, a green signal | `/b/ru-shop` — the widget in Russian, detecting wholesale intent |
+| `/ru` — same chain, Russian market: roubles, Яндекс.Директ, СДЭК | `/b/ru-shop` — the widget in Russian, detecting wholesale intent |
 
 |  |  |
 |---|---|

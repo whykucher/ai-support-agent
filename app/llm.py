@@ -75,10 +75,11 @@ _BUY_WORDS_RU = ("опт", "объём", "объем", "парти", "счёт",
 _BUY_WORDS_PORTFOLIO_RU = ("нанят", "наня", "бюджет", "проект", "заказ",
                            "смет", "срок", "дедлайн", "сколько сто", "стоимост",
                            "цен", "тариф", "пилот", "сопровожд", "договор",
+                           "стоит",
                            "счёт", "счет", "свободн", "занят", "начать",
                            "приступ", "оценит")
 
-_PRICE_WORDS_RU = ("цен", "стоимост", "сколько сто", "сколько буд", "скидк",
+_PRICE_WORDS_RU = ("цен", "стоимост", "стоит", "сколько сто", "сколько буд", "скидк",
                    "дешев", "дешёв", "тариф", "прайс", "рассрочк")
 
 _ANGRY_WORDS_RU = ("верните", "вернуть деньги", "возврат", "брак", "сломал",
@@ -126,6 +127,16 @@ def _is_portfolio(site: str) -> bool:
     return site in ("portfolio", "portfolio-ru")
 
 
+# A buying word inside a negated question means the opposite of buying.
+# "When should I NOT hire you", "I don't want a contract", "когда вас НЕ надо
+# нанимать" - all of these matched the commercial list and scored 80.
+_NEGATED = re.compile(
+    r"\b(not|dont|don't|never|shouldn't|shouldnt|without|avoid|"
+    r"\u043d\u0435|\u043d\u0435\u043b\u044c\u0437\u044f|\u0431\u0435\u0437|\u043d\u0438\u043a\u043e\u0433\u0434\u0430)\b",
+    re.IGNORECASE | re.UNICODE,
+)
+
+
 def _demo_reply(question: str, chunks: list[dict[str, Any]],
                 site: str | None = None) -> dict[str, Any]:
     """Deterministic, no network. Good enough to demo the whole pipeline."""
@@ -144,7 +155,7 @@ def _demo_reply(question: str, chunks: list[dict[str, Any]],
 
     if not _is_portfolio(site) and any(w in q for w in angry_words):
         intent, score, handoff = "complaint", 25, True
-    elif any(w in q for w in buy_words):
+    elif any(w in q for w in buy_words) and not _NEGATED.search(q):
         intent, score, handoff = "buying", 80, False
     elif any(w in q for w in price_words):
         intent, score, handoff = "pricing", 50, False
@@ -158,7 +169,9 @@ def _demo_reply(question: str, chunks: list[dict[str, Any]],
     else:
         body = " ".join(chunks[0]["content"].split())
         if len(body) > 420:
-            body = body[:420].rsplit(" ", 1)[0] + "..."
+            cut = body[:420]
+            end = max(cut.rfind(". "), cut.rfind("? "), cut.rfind("! "))
+            body = cut[: end + 1] if end > 200 else cut.rsplit(" ", 1)[0] + "\u2026"
         answer = body
         if intent == "buying":
             answer += _FOLLOW_UP.get(site, "")

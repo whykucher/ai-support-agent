@@ -51,25 +51,25 @@ def main() -> int:
         page.goto(base, wait_until="networkidle")
         page.evaluate("localStorage.clear()")
         page.reload(wait_until="networkidle")
-        page.wait_for_timeout(2600)   # let the two lanes finish drawing
+        page.wait_for_timeout(1200)
         shot(page, "00-portfolio.png",
-             "Portfolio hero: the same enquiry by hand and by agent")
+             "The hero is the execution chain, waiting for a question")
 
-        # --- 2. the assistant answering, with the run log beside it ---------
-        page.click(".asks button")
-        page.wait_for_selector(".nw-msg.bot", state="visible", timeout=30_000)
-        page.wait_for_timeout(6_500)  # the feed polls every 5s
-        page.locator("#live").scroll_into_view_if_needed()
-        page.wait_for_timeout(600)
+        # --- 2. a real question run through the real chain ------------------
+        # Seed 1 is commercial, so the router fires and the whole chain settles.
+        page.click("#seeds button:nth-child(1)")
+        page.wait_for_selector("#result:not([hidden])", timeout=30_000)
+        page.wait_for_timeout(900)
         shot(page, "01-live-agent.png",
-             "Ask a question and watch it land in the live run log")
+             "One question, five stages, every value read back from the request")
 
-        # --- 2b. the industry picker, mid-switch ------------------------------
-        page.locator('#industries').scroll_into_view_if_needed()
-        page.click('#ind-tabs button:nth-child(2)')
-        page.wait_for_timeout(400)
-        page.screenshot(path=OUT / '01b-industries.png')
-        shots.append(('01b-industries.png', 'Pick an industry and the assistant becomes that business'))
+        # --- 2b. the same chain declining to route ----------------------------
+        # Seed 3 is not a lead, and the Route node says so instead of firing.
+        page.click("#seeds button:nth-child(3)")
+        page.wait_for_timeout(2200)
+        page.screenshot(path=OUT / "01b-not-routed.png")
+        shots.append(("01b-not-routed.png",
+                      "Below the threshold the router deliberately does not fire"))
 
         # --- 2c. the standalone business sites --------------------------------
         for key, label in [("agency", "Halyard Digital, performance marketing"),
@@ -94,17 +94,15 @@ def main() -> int:
         rupage.goto(f"{base}/ru", wait_until="networkidle")
         rupage.evaluate("localStorage.clear()")
         rupage.reload(wait_until="networkidle")
-        rupage.wait_for_timeout(2600)
+        rupage.wait_for_timeout(1200)
         shot(rupage, "09-portfolio-ru.png",
-             "Русская версия: та же заявка руками и ассистентом")
+             "Русская версия на том же движке: цепочка ждёт вопроса")
 
-        rupage.click(".asks button")
-        rupage.wait_for_selector(".nw-msg.bot", state="visible", timeout=30_000)
-        rupage.wait_for_timeout(6_500)
-        rupage.locator("#live").scroll_into_view_if_needed()
-        rupage.wait_for_timeout(600)
+        rupage.click("#seeds button:nth-child(1)")
+        rupage.wait_for_selector("#result:not([hidden])", timeout=30_000)
+        rupage.wait_for_timeout(900)
         shot(rupage, "10-live-agent-ru.png",
-             "Вопрос ассистенту попадает в журнал запусков за секунду")
+             "Один вопрос, пять стадий, все значения из настоящего запроса")
 
         for key, label in [("ru-agency", "«Полдень», перформанс-маркетинг"),
                            ("ru-shop", "«Лоскут», магазин одежды из льна"),
@@ -174,6 +172,23 @@ def main() -> int:
         shot(page, "07-ops-runs.png",
              "Ops: every automation the app has performed")
 
+        # --- 5b. the rebuilt portfolio on a phone --------------------------------
+        # The chain is five wide on a desktop and has to stack without a
+        # horizontal scrollbar, which is the failure mode of any node graph.
+        narrow = browser.new_context(
+            viewport={"width": 390, "height": 844}, device_scale_factor=3,
+            is_mobile=True, has_touch=True, locale="en-US",
+            timezone_id="America/Los_Angeles",
+        )
+        npage = narrow.new_page()
+        npage.goto(base, wait_until="networkidle")
+        npage.click("#seeds button:nth-child(1)")
+        npage.wait_for_selector("#result:not([hidden])", timeout=30_000)
+        npage.wait_for_timeout(700)
+        shot(npage, "08b-portfolio-mobile.png",
+             "The same chain stacked on a phone")
+        narrow.close()
+
         # --- 6. the widget on a phone ------------------------------------------
         mobile = browser.new_context(
             viewport={"width": 390, "height": 844}, device_scale_factor=3,
@@ -181,9 +196,9 @@ def main() -> int:
             timezone_id="America/Los_Angeles",
         )
         mpage = mobile.new_page()
-        mpage.goto(base, wait_until="networkidle")
+        mpage.goto(f"{base}/b/agency", wait_until="networkidle")
         mpage.click(".nw-launcher")
-        mpage.fill("#nw-input", "How long does a project take?")
+        mpage.fill("#nw-input", "How much do you charge to manage Google Ads?")
         mpage.press("#nw-input", "Enter")
         mpage.wait_for_selector(".nw-sources", state="visible", timeout=30_000)
         mpage.wait_for_timeout(600)
