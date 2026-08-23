@@ -355,7 +355,10 @@
     display: flex; align-items: center; gap: 7px;
   }
   .card .go { margin-left: auto; color: var(--flow); font-size: 14px; }
-  .swatch { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+  /* Each company's own mark, in its own accent - it identifies the card
+     better than the colour chip it replaced. */
+  .c-mark { display: block; margin-bottom: 11px; }
+  .c-mark svg { width: 26px; height: 26px; }
 
   /* ---------- what I build ---------- */
   .builds { display: grid; grid-template-columns: repeat(auto-fit, minmax(252px, 1fr)); gap: 26px 32px; }
@@ -874,10 +877,11 @@
       var k = e[0], s = e[1];
       var href = k === "demo" ? "/demo" : "/b/" + k;
       return '<a class="card" href="' + esc(href) + '">' +
+        '<span class="c-mark" style="color:' + esc(s.accent) + '">' + (s.logo || "") + "</span>" +
         '<span class="tag">' + esc(s.industry) + "</span>" +
         "<h3>" + esc(s.company) + "</h3>" +
         '<p class="co">' + esc(s.tagline) + "</p>" +
-        '<div class="kb"><span class="swatch" style="background:' + esc(s.accent) + '"></span>' +
+        '<div class="kb">' +
         '<span class="tag">' + s.knowledge.n + " sections</span>" +
         '<span class="go" aria-hidden="true">Open →</span></div></a>';
     }).join("");

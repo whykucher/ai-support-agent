@@ -445,6 +445,82 @@ PAGES: dict[str, dict[str, Any]] = {
 }
 
 
+# --- logomarks --------------------------------------------------------------
+# Inline SVG, sized by CSS, coloured by currentColor so each mark inherits the
+# ink of whatever it sits on and can be tinted with the brand accent. These are
+# constants in this file, not user input, which is why the templates are free
+# to inject them as markup.
+LOGOS: dict[str, str] = {
+    # A halyard is the rope that hoists a sail. Mast plus hoisted sail, solid
+    # and blunt, to sit next to Anton without looking timid.
+    "agency": (
+        '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">'
+        '<path d="M4 2v20" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/>'
+        '<path d="M8 4.5 21 11.5 8 18.5Z" fill="currentColor"/>'
+        "</svg>"
+    ),
+    # Latchkey: a key. Rounded monoline, the friendliest possible reading of a
+    # product that unlocks somebody's scheduling day.
+    "saas": (
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+        'stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+        '<circle cx="8.5" cy="8.5" r="4.6"/>'
+        '<path d="M11.9 11.9 20.5 20.5"/>'
+        '<path d="M18.4 18.4 16.3 20.5"/>'
+        '<path d="M15.6 15.6 13.5 17.7"/>'
+        "</svg>"
+    ),
+    # An engraved K on a stationery rule, with the upper arm swept long like a
+    # wing. Two attempts at drawing the kestrel itself collapsed into a nearer
+    # glyph - first an "n", then a "Y" - because at 24px the eye snaps to the
+    # closest letter it knows. A monogram cannot be misread, and it is what an
+    # estate agency of this vintage would have used anyway.
+    "realty": (
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+        'stroke-width="1.4" stroke-linecap="round" aria-hidden="true">'
+        '<path d="M6 3.6v13.8"/>'
+        '<path d="M18.6 3.6 8.4 11.1"/>'
+        '<path d="M10.9 9.3 18.6 17.4"/>'
+        '<path d="M3.4 21h17.2" stroke-width="1"/>'
+        "</svg>"
+    ),
+    # A north light is a studio's north-facing window: steady, even, no glare.
+    # Drawn as the window with one pane lit. The obvious alternatives both
+    # failed - a four-point star is the most over-used mark in the industry,
+    # and a lamp throwing rays read as a stick figure.
+    "coaching": (
+        '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">'
+        '<path d="M12 4.2h7.8V12H12Z" fill="currentColor"/>'
+        '<g stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">'
+        '<rect x="4.2" y="4.2" width="15.6" height="15.6" rx="1.2"/>'
+        '<path d="M12 4.2v15.6"/><path d="M4.2 12h15.6"/>'
+        "</g></svg>"
+    ),
+    # Havenridge: a ridge is two peaks and the shelter between them. The near
+    # peak solid, the far one outlined, so the mark has depth at 20px.
+    "recruiting": (
+        '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">'
+        '<path d="M8 3.5 14.6 14.5H1.4Z" stroke="currentColor" stroke-width="1.8" '
+        'stroke-linejoin="round"/>'
+        '<path d="M15.8 9.5 22.6 20.5H9Z" fill="currentColor"/>'
+        "</svg>"
+    ),
+    # Northwind: a compass rose, cardinal north filled.
+    "demo": (
+        '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">'
+        '<circle cx="12" cy="12" r="9.2" stroke="currentColor" stroke-width="1.6"/>'
+        '<path d="M12 3.6 14.4 12 12 20.4 9.6 12Z" fill="currentColor"/>'
+        '<path d="M3.6 12h16.8" stroke="currentColor" stroke-width="1.6"/>'
+        "</svg>"
+    ),
+}
+
+
+def logo(site: str) -> str:
+    """The mark for a site, or an empty string where there is none."""
+    return LOGOS.get(site, "")
+
+
 def page(site: str) -> dict[str, Any] | None:
     return PAGES.get(site)
 

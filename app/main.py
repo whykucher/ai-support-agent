@@ -135,7 +135,8 @@ def health() -> dict[str, Any]:
         "status": "ok",
         "provider": config.LLM_PROVIDER,
         "sites": {
-            name: {**conf, "knowledge": db.chunk_stats(name)}
+            name: {**conf, "knowledge": db.chunk_stats(name),
+                   "logo": sites.logo(name)}
             for name, conf in config.SITES.items()
         },
         "knowledge": db.chunk_stats(),
@@ -234,6 +235,7 @@ def site_payload(site: str) -> dict[str, Any]:
         "home": "/",
         "owner": config.OWNER_NAME,
         "page": page,
+        "logo": sites.logo(site),
         "fonts": sites.FONTS,
         "assistant": {
             "label": conf["label"],

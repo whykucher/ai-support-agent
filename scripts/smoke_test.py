@@ -237,6 +237,19 @@ def main() -> int:
               len({t["bg"] for t in themes}) == len(themes))
         check("each business has its own typeface",
               len({t["display"] for t in themes}) == len(themes))
+        # A business without a mark renders a nav lockup with a hole in it, and
+        # an instance card on the front page with nothing to identify it.
+        for key in list(_sites.PAGES) + ["demo"]:
+            mark = _sites.logo(key)
+            check(f"{key} has a logomark",
+                  mark.startswith("<svg") and "currentColor" in mark)
+        check("no two businesses share a mark",
+              len({_sites.logo(k) for k in _sites.LOGOS}) == len(_sites.LOGOS))
+        check("the front page serves the marks",
+              all(s.get("logo") for k, s in
+                  client.get("/api/health").json()["sites"].items()
+                  if s.get("vertical")))
+
         check("hero layouts vary",
               len({p["layout"] for p in _sites.PAGES.values()}) >= 3,
               ", ".join(sorted({p["layout"] for p in _sites.PAGES.values()})))

@@ -166,6 +166,15 @@
   .band p { margin: 12px 0 0; opacity: .88; max-width: 54ch; }
   .band .btn { background: var(--accent-ink); color: var(--accent); border-color: var(--accent-ink); }
 
+  /* ---------- logomark ---------- */
+  .mark {
+    display: inline-flex; align-items: center; gap: 9px;
+  }
+  .mark svg { width: 22px; height: 22px; flex: none; color: var(--accent); }
+  .foot-in { display: flex; align-items: center; gap: 10px; }
+  .foot-mark { display: inline-flex; opacity: .55; }
+  .foot-mark svg { width: 16px; height: 16px; }
+
   /* ---------- ask strip ---------- */
   .ask { padding: 0 0 clamp(44px, 6vw, 72px); }
   .ask-in { border: 1px dashed var(--line); border-radius: var(--radius); padding: 24px; }
@@ -297,7 +306,7 @@ function render(d) {
     </div></div>
 
     <header class="nav"><div class="wrap nav-in">
-      <a class="mark" href="#">${esc(p.mark)}</a>
+      <a class="mark" href="#">${d.logo}<span>${esc(p.mark)}</span></a>
       <nav class="nav-links">${p.nav.map((n) =>
         `<a href="#offer">${esc(n)}</a>`).join("")}</nav>
       <button class="btn" data-ask="${esc(p.questions[0] || "")}">${esc(p.hero.cta)}</button>
@@ -332,7 +341,7 @@ function render(d) {
       </div></div></div>
     </main>
 
-    <footer class="foot"><div class="wrap">${esc(p.footer)}</div></footer>`;
+    <footer class="foot"><div class="wrap foot-in"><span class="foot-mark">${d.logo}</span><span>${esc(p.footer)}</span></div></footer>`;
 
   document.querySelectorAll("[data-ask]").forEach((b) =>
     b.addEventListener("click", () => {
