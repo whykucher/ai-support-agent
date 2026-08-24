@@ -1,0 +1,60 @@
+# Fly.io deployment.
+#
+#   fly auth login                        # once, in a real terminal
+#   fly launch --copy-config --no-deploy  # claims the app name
+#   fly secrets set ADMIN_TOKEN=<pick your own>
+#   fly deploy
+#
+# Why move off Render's free tier: it sleeps a service after 15 minutes of
+# quiet, and the next visitor waits about 50 seconds on a blank page. For a
+# portfolio somebody opens from a proposal, that is the whole first impression.
+#
+# Why this config does not simply pin a machine up: Fly bills running time, and
+# a machine left on costs roughly $3.30 a month. Stopped, it costs nothing, and
+# a stopped machine with the image already on the host boots in a couple of
+# seconds. Same idle bill as Render, an order of magnitude off the wait.
+
+app = "ai-support-agent"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  LLM_PROVIDER = "demo"
+  # No volume is attached, so the database is rebuilt on every boot and the
+  # dashboard is never empty for a visitor. A volume is $0.15/GB a month if you
+  # later want captured leads to outlive a restart - though in a real build the
+  # lead reaches n8n within seconds, which is the copy that matters.
+  SEED_ON_START = "true"
+  COMPANY_NAME = "Northwind Coffee Co."
+  AGENT_NAME = "Nora"
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Stop when idle, start on the next request. "stop" rather than "suspend":
+  # suspend wakes faster but keeps memory reserved, and reserved memory is
+  # billed. This is the configuration that keeps the bill at zero.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 40
+    hard_limit = 60
+
+# Fly will not route to a machine until this passes, so a bad build never
+# replaces a working one.
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "20s"
+  method = "GET"
+  path = "/api/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
