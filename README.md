@@ -1,17 +1,20 @@
 # AI Support & Lead Agent
 
-**Live → <https://ai-support-agent-jett.onrender.com>**
+**Live → <https://ai-support-agent-lime.vercel.app>**
+
+*Deployment notes, and what a serverless host cannot do for this app, in
+[docs/DEPLOY-VERCEL-RU.md](docs/DEPLOY-VERCEL-RU.md).*
 
 One FastAPI service behind four surfaces. Not a landing page with screenshots of
 software — the software, running, with the ledger open.
 
 | | |
 |---|---|
-| [`/`](https://ai-support-agent-jett.onrender.com/) | Portfolio. The hero is a live execution chain: ask it a question and watch the request cross all five stages, filled in with the real retrieval, scoring and routing results. |
-| [`/b/<business>`](https://ai-support-agent-jett.onrender.com/b/agency) | Five standalone client sites — an agency, a SaaS, an estate agency, a coaching practice, a recruiter — each with its own brand, layout and working assistant. |
-| [`/lab`](https://ai-support-agent-jett.onrender.com/lab) | Three tools you can run: a page scraper, a message classifier, a CSV cleaner. |
-| [`/demo`](https://ai-support-agent-jett.onrender.com/demo) | The client-facing storefront the agent was built for. |
-| [`/admin`](https://ai-support-agent-jett.onrender.com/admin) | Operations: leads, transcripts, run log and knowledge base across every site. |
+| [`/`](https://ai-support-agent-lime.vercel.app/) | Portfolio. The hero is a live execution chain: ask it a question and watch the request cross all five stages, filled in with the real retrieval, scoring and routing results. |
+| [`/b/<business>`](https://ai-support-agent-lime.vercel.app/b/agency) | Five standalone client sites — an agency, a SaaS, an estate agency, a coaching practice, a recruiter — each with its own brand, layout and working assistant. |
+| [`/lab`](https://ai-support-agent-lime.vercel.app/lab) | Three tools you can run: a page scraper, a message classifier, a CSV cleaner. |
+| [`/demo`](https://ai-support-agent-lime.vercel.app/demo) | The client-facing storefront the agent was built for. |
+| [`/admin`](https://ai-support-agent-lime.vercel.app/admin) | Operations: leads, transcripts, run log and knowledge base across every site. |
 
 **Runs with zero API keys.** `demo` mode uses hybrid keyword retrieval and
 templated answers, so the whole thing works — and costs nothing — before you add
