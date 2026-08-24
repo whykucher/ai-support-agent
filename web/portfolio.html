@@ -41,6 +41,12 @@
     --done:      #146B4F;
     --done-soft: #DBEDE5;
 
+    /* One resting elevation and one raised, shared by everything that lifts.
+       Cards on a canvas need to sit on it rather than be drawn into it. */
+    --lift:   0 1px 2px rgba(22, 22, 29, .045), 0 2px 6px -3px rgba(22, 22, 29, .07);
+    --lift-2: 0 2px 4px rgba(22, 22, 29, .05), 0 14px 30px -14px rgba(22, 22, 29, .26);
+    --ease:   cubic-bezier(.2, .7, .3, 1);
+
     --display: "Geologica", ui-sans-serif, system-ui, sans-serif;
     --prose: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
     --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -62,6 +68,10 @@
   }
 
   .wrap { max-width: 1120px; margin: 0 auto; padding-inline: var(--sp); }
+
+  /* The header is sticky and 60px tall, so an anchor scrolled flush to the top
+     lands underneath it. Clear the header plus a little air. */
+  :where(section[id], main[id]) { scroll-margin-top: 84px; }
 
   a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
   a:hover { text-decoration-color: var(--flow); }
@@ -96,8 +106,9 @@
   /* ---------- header ---------- */
   .top {
     position: sticky; top: 0; z-index: 40;
-    background: color-mix(in srgb, var(--canvas) 88%, transparent);
-    backdrop-filter: blur(10px);
+    /* Opaque, not frosted. The canvas is one flat colour, so translucency
+       buys nothing and let bold headings ghost through as the page scrolled. */
+    background: var(--canvas);
     border-bottom: 1px solid var(--rule-2);
   }
   .top-in {
@@ -109,8 +120,21 @@
     letter-spacing: -.01em;
   }
   .topnav { margin-left: auto; display: flex; gap: 22px; align-items: center; }
-  .topnav a { font-size: 14.5px; color: var(--ink-2); text-decoration: none; }
+  .topnav a {
+    position: relative;
+    font-size: 14.5px; color: var(--ink-2); text-decoration: none;
+    padding-block: 4px;
+    transition: color .16s var(--ease);
+  }
+  .topnav a::after {
+    content: "";
+    position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px;
+    background: var(--flow);
+    transform: scaleX(0); transform-origin: right center;
+    transition: transform .22s var(--ease);
+  }
   .topnav a:hover { color: var(--ink); }
+  .topnav a:hover::after { transform: scaleX(1); transform-origin: left center; }
   @media (max-width: 720px) { .topnav .hide-sm { display: none; } }
 
   /* ---------- the canvas ---------- */
@@ -163,10 +187,16 @@
     color: #fff; background: var(--flow);
     border: 0; border-radius: 8px; cursor: pointer;
     display: inline-flex; align-items: center; gap: 8px;
-    transition: background .15s ease, transform .15s ease;
+    box-shadow: var(--lift);
+    transition: background .16s var(--ease), transform .16s var(--ease),
+                box-shadow .16s var(--ease);
   }
-  .run:hover { background: #2E24C2; }
-  .run:active { transform: translateY(1px); }
+  .run:hover {
+    background: #2E24C2;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px -4px rgba(58, 47, 224, .45);
+  }
+  .run:active { transform: translateY(0); box-shadow: var(--lift); }
   .run[disabled] { background: var(--ink-3); cursor: progress; }
   .run svg { width: 15px; height: 15px; }
 
@@ -179,9 +209,16 @@
     border-radius: 999px;
     padding: 7px 13px;
     cursor: pointer;
-    transition: border-color .15s ease, color .15s ease, background .15s ease;
+    transition: border-color .16s var(--ease), color .16s var(--ease),
+                background .16s var(--ease), transform .16s var(--ease),
+                box-shadow .16s var(--ease);
   }
-  .seeds button:hover { border-color: var(--flow); color: var(--flow); background: var(--flow-soft); }
+  .seeds button:hover {
+    border-color: var(--flow); color: var(--flow); background: var(--flow-soft);
+    transform: translateY(-1px);
+    box-shadow: var(--lift);
+  }
+  .seeds button:active { transform: translateY(0); box-shadow: none; }
 
   /* ---------- the chain ---------- */
   .chain-head {
@@ -209,7 +246,9 @@
     padding: 12px 14px 13px;
     min-height: 118px;
     display: flex; flex-direction: column;
-    transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+    box-shadow: var(--lift);
+    transition: border-color .25s var(--ease), box-shadow .25s var(--ease),
+                transform .25s var(--ease);
   }
   /* The wire, drawn from the node so it can never drift out of alignment.
      ::before is the dormant rail, ::after the signal that fills it. */
@@ -246,10 +285,14 @@
   .node.done .port { border-color: var(--done); }
   .node.done .p-out { background: var(--done); }
   .node.done.noop .port { border-color: var(--rule); background: var(--canvas); }
-  .node.lit { border-color: var(--flow); box-shadow: 0 0 0 3px var(--flow-soft); }
+  .node.lit {
+    border-color: var(--flow);
+    box-shadow: 0 0 0 3px var(--flow-soft), var(--lift-2);
+    transform: translateY(-2px);
+  }
   .node.lit + .node::after,
   .node.done + .node::after { transform: translateY(-50%) scaleX(1); opacity: 1; transition: transform .28s ease, opacity .1s ease; }
-  .node.done { border-color: var(--done); box-shadow: 0 0 0 3px var(--done-soft); }
+  .node.done { border-color: var(--done); box-shadow: 0 0 0 3px var(--done-soft), var(--lift); }
   .node.done.noop { border-color: var(--rule); box-shadow: none; }
   /* Once a stage has settled its outgoing wire is no longer in flight. */
   .node.done + .node::after { background: var(--done); }
@@ -298,6 +341,7 @@
     background: var(--panel);
     border: 1px solid var(--rule);
     border-radius: 10px;
+    box-shadow: var(--lift);
     padding: 0;
     overflow: hidden;
   }
@@ -341,13 +385,21 @@
     border-radius: 10px;
     padding: 16px 17px 15px;
     text-decoration: none;
-    transition: border-color .16s ease, transform .16s ease, box-shadow .16s ease;
+    box-shadow: var(--lift);
+    transition: border-color .18s var(--ease), transform .18s var(--ease),
+                box-shadow .18s var(--ease);
   }
   .card:hover {
     border-color: var(--flow);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px -12px rgba(22, 22, 29, .35);
+    transform: translateY(-3px);
+    box-shadow: var(--lift-2);
   }
+  .card:active { transform: translateY(-1px); }
+  /* The arrow moves the way the card is about to take you. */
+  .card .go { transition: transform .18s var(--ease); }
+  .card:hover .go { transform: translateX(3px); }
+  .card .c-mark { transition: transform .22s var(--ease); }
+  .card:hover .c-mark { transform: scale(1.06); }
   .card h3 { font-size: 17px; margin: 9px 0 0; }
   .card .co { font-size: 14px; color: var(--ink-2); margin: 4px 0 0; }
   .card .kb {
@@ -390,6 +442,7 @@
   .tier {
     background: var(--panel); border: 1px solid var(--rule);
     border-radius: 10px; padding: 18px 18px 20px;
+    box-shadow: var(--lift);
   }
   .tier.pick { border-color: var(--ink); }
   .tier b {
@@ -415,10 +468,21 @@
     display: flex; align-items: center; gap: 10px;
     background: var(--panel); border: 1px solid var(--rule); border-radius: 9px;
     padding: 13px 15px; text-decoration: none; font-size: 15.5px;
-    transition: border-color .16s ease;
+    box-shadow: var(--lift);
+    transition: border-color .18s var(--ease), transform .18s var(--ease),
+                box-shadow .18s var(--ease);
   }
-  .channels a:hover { border-color: var(--flow); }
-  .channels .arw { margin-left: auto; color: var(--ink-3); }
+  .channels a:hover {
+    border-color: var(--flow);
+    transform: translateY(-2px);
+    box-shadow: var(--lift-2);
+  }
+  .channels a:active { transform: translateY(0); }
+  .channels .arw {
+    margin-left: auto; color: var(--ink-3);
+    transition: transform .18s var(--ease), color .18s var(--ease);
+  }
+  .channels a:hover .arw { color: var(--flow); transform: translateX(3px); }
 
   footer { padding: 26px 0 40px; }
   .foot-in { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; }
@@ -429,6 +493,14 @@
       animation-duration: .01ms !important;
       transition-duration: .01ms !important;
     }
+    /* Killing the transition leaves the transform snapping instantly, which is
+       more jarring than the animation was. Drop the movement, keep the
+       colour and shadow so the state is still legible. */
+    .card:hover, .channels a:hover, .seeds button:hover, .run:hover,
+    .node.lit { transform: none; }
+    .card:hover .go, .card:hover .c-mark, .channels a:hover .arw,
+    .topnav a:hover::after { transform: none; }
+    .topnav a:hover { text-decoration: underline; }
   }
 </style>
 </head>

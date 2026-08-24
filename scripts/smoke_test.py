@@ -275,6 +275,15 @@ def main() -> int:
         check("/ru is gone", client.get("/ru").status_code == 404)
         for key in ("ru-agency", "ru-shop", "ru-school", "portfolio-ru"):
             check(f"{key} is gone", client.get(f"/api/site/{key}").status_code == 404)
+        # The header is sticky and 60px tall. Without this, clicking a nav link
+        # parks the section under it and the heading you clicked for is hidden.
+        home = client.get("/").text
+        check("anchor targets clear the sticky header",
+              "scroll-margin-top" in home)
+        check("interactive elements have hover states",
+              all(s in home for s in (".card:hover", ".channels a:hover",
+                                      ".topnav a:hover", ".seeds button:hover")))
+
         check("the front page has no language switch",
               'href="/ru"' not in client.get("/").text)
 
