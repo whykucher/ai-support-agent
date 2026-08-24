@@ -301,6 +301,19 @@ def main() -> int:
 
         check("anchor targets clear the sticky header",
               "scroll-margin-top" in home)
+        # Two `var x` in one IIFE are one variable, and the second assignment
+        # silently wins. That is how the reduced-motion branch of the scroller
+        # ended up reading .matches off a boolean: a MediaQueryList named
+        # `reduced` was clobbered by a later `var reduced = ...matches`.
+        _inline = "\n".join(re.findall(r"<script>(.*?)</script>", home, re.S))
+        _vars = re.findall(r"^\s{0,4}var\s+([A-Za-z_$][\w$]*)\s*=", _inline, re.M)
+        _dupes = sorted({v for v in _vars if _vars.count(v) > 1})
+        check("no duplicate var in the page's top-level script", not _dupes,
+              ", ".join(_dupes) if _dupes else "none")
+
+        check("the anchor scroll is driven in JS, not left to the browser",
+              "motionQuery.matches" in home and 'behavior: "instant"' in home)
+
         check("interactive elements have hover states",
               all(s in home for s in (".card:hover", ".channels a:hover",
                                       ".topnav a:hover", ".seeds button:hover")))

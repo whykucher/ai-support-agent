@@ -134,7 +134,11 @@
     transition: transform .22s var(--ease);
   }
   .topnav a:hover { color: var(--ink); }
-  .topnav a:hover::after { transform: scaleX(1); transform-origin: left center; }
+  .topnav a:hover::after,
+  .topnav a[aria-current="true"]::after { transform: scaleX(1); transform-origin: left center; }
+  /* Landing somewhere with no marker is disorienting whether the scroll
+     animated or not. The nav says where you are. */
+  .topnav a[aria-current="true"] { color: var(--ink); }
   @media (max-width: 720px) { .topnav .hide-sm { display: none; } }
 
   /* ---------- the canvas ---------- */
@@ -769,6 +773,103 @@
 <script>
 (function () {
   "use strict";
+
+  // --- anchor scrolling ----------------------------------------------------
+  // Driven here rather than by CSS scroll-behavior, which is silently switched
+  // off by the OS "show animations" setting and by Chromium under automation.
+  // A navigation that teleports is the single thing that made the page feel
+  // wooden, and it is not worth leaving to a property that three different
+  // layers can veto.
+  var HEADER = 84;                       // sticky header plus air
+  // Named for this use only. A plain `reduced` collides with the boolean
+  // the chain animation declares later in the same IIFE - var is function
+  // scoped, so the two were one variable and .matches came back undefined.
+  // Kept as the live MediaQueryList so changing the OS setting takes
+  // effect without a reload.
+  var motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function scrollToTarget(el, done) {
+    var from = window.pageYOffset;
+    var to = Math.max(0, Math.min(
+      from + el.getBoundingClientRect().top - HEADER,
+      document.documentElement.scrollHeight - window.innerHeight
+    ));
+    var distance = to - from;
+
+    // "instant" explicitly, because a bare scrollTo obeys the CSS
+    // scroll-behavior on <html> - so the fallback meant to be immediate was
+    // being animated by the very property this function exists to replace.
+    if (motionQuery.matches || Math.abs(distance) < 2) {
+      window.scrollTo({ top: to, behavior: "instant" });
+      if (done) done();
+      return;
+    }
+
+    // Long jumps should not take proportionally long, or the page feels slow;
+    // short ones should not snap. Clamped either side.
+    var duration = Math.min(780, Math.max(340, Math.abs(distance) * 0.45));
+    var start = 0;
+
+    function step(now) {
+      if (!start) start = now;
+      var p = Math.min(1, (now - start) / duration);
+      // Same reason: each frame must land where the easing says, not start a
+      // second browser animation toward it.
+      window.scrollTo({ top: Math.round(from + distance * easeInOutCubic(p)),
+                        behavior: "instant" });
+      if (p < 1) {
+        requestAnimationFrame(step);
+      } else if (done) {
+        done();
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  document.addEventListener("click", function (e) {
+    var link = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!link) return;
+    var id = link.getAttribute("href");
+    if (id === "#" || id.length < 2) return;
+    var el = document.querySelector(id);
+    if (!el) return;
+
+    e.preventDefault();
+    scrollToTarget(el, function () {
+      // Written after the movement, so the browser cannot jump us there first,
+      // and with replaceState so Back still leaves the page rather than
+      // walking through every section the visitor looked at.
+      history.replaceState(null, "", id);
+      // Keyboard focus has to follow the eye or the next Tab starts from the
+      // top of the document again.
+      el.setAttribute("tabindex", "-1");
+      el.focus({ preventScroll: true });
+    });
+  });
+
+  // --- which section am I in ----------------------------------------------
+  var navLinks = [].slice.call(document.querySelectorAll('.topnav a[href^="#"]'));
+  var sections = navLinks
+    .map(function (a) { return document.querySelector(a.getAttribute("href")); })
+    .filter(Boolean);
+
+  if (sections.length && "IntersectionObserver" in window) {
+    var seen = {};
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { seen[en.target.id] = en.isIntersecting; });
+      var active = sections.filter(function (s) { return seen[s.id]; })[0];
+      navLinks.forEach(function (a) {
+        var on = active && a.getAttribute("href") === "#" + active.id;
+        if (on) { a.setAttribute("aria-current", "true"); }
+        else { a.removeAttribute("aria-current"); }
+      });
+    }, { rootMargin: "-" + HEADER + "px 0px -55% 0px" });
+    sections.forEach(function (s) { io.observe(s); });
+  }
 
   var esc = function (s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
