@@ -1,0 +1,20 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/index.py": {
+      "memory": 1024,
+      "maxDuration": 30,
+      "includeFiles": "{app,web,knowledge,scripts,n8n}/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api/index" }
+  ],
+  "env": {
+    "DB_PATH": "/tmp/app.db",
+    "LLM_PROVIDER": "demo",
+    "SEED_ON_START": "true",
+    "COMPANY_NAME": "Northwind Coffee Co.",
+    "AGENT_NAME": "Nora"
+  }
+}
