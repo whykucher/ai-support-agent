@@ -1,5 +1,6 @@
 """Runtime configuration. Everything is env-driven so the same image runs in demo and prod."""
 import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -21,33 +22,52 @@ def _load_dotenv() -> None:
 _load_dotenv()
 
 
+def _env(name: str, default: str = "") -> str:
+    """A variable that is set but blank means "not configured", not "".
+
+    Hosting dashboards create empty rows freely - Vercel's import screen reads
+    .env.example and pre-creates every key it finds - and os.getenv only falls
+    back to the default when the key is absent, not when it is empty.
+    """
+    value = os.getenv(name)
+    return default if value is None or not value.strip() else value.strip()
+
+
+def _int(name: str, default: int) -> int:
+    """int("") is a ValueError, and at module scope that is an import crash."""
+    try:
+        return int(_env(name, str(default)))
+    except ValueError:
+        return default
+
+
 def _bool(name: str, default: bool = False) -> bool:
-    return os.getenv(name, str(default)).strip().lower() in {"1", "true", "yes", "on"}
+    return _env(name, str(default)).lower() in {"1", "true", "yes", "on"}
 
 
 # --- LLM provider -----------------------------------------------------------
 # "demo"      - no API key needed, keyword retrieval + templated answers
 # "anthropic" - Claude
 # "openai"    - GPT / any OpenAI-compatible endpoint (OpenRouter, DeepSeek, Ollama)
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "demo").strip().lower()
+LLM_PROVIDER = _env("LLM_PROVIDER", "demo").strip().lower()
 
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-5")
-ANTHROPIC_BASE_URL = os.getenv("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
+ANTHROPIC_API_KEY = _env("ANTHROPIC_API_KEY", "")
+ANTHROPIC_MODEL = _env("ANTHROPIC_MODEL", "claude-sonnet-4-5")
+ANTHROPIC_BASE_URL = _env("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
+OPENAI_API_KEY = _env("OPENAI_API_KEY", "")
+OPENAI_MODEL = _env("OPENAI_MODEL", "gpt-4o-mini")
+OPENAI_BASE_URL = _env("OPENAI_BASE_URL", "https://api.openai.com/v1")
+EMBEDDING_MODEL = _env("EMBEDDING_MODEL", "text-embedding-3-small")
 
 # --- Sites ------------------------------------------------------------------
 # One engine, several knowledge bases. A site is a folder under knowledge/ plus
 # an entry below. Adding a client is a folder and a dict - no new deployment,
 # no forked code.
-DEFAULT_SITE = os.getenv("DEFAULT_SITE", "portfolio")
+DEFAULT_SITE = _env("DEFAULT_SITE", "portfolio")
 
-OWNER_NAME = os.getenv("OWNER_NAME", "Nikita Denisov")
-OWNER_EMAIL = os.getenv("OWNER_EMAIL", "hentajp5@gmail.com")
+OWNER_NAME = _env("OWNER_NAME", "Nikita Denisov")
+OWNER_EMAIL = _env("OWNER_EMAIL", "hentajp5@gmail.com")
 # The Russian site runs under its own name, not a transliteration.
 
 # Entries marked `vertical` also appear in the industry picker on the portfolio,
@@ -68,8 +88,8 @@ SITES: dict[str, dict[str, Any]] = {
         "vertical": False,
     },
     "demo": {
-        "company": os.getenv("COMPANY_NAME", "Northwind Coffee Co."),
-        "agent": os.getenv("AGENT_NAME", "Nora"),
+        "company": _env("COMPANY_NAME", "Northwind Coffee Co."),
+        "agent": _env("AGENT_NAME", "Nora"),
         "label": "Northwind Support",
         "accent": "#6E7F4E",
         "greeting": "Hi! I can help with orders, shipping, subscriptions and "
@@ -233,20 +253,20 @@ def site_conf(site: str | None) -> dict[str, Any]:
 # Kept for backwards compatibility with the demo-only entry points.
 COMPANY_NAME = SITES["demo"]["company"]
 AGENT_NAME = SITES["demo"]["agent"]
-TOP_K = int(os.getenv("TOP_K", "4"))
-HANDOFF_SCORE = int(os.getenv("HANDOFF_SCORE", "60"))  # lead_score >= this -> notify sales
+TOP_K = _int("TOP_K", 4)
+HANDOFF_SCORE = _int("HANDOFF_SCORE", 60)  # lead_score >= this -> notify sales
 
 # --- Integrations -----------------------------------------------------------
 # Point this at your n8n Webhook node to fan out into CRM / Slack / Sheets / email.
-N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "")
-N8N_WEBHOOK_SECRET = os.getenv("N8N_WEBHOOK_SECRET", "")
+N8N_WEBHOOK_URL = _env("N8N_WEBHOOK_URL", "")
+N8N_WEBHOOK_SECRET = _env("N8N_WEBHOOK_SECRET", "")
 
 # --- Infra ------------------------------------------------------------------
-DB_PATH = Path(os.getenv("DB_PATH", ROOT / "data" / "app.db"))
-KNOWLEDGE_DIR = Path(os.getenv("KNOWLEDGE_DIR", ROOT / "knowledge"))
-ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "demo-admin-token")
-HOST = os.getenv("HOST", "127.0.0.1")
-PORT = int(os.getenv("PORT", "8000"))
+DB_PATH = Path(_env("DB_PATH", str(ROOT / "data" / "app.db")))
+KNOWLEDGE_DIR = Path(_env("KNOWLEDGE_DIR", str(ROOT / "knowledge")))
+ADMIN_TOKEN = _env("ADMIN_TOKEN", "demo-admin-token")
+HOST = _env("HOST", "127.0.0.1")
+PORT = _int("PORT", 8000)
 DEBUG = _bool("DEBUG", False)
 
 # Free hosting tiers give you no persistent disk, so the database is wiped on
@@ -254,4 +274,21 @@ DEBUG = _bool("DEBUG", False)
 # With this on, an empty database is filled with sample traffic at startup.
 SEED_ON_START = _bool("SEED_ON_START", False)
 
-DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+def _writable(path: Path) -> Path:
+    """Fall back to /tmp where the checkout is read-only.
+
+    Serverless runtimes mount the deployment read-only and give you one
+    writable directory. Without this the module raised OSError at import and
+    the whole function crashed, which reads as a broken app rather than as a
+    misplaced database.
+    """
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        return path
+    except OSError:
+        fallback = Path(tempfile.gettempdir()) / "ai-support-agent" / path.name
+        fallback.parent.mkdir(parents=True, exist_ok=True)
+        return fallback
+
+
+DB_PATH = _writable(DB_PATH)

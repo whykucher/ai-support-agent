@@ -9,6 +9,7 @@ pages. Exit code 0 means the whole thing works on this
 machine. Network is only needed for the one live-scrape check, which is skipped
 rather than failed when offline.
 """
+import os
 import re
 import sys
 from pathlib import Path
@@ -278,6 +279,26 @@ def main() -> int:
         # The header is sticky and 60px tall. Without this, clicking a nav link
         # parks the section under it and the heading you clicked for is hidden.
         home = client.get("/").text
+        # A hosting dashboard that pre-creates every key from .env.example with
+        # a blank value used to kill the app at import: int("") is a ValueError
+        # at module scope, so the function crashed before any of this ran.
+        import subprocess as _sp
+        import sys as _sys
+        _blank = dict(os.environ)
+        for _k in ("LLM_PROVIDER", "TOP_K", "HANDOFF_SCORE", "PORT",
+                   "COMPANY_NAME", "AGENT_NAME", "HOST", "SEED_ON_START"):
+            _blank[_k] = ""
+        _probe = _sp.run(
+            [_sys.executable, "-c",
+             "from app import config;"
+             "print(config.LLM_PROVIDER, config.TOP_K, config.HANDOFF_SCORE,"
+             " config.PORT, config.SITES['demo']['company'])"],
+            env=_blank, capture_output=True, text=True, cwd=str(Path(__file__).resolve().parent.parent))
+        check("blank env vars fall back to defaults instead of crashing",
+              _probe.returncode == 0
+              and _probe.stdout.startswith("demo 4 60 8000 Northwind"),
+              _probe.stdout.strip() or _probe.stderr.strip()[-90:])
+
         check("anchor targets clear the sticky header",
               "scroll-margin-top" in home)
         check("interactive elements have hover states",
